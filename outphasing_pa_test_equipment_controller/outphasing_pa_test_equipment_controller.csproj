@@ -100,7 +100,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\list_visa_devices_dialogue\list_visa_devices_dialogue\list_visa_devices_dialogue.csproj">
+    <ProjectReference Include="..\list_visa_devices_dialogue\list_visa_devices_dialogue.csproj">
       <Project>{f7e4c47b-89ea-4f80-a6c7-2ecb610d9a51}</Project>
       <Name>list_visa_devices_dialogue</Name>
     </ProjectReference>
