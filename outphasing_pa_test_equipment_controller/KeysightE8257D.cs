@@ -12,5 +12,11 @@ namespace outphasing_pa_test_equipment_controller
             {
 
             }
+        // IEEE Common Commands
+        public string GetId()
+            {
+            return ReadString("*IDN?");
+            }
         }
+
 }
