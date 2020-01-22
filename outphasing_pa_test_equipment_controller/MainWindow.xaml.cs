@@ -165,7 +165,7 @@ namespace outphasing_pa_test_equipment_controller
             else
                 {
                 rsa3408a = new TektronixRSA3408A(address);
-                SpectrumAnalyzerConnectionStatus.Text = string.Format("Connected to {0}", address);
+                SpectrumAnalyzerConnectionStatus.Text = string.Format("Connected to {0}\nID: {1}", address, rsa3408a.GetId());
                 }
             }
 
@@ -179,7 +179,7 @@ namespace outphasing_pa_test_equipment_controller
             else
                 {
                 smu200a = new RS_SMU200A(address);
-                SMU200AConnectionStatus.Text = string.Format("Connected to {0}", address);
+                SMU200AConnectionStatus.Text = string.Format("Connected to {0}\nID: {1}", address, smu200a.GetId());
                 }
             }
 
@@ -193,7 +193,7 @@ namespace outphasing_pa_test_equipment_controller
             else
                 {
                 e8257d = new KeysightE8257D(address);
-                E8257DConnectionStatus.Text = string.Format("Connected to {0}", address);
+                E8257DConnectionStatus.Text = string.Format("Connected to {0}\nID: {1}", address, e8257d.GetId());
                 }
             }
 
@@ -594,6 +594,54 @@ namespace outphasing_pa_test_equipment_controller
         private void ReadChannel4StateButton_Click(object sender, RoutedEventArgs e)
             {
             GetChannelState(4, UpdateTextBox: true);
+            }
+
+        private void PsuDebugWriteButton_Click(object sender, RoutedEventArgs e)
+            {
+            var command = PsuDebugInputTextBox.Text;
+            hp6624a.device.RawIO.Write(command);
+            }
+
+        private void PsuDebugQueryButton_Click(object sender, RoutedEventArgs e)
+            {
+            var query = PsuDebugInputTextBox.Text;
+            PsuDebugOutputTextBlock.Text = hp6624a.ReadString(query);
+            }
+
+        private void Rsa3408aDebugWriteButton_Click(object sender, RoutedEventArgs e)
+            {
+            var command = Rsa3408aDebugInputTextBox.Text;
+            rsa3408a.device.RawIO.Write(command);
+            }
+
+        private void Rsa3408aDebugQueryButton_Click(object sender, RoutedEventArgs e)
+            {
+            var query = Rsa3408aDebugInputTextBox.Text;
+            Rsa3408aDebugOutputTextBlock.Text = rsa3408a.ReadString(query);
+            }
+
+        private void Smu200aDebugWriteButton_Click(object sender, RoutedEventArgs e)
+            {
+            var command = Smu200aDebugInputTextBox.Text;
+            smu200a.device.RawIO.Write(command);
+            }
+
+        private void Smu200aDebugQueryButton_Click(object sender, RoutedEventArgs e)
+            {
+            var query = Smu200aDebugInputTextBox.Text;
+            Smu200aDebugOutputTextBlock.Text = smu200a.ReadString(query);
+            }
+
+        private void E8257DDebugWriteButton_Click(object sender, RoutedEventArgs e)
+            {
+            var command = E8257DDebugInputTextBox.Text;
+            e8257d.device.RawIO.Write(command);
+            }
+
+        private void E8257DDebugQueryButton_Click(object sender, RoutedEventArgs e)
+            {
+            var query = E8257DDebugInputTextBox.Text;
+            E8257DDebugOutputTextBlock.Text = e8257d.ReadString(query);
             }
         }
     }

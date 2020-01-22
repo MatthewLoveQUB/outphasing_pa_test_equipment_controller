@@ -39,7 +39,7 @@ namespace list_visa_devices_dialogue
         /// </summary>
         /// <param name="command"></param>
         /// <returns></returns>
-        public string ReadString(string command)
+        public string ReadString(string command, bool suppressError=true)
         {
             device.RawIO.Write(command);
             try
@@ -48,7 +48,14 @@ namespace list_visa_devices_dialogue
             }
             catch (Ivi.Visa.IOTimeoutException e)
             {
-                return string.Format("Timeout Error: {0}", e.Message);
+                if (suppressError)
+                    {
+                    return string.Format("Timeout Error: {0}", e.Message);
+                    }
+                else
+                    {
+                    throw;
+                    }
             }
         }
     }

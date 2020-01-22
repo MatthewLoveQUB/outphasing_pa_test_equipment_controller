@@ -43,8 +43,9 @@
             <Grid Grid.Column="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="0.8*" />
-                    <RowDefinition Height="10*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="16*" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <!--  Controller Header  -->
                 <TextBlock
@@ -71,7 +72,6 @@
                         VerticalContentAlignment="Center"
                         IsReadOnly="True" />
                 </Grid>
-
                 <!--  The actual controls  -->
                 <Grid Grid.Row="2">
                     <Grid.RowDefinitions>
@@ -830,16 +830,50 @@
                             TextAlignment="Center" />
                     </Grid>
                 </Grid>
+                <!--  The debug line  -->
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="4*" />
+                        <ColumnDefinition Width="4*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Button
+                        x:Name="PsuDebugWriteButton"
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Click="PsuDebugWriteButton_Click"
+                        Content="Write" />
+                    <Button
+                        x:Name="PsuDebugQueryButton"
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Click="PsuDebugQueryButton_Click"
+                        Content="Query" />
+                    <TextBox
+                        x:Name="PsuDebugInputTextBox"
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        Grid.Column="1" />
+                    <TextBlock
+                        x:Name="PsuDebugOutputTextBlock"
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        Grid.Column="2" />
+                </Grid>
             </Grid>
-            <!--  3408A  -->
+            <!--  RSA3408A  -->
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="0.8*" />
-                    <RowDefinition Height="10*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="16*" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <!--  Controller Header  -->
-
                 <TextBlock
                     Grid.Row="0"
                     VerticalAlignment="Center"
@@ -887,13 +921,48 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                 </Grid>
+                <!--  Debug  -->
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="4*" />
+                        <ColumnDefinition Width="4*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Button
+                        x:Name="Rsa3408aDebugWriteButton"
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Click="Rsa3408aDebugWriteButton_Click"
+                        Content="Write" />
+                    <Button
+                        x:Name="Rsa3408aDebugQueryButton"
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Click="Rsa3408aDebugQueryButton_Click"
+                        Content="Query" />
+                    <TextBox
+                        x:Name="Rsa3408aDebugInputTextBox"
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        Grid.Column="1" />
+                    <TextBlock
+                        x:Name="Rsa3408aDebugOutputTextBlock"
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        Grid.Column="2" />
+                </Grid>
             </Grid>
             <!--  R&S SMU200A  -->
             <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="0.8*" />
-                    <RowDefinition Height="10*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="16*" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <!--  Controller Header  -->
                 <TextBlock
@@ -943,13 +1012,48 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                 </Grid>
+                <!--  Debug  -->
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="4*" />
+                        <ColumnDefinition Width="4*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Button
+                        x:Name="Smu200aDebugWriteButton"
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Click="Smu200aDebugWriteButton_Click"
+                        Content="Write" />
+                    <Button
+                        x:Name="Smu200aDebugQueryButton"
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Click="Smu200aDebugQueryButton_Click"
+                        Content="Query" />
+                    <TextBox
+                        x:Name="Smu200aDebugInputTextBox"
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        Grid.Column="1" />
+                    <TextBlock
+                        x:Name="Smu200aDebugOutputTextBlock"
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        Grid.Column="2" />
+                </Grid>
             </Grid>
             <!--  E8257D  -->
             <Grid Grid.Column="3">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="0.8*" />
-                    <RowDefinition Height="10*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="16*" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <!--  Controller Header  -->
                 <TextBlock
@@ -998,6 +1102,40 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
+                </Grid>
+                <!--  Debug  -->
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="4*" />
+                        <ColumnDefinition Width="4*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Button
+                        x:Name="E8257DDebugWriteButton"
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Click="E8257DDebugWriteButton_Click"
+                        Content="Write" />
+                    <Button
+                        x:Name="E8257DDebugQueryButton"
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Click="E8257DDebugQueryButton_Click"
+                        Content="Query" />
+                    <TextBox
+                        x:Name="E8257DDebugInputTextBox"
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        Grid.Column="1" />
+                    <TextBlock
+                        x:Name="E8257DDebugOutputTextBlock"
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        Grid.Column="2" />
                 </Grid>
             </Grid>
         </Grid>
