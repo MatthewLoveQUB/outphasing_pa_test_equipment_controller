@@ -1,0 +1,1013 @@
+﻿<Window
+    x:Class="outphasing_pa_test_equipment_controller.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:outphasing_pa_test_equipment_controller"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="Outphasing Test Equipment Controller"
+    Width="1600"
+    Height="900"
+    mc:Ignorable="d">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="5*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="25" />
+        </Grid.RowDefinitions>
+        <!--  Grid for VISA connection control  -->
+        <Grid Grid.Row="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+        </Grid>
+        <!--  Controls for each device  -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <!--  6624A  -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="0.8*" />
+                    <RowDefinition Height="10*" />
+                </Grid.RowDefinitions>
+                <!--  Controller Header  -->
+                <TextBlock
+                    Grid.Row="0"
+                    VerticalAlignment="Center"
+                    FontSize="24"
+                    Text="HP 6624A PSU"
+                    TextAlignment="Center" />
+                <!--  Connection  -->
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="4*" />
+                    </Grid.ColumnDefinitions>
+                    <Button
+                        x:Name="PsuConnectionButton"
+                        Grid.Column="0"
+                        Click="PsuConnectionButton_Click"
+                        Content="Connect" />
+                    <TextBox
+                        x:Name="PsuConnectionStatus"
+                        Grid.Column="1"
+                        HorizontalContentAlignment="Left"
+                        VerticalContentAlignment="Center"
+                        IsReadOnly="True" />
+                </Grid>
+
+                <!--  The actual controls  -->
+                <Grid Grid.Row="2">
+                    <Grid.RowDefinitions>
+                        <!--  A row per channel plus general system status  -->
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <!--  Channel 1  -->
+                    <Grid Grid.Row="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.5*" />
+                            <ColumnDefinition Width="1.5*" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="2*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Channel 1"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="2"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Set Value"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="4"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Get Value"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="6"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Read Output"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Voltage (V)"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Current (A)"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="3"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Overvoltage (V)"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="4"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Channel State"
+                            TextAlignment="Center" />
+                        <!--  Voltage  -->
+                        <Button
+                            x:Name="SetChannel1VoltageButton"
+                            Grid.Row="1"
+                            Grid.Column="2"
+                            Click="SetChannel1VoltageButton_Click"
+                            Content="Set" />
+                        <TextBox
+                            x:Name="SetChannel1VoltageTextBox"
+                            Grid.Row="1"
+                            Grid.Column="3" />
+                        <Button
+                            x:Name="GetChannel1VoltageButton"
+                            Grid.Row="1"
+                            Grid.Column="4"
+                            Click="GetChannel1VoltageButton_Click"
+                            Content="Get" />
+                        <TextBox
+                            x:Name="GetChannel1VoltageTextBox"
+                            Grid.Row="1"
+                            Grid.Column="5"
+                            IsReadOnly="True" />
+                        <Button
+                            x:Name="ReadChannel1VoltageButton"
+                            Grid.Row="1"
+                            Grid.Column="6"
+                            Click="ReadChannel1VoltageButton_Click"
+                            Content="Read" />
+                        <TextBox
+                            x:Name="ReadChannel1VoltageTextBox"
+                            Grid.Row="1"
+                            Grid.Column="7"
+                            IsReadOnly="True" />
+                        <!--  Current  -->
+                        <Button
+                            x:Name="SetChannel1CurrentButton"
+                            Grid.Row="2"
+                            Grid.Column="2"
+                            Click="SetChannel1CurrentButton_Click"
+                            Content="Set" />
+                        <TextBox
+                            x:Name="SetChannel1CurrentTextBox"
+                            Grid.Row="2"
+                            Grid.Column="3" />
+                        <Button
+                            x:Name="GetChannel1CurrentButton"
+                            Grid.Row="2"
+                            Grid.Column="4"
+                            Click="GetChannel1CurrentButton_Click"
+                            Content="Get" />
+                        <TextBox
+                            x:Name="GetChannel1CurrentTextBox"
+                            Grid.Row="2"
+                            Grid.Column="5"
+                            IsReadOnly="True" />
+                        <Button
+                            x:Name="ReadChannel1CurrentButton"
+                            Grid.Row="2"
+                            Grid.Column="6"
+                            Click="ReadChannel1CurrentButton_Click"
+                            Content="Read" />
+                        <TextBox
+                            x:Name="ReadChannel1CurrentTextBox"
+                            Grid.Row="2"
+                            Grid.Column="7"
+                            IsReadOnly="True" />
+                        <!--  Over-voltage  -->
+                        <Button
+                            x:Name="SetChannel1OverVoltageButton"
+                            Grid.Row="3"
+                            Grid.Column="2"
+                            Click="SetChannel1OverVoltageButton_Click"
+                            Content="Set" />
+                        <TextBox
+                            x:Name="SetChannel1OverVoltageTextBox"
+                            Grid.Row="3"
+                            Grid.Column="3" />
+                        <Button
+                            x:Name="GetChannel1OverVoltageButton"
+                            Grid.Row="3"
+                            Grid.Column="4"
+                            Click="GetChannel1OverVoltageButton_Click"
+                            Content="Get" />
+                        <TextBox
+                            x:Name="GetChannel1OverVoltageTextBox"
+                            Grid.Row="3"
+                            Grid.Column="5"
+                            IsReadOnly="True" />
+                        <!--  Channel State  -->
+                        <Button
+                            x:Name="SetChannel1StateButton"
+                            Grid.Row="4"
+                            Grid.Column="2"
+                            Grid.ColumnSpan="2"
+                            Click="SetChannel1StateButton_Click"
+                            Content="Switch" />
+                        <Button
+                            x:Name="ReadChannel1StateButton"
+                            Grid.Row="4"
+                            Grid.Column="4"
+                            Grid.ColumnSpan="2"
+                            Click="ReadChannel1StateButton_Click"
+                            Content="Read" />
+                        <TextBlock
+                            x:Name="ReadChannel1StateTextBlock"
+                            Grid.Row="4"
+                            Grid.Column="6"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Not Read"
+                            TextAlignment="Center" />
+                    </Grid>
+                    <!--  Channel 2  -->
+                    <Grid Grid.Row="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.5*" />
+                            <ColumnDefinition Width="1.5*" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="2*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Channel 2"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="2"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Set Value"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="4"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Get Value"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="6"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Read Output"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Voltage (V)"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Current (A)"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="3"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Overvoltage (V)"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="4"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Channel State"
+                            TextAlignment="Center" />
+                        <!--  Voltage  -->
+                        <Button
+                            x:Name="SetChannel2VoltageButton"
+                            Grid.Row="1"
+                            Grid.Column="2"
+                            Click="SetChannel2VoltageButton_Click"
+                            Content="Set" />
+                        <TextBox
+                            x:Name="SetChannel2VoltageTextBox"
+                            Grid.Row="1"
+                            Grid.Column="3" />
+                        <Button
+                            x:Name="GetChannel2VoltageButton"
+                            Grid.Row="1"
+                            Grid.Column="4"
+                            Click="GetChannel2VoltageButton_Click"
+                            Content="Get" />
+                        <TextBox
+                            x:Name="GetChannel2VoltageTextBox"
+                            Grid.Row="1"
+                            Grid.Column="5"
+                            IsReadOnly="True" />
+                        <Button
+                            x:Name="ReadChannel2VoltageButton"
+                            Grid.Row="1"
+                            Grid.Column="6"
+                            Click="ReadChannel2VoltageButton_Click"
+                            Content="Read" />
+                        <TextBox
+                            x:Name="ReadChannel2VoltageTextBox"
+                            Grid.Row="1"
+                            Grid.Column="7"
+                            IsReadOnly="True" />
+                        <!--  Current  -->
+                        <Button
+                            x:Name="SetChannel2CurrentButton"
+                            Grid.Row="2"
+                            Grid.Column="2"
+                            Click="SetChannel2CurrentButton_Click"
+                            Content="Set" />
+                        <TextBox
+                            x:Name="SetChannel2CurrentTextBox"
+                            Grid.Row="2"
+                            Grid.Column="3" />
+                        <Button
+                            x:Name="GetChannel2CurrentButton"
+                            Grid.Row="2"
+                            Grid.Column="4"
+                            Click="GetChannel2CurrentButton_Click"
+                            Content="Get" />
+                        <TextBox
+                            x:Name="GetChannel2CurrentTextBox"
+                            Grid.Row="2"
+                            Grid.Column="5"
+                            IsReadOnly="True" />
+                        <Button
+                            x:Name="ReadChannel2CurrentButton"
+                            Grid.Row="2"
+                            Grid.Column="6"
+                            Click="ReadChannel2CurrentButton_Click"
+                            Content="Read" />
+                        <TextBox
+                            x:Name="ReadChannel2CurrentTextBox"
+                            Grid.Row="2"
+                            Grid.Column="7"
+                            IsReadOnly="True" />
+                        <!--  Over-voltage  -->
+                        <Button
+                            x:Name="SetChannel2OverVoltageButton"
+                            Grid.Row="3"
+                            Grid.Column="2"
+                            Click="SetChannel2OverVoltageButton_Click"
+                            Content="Set" />
+                        <TextBox
+                            x:Name="SetChannel2OverVoltageTextBox"
+                            Grid.Row="3"
+                            Grid.Column="3" />
+                        <Button
+                            x:Name="GetChannel2OverVoltageButton"
+                            Grid.Row="3"
+                            Grid.Column="4"
+                            Click="GetChannel2OverVoltageButton_Click"
+                            Content="Get" />
+                        <TextBox
+                            x:Name="GetChannel2OverVoltageTextBox"
+                            Grid.Row="3"
+                            Grid.Column="5"
+                            IsReadOnly="True" />
+                        <!--  Channel State  -->
+                        <Button
+                            x:Name="SetChannel2StateButton"
+                            Grid.Row="4"
+                            Grid.Column="2"
+                            Grid.ColumnSpan="2"
+                            Click="SetChannel2StateButton_Click"
+                            Content="Switch" />
+                        <Button
+                            x:Name="ReadChannel2StateButton"
+                            Grid.Row="4"
+                            Grid.Column="4"
+                            Grid.ColumnSpan="2"
+                            Click="ReadChannel2StateButton_Click"
+                            Content="Read" />
+                        <TextBlock
+                            x:Name="ReadChannel2StateTextBlock"
+                            Grid.Row="4"
+                            Grid.Column="6"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Not Read"
+                            TextAlignment="Center" />
+                    </Grid>
+                    <!--  Channel 3  -->
+                    <Grid Grid.Row="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.5*" />
+                            <ColumnDefinition Width="1.5*" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="2*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Channel 3"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="2"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Set Value"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="4"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Get Value"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="6"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Read Output"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Voltage (V)"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Current (A)"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="3"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Overvoltage (V)"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="4"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Channel State"
+                            TextAlignment="Center" />
+                        <!--  Voltage  -->
+                        <Button
+                            x:Name="SetChannel3VoltageButton"
+                            Grid.Row="1"
+                            Grid.Column="2"
+                            Click="SetChannel3VoltageButton_Click"
+                            Content="Set" />
+                        <TextBox
+                            x:Name="SetChannel3VoltageTextBox"
+                            Grid.Row="1"
+                            Grid.Column="3" />
+                        <Button
+                            x:Name="GetChannel3VoltageButton"
+                            Grid.Row="1"
+                            Grid.Column="4"
+                            Click="GetChannel3VoltageButton_Click"
+                            Content="Get" />
+                        <TextBox
+                            x:Name="GetChannel3VoltageTextBox"
+                            Grid.Row="1"
+                            Grid.Column="5"
+                            IsReadOnly="True" />
+                        <Button
+                            x:Name="ReadChannel3VoltageButton"
+                            Grid.Row="1"
+                            Grid.Column="6"
+                            Click="ReadChannel3VoltageButton_Click"
+                            Content="Read" />
+                        <TextBox
+                            x:Name="ReadChannel3VoltageTextBox"
+                            Grid.Row="1"
+                            Grid.Column="7"
+                            IsReadOnly="True" />
+                        <!--  Current  -->
+                        <Button
+                            x:Name="SetChannel3CurrentButton"
+                            Grid.Row="2"
+                            Grid.Column="2"
+                            Click="SetChannel3CurrentButton_Click"
+                            Content="Set" />
+                        <TextBox
+                            x:Name="SetChannel3CurrentTextBox"
+                            Grid.Row="2"
+                            Grid.Column="3" />
+                        <Button
+                            x:Name="GetChannel3CurrentButton"
+                            Grid.Row="2"
+                            Grid.Column="4"
+                            Click="GetChannel3CurrentButton_Click"
+                            Content="Get" />
+                        <TextBox
+                            x:Name="GetChannel3CurrentTextBox"
+                            Grid.Row="2"
+                            Grid.Column="5"
+                            IsReadOnly="True" />
+                        <Button
+                            x:Name="ReadChannel3CurrentButton"
+                            Grid.Row="2"
+                            Grid.Column="6"
+                            Click="ReadChannel3CurrentButton_Click"
+                            Content="Read" />
+                        <TextBox
+                            x:Name="ReadChannel3CurrentTextBox"
+                            Grid.Row="2"
+                            Grid.Column="7"
+                            IsReadOnly="True" />
+                        <!--  Over-voltage  -->
+                        <Button
+                            x:Name="SetChannel3OverVoltageButton"
+                            Grid.Row="3"
+                            Grid.Column="2"
+                            Click="SetChannel3OverVoltageButton_Click"
+                            Content="Set" />
+                        <TextBox
+                            x:Name="SetChannel3OverVoltageTextBox"
+                            Grid.Row="3"
+                            Grid.Column="3" />
+                        <Button
+                            x:Name="GetChannel3OverVoltageButton"
+                            Grid.Row="3"
+                            Grid.Column="4"
+                            Click="GetChannel3OverVoltageButton_Click"
+                            Content="Get" />
+                        <TextBox
+                            x:Name="GetChannel3OverVoltageTextBox"
+                            Grid.Row="3"
+                            Grid.Column="5"
+                            IsReadOnly="True" />
+                        <!--  Channel State  -->
+                        <Button
+                            x:Name="SetChannel3StateButton"
+                            Grid.Row="4"
+                            Grid.Column="2"
+                            Grid.ColumnSpan="2"
+                            Click="SetChannel3StateButton_Click"
+                            Content="Switch" />
+                        <Button
+                            x:Name="ReadChannel3StateButton"
+                            Grid.Row="4"
+                            Grid.Column="4"
+                            Grid.ColumnSpan="2"
+                            Click="ReadChannel3StateButton_Click"
+                            Content="Read" />
+                        <TextBlock
+                            x:Name="ReadChannel3StateTextBlock"
+                            Grid.Row="4"
+                            Grid.Column="6"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Not Read"
+                            TextAlignment="Center" />
+                    </Grid>
+                    <!--  Channel 4  -->
+                    <Grid Grid.Row="3">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.5*" />
+                            <ColumnDefinition Width="1.5*" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="2*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Channel 4"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="2"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Set Value"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="4"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Get Value"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="6"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Read Output"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Voltage (V)"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Current (A)"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="3"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Overvoltage (V)"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            Grid.Row="4"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Channel State"
+                            TextAlignment="Center" />
+                        <!--  Voltage  -->
+                        <Button
+                            x:Name="SetChannel4VoltageButton"
+                            Grid.Row="1"
+                            Grid.Column="2"
+                            Click="SetChannel4VoltageButton_Click"
+                            Content="Set" />
+                        <TextBox
+                            x:Name="SetChannel4VoltageTextBox"
+                            Grid.Row="1"
+                            Grid.Column="3" />
+                        <Button
+                            x:Name="GetChannel4VoltageButton"
+                            Grid.Row="1"
+                            Grid.Column="4"
+                            Click="GetChannel4VoltageButton_Click"
+                            Content="Get" />
+                        <TextBox
+                            x:Name="GetChannel4VoltageTextBox"
+                            Grid.Row="1"
+                            Grid.Column="5"
+                            IsReadOnly="True" />
+                        <Button
+                            x:Name="ReadChannel4VoltageButton"
+                            Grid.Row="1"
+                            Grid.Column="6"
+                            Click="ReadChannel4VoltageButton_Click"
+                            Content="Read" />
+                        <TextBox
+                            x:Name="ReadChannel4VoltageTextBox"
+                            Grid.Row="1"
+                            Grid.Column="7"
+                            IsReadOnly="True" />
+                        <!--  Current  -->
+                        <Button
+                            x:Name="SetChannel4CurrentButton"
+                            Grid.Row="2"
+                            Grid.Column="2"
+                            Click="SetChannel4CurrentButton_Click"
+                            Content="Set" />
+                        <TextBox
+                            x:Name="SetChannel4CurrentTextBox"
+                            Grid.Row="2"
+                            Grid.Column="3" />
+                        <Button
+                            x:Name="GetChannel4CurrentButton"
+                            Grid.Row="2"
+                            Grid.Column="4"
+                            Click="GetChannel4CurrentButton_Click"
+                            Content="Get" />
+                        <TextBox
+                            x:Name="GetChannel4CurrentTextBox"
+                            Grid.Row="2"
+                            Grid.Column="5"
+                            IsReadOnly="True" />
+                        <Button
+                            x:Name="ReadChannel4CurrentButton"
+                            Grid.Row="2"
+                            Grid.Column="6"
+                            Click="ReadChannel4CurrentButton_Click"
+                            Content="Read" />
+                        <TextBox
+                            x:Name="ReadChannel4CurrentTextBox"
+                            Grid.Row="2"
+                            Grid.Column="7"
+                            IsReadOnly="True" />
+                        <!--  Over-voltage  -->
+                        <Button
+                            x:Name="SetChannel4OverVoltageButton"
+                            Grid.Row="3"
+                            Grid.Column="2"
+                            Click="SetChannel4OverVoltageButton_Click"
+                            Content="Set" />
+                        <TextBox
+                            x:Name="SetChannel4OverVoltageTextBox"
+                            Grid.Row="3"
+                            Grid.Column="3" />
+                        <Button
+                            x:Name="GetChannel4OverVoltageButton"
+                            Grid.Row="3"
+                            Grid.Column="4"
+                            Click="GetChannel4OverVoltageButton_Click"
+                            Content="Get" />
+                        <TextBox
+                            x:Name="GetChannel4OverVoltageTextBox"
+                            Grid.Row="3"
+                            Grid.Column="5"
+                            IsReadOnly="True" />
+                        <!--  Channel State  -->
+                        <Button
+                            x:Name="SetChannel4StateButton"
+                            Grid.Row="4"
+                            Grid.Column="2"
+                            Grid.ColumnSpan="2"
+                            Click="SetChannel4StateButton_Click"
+                            Content="Switch" />
+                        <Button
+                            x:Name="ReadChannel4StateButton"
+                            Grid.Row="4"
+                            Grid.Column="4"
+                            Grid.ColumnSpan="2"
+                            Click="ReadChannel4StateButton_Click"
+                            Content="Read" />
+                        <TextBlock
+                            x:Name="ReadChannel4StateTextBlock"
+                            Grid.Row="4"
+                            Grid.Column="6"
+                            Grid.ColumnSpan="2"
+                            VerticalAlignment="Center"
+                            Text="Not Read"
+                            TextAlignment="Center" />
+                    </Grid>
+                </Grid>
+            </Grid>
+            <!--  3408A  -->
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="0.8*" />
+                    <RowDefinition Height="10*" />
+                </Grid.RowDefinitions>
+                <!--  Controller Header  -->
+
+                <TextBlock
+                    Grid.Row="0"
+                    VerticalAlignment="Center"
+                    FontSize="24"
+                    Text="3408A"
+                    TextAlignment="Center" />
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="4*" />
+                    </Grid.ColumnDefinitions>
+                    <Button
+                        x:Name="SpectrumAnalyzerConnectionButton"
+                        Grid.Column="0"
+                        Click="SpectrumAnalyzerConnectionButton_Click"
+                        Content="Connect" />
+                    <TextBox
+                        x:Name="SpectrumAnalyzerConnectionStatus"
+                        Grid.Column="1"
+                        HorizontalContentAlignment="Left"
+                        VerticalContentAlignment="Center"
+                        IsReadOnly="True" />
+                </Grid>
+                <!--  The actual controls  -->
+                <Grid Grid.Row="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                </Grid>
+            </Grid>
+            <!--  R&S SMU200A  -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="0.8*" />
+                    <RowDefinition Height="10*" />
+                </Grid.RowDefinitions>
+                <!--  Controller Header  -->
+                <TextBlock
+                    Grid.Row="0"
+                    VerticalAlignment="Center"
+                    FontSize="24"
+                    Text="R&amp;S SMU200A"
+                    TextAlignment="Center" />
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="4*" />
+                    </Grid.ColumnDefinitions>
+                    <Button
+                        x:Name="Smu200AConnectionButton"
+                        Grid.Column="0"
+                        Click="Smu200AConnectionButton_Click"
+                        Content="Connect" />
+                    <TextBox
+                        x:Name="SMU200AConnectionStatus"
+                        Grid.Column="1"
+                        HorizontalContentAlignment="Left"
+                        VerticalContentAlignment="Center"
+                        IsReadOnly="True" />
+                </Grid>
+                <!--  The actual controls  -->
+                <Grid Grid.Row="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                </Grid>
+            </Grid>
+            <!--  E8257D  -->
+            <Grid Grid.Column="3">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="0.8*" />
+                    <RowDefinition Height="10*" />
+                </Grid.RowDefinitions>
+                <!--  Controller Header  -->
+                <TextBlock
+                    Grid.Row="0"
+                    VerticalAlignment="Center"
+                    FontSize="24"
+                    Text="E8257D"
+                    TextAlignment="Center" />
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="4*" />
+                    </Grid.ColumnDefinitions>
+                    <Button
+                        x:Name="E8257DConnectionButton"
+                        Grid.Column="0"
+                        Click="E8257DConnectionButton_Click"
+                        Content="Connect" />
+                    <TextBox
+                        x:Name="E8257DConnectionStatus"
+                        Grid.Column="1"
+                        HorizontalContentAlignment="Left"
+                        VerticalContentAlignment="Center"
+                        IsReadOnly="True" />
+                </Grid>
+                <!--  The actual controls  -->
+                <Grid Grid.Row="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                </Grid>
+            </Grid>
+        </Grid>
+        <!--  Sweep Controls  -->
+        <Grid Grid.Row="1" />
+        <!--  Status bar  -->
+        <StatusBar Grid.Row="2">
+            <StatusBarItem>
+                <TextBlock x:Name="StatusTextBlock" />
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>
