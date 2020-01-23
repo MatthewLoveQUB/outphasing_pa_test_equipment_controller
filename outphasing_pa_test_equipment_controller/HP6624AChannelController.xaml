@@ -31,7 +31,7 @@
             Grid.Column="0"
             Grid.ColumnSpan="2"
             VerticalAlignment="Center"
-            Text="{Binding ChannelNumber, StringFormat=Channel {0}}"
+            Text="{Binding Channel, StringFormat=Channel {0}}"
             TextAlignment="Center" />
         <TextBlock
             Grid.Row="0"

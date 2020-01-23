@@ -6,48 +6,56 @@ using System.Threading.Tasks;
 
 namespace outphasing_pa_test_equipment_controller
 {
-    class TektronixRSA3408A : list_visa_devices_dialogue.VisaDevice
+    public class TektronixRSA3408A
     {
+        public list_visa_devices_dialogue.VisaDevice Device;
         public string SaveDir;
 
-        public TektronixRSA3408A(string deviceAddress, string saveDir="") : base(deviceAddress, "TektronixRSA3408A")
-        {
+        public TektronixRSA3408A(string deviceAddress, string saveDir="")
+            {
             SaveDir = saveDir;
-        }
+            Device = new list_visa_devices_dialogue.VisaDevice(deviceAddress);
+            }
+
+        public TektronixRSA3408A(list_visa_devices_dialogue.VisaDevice device, string saveDir = "")
+            {
+            SaveDir = saveDir;
+            Device = device;
+            }
 
         // IEEE Common Commands
         public string GetId()
             {
-            return ReadString("*IDN?");
+            return Device.ReadString("*IDN?");
             }
 
         // Configure Commands
         public void SetSpectrumChannelPowerMeasurementMode()
             {
-            device.RawIO.Write(":CONF:SPEC:CHP");
+            Device.connection.RawIO.Write(":CONF:SPEC:CHP");
             }
 
         // Fetch Commands
         public string GetSpectrumChannelPower()
             {
-            return ReadString(":FETC:SPEC:CHP?");
+            return Device.ReadString(":FETC:SPEC:CHP?");
             }
 
         // Initiate Commands
         public void SetContinuousMode(bool continuousOn)
             {
             var message = string.Format(":INIT:CONT {0}", continuousOn ? "ON" : "OFF");
-            device.RawIO.Write(message);
+            Device.connection.RawIO.Write(message);
             }
 
         public void StartSignalAcquisition()
             {
-            device.RawIO.Write(":INIT");
+            Device.connection.RawIO.Write(":INIT");
             }
 
         public void RestartSignalAcquisition()
             {
-            device.RawIO.Write(":INIT:REST");
+            Device.connection.RawIO.Write(":INIT:REST");
             }
 
         // Memory Commands
@@ -55,13 +63,13 @@ namespace outphasing_pa_test_equipment_controller
             {
             var filePath = string.Format("{0}//{1}", SaveDir, fileName);
             var message = string.Format(":MMEM:STOR:TRAC {0}", filePath);
-            device.RawIO.Write(message);
+            Device.connection.RawIO.Write(message);
             }
 
         // Sense Commands
         public string GetFrequencyBand()
             {
-            return ReadString(":SENSE:FREQ:BAND?");
+            return Device.ReadString(":SENSE:FREQ:BAND?");
             }
     }
 }

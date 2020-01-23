@@ -6,8 +6,20 @@ using System.Threading.Tasks;
 
 namespace outphasing_pa_test_equipment_controller
 {
-    public class HP6624A : list_visa_devices_dialogue.VisaDevice
+    public class HP6624A
     {
+        public list_visa_devices_dialogue.VisaDevice Device;
+        public HP6624A(string deviceAddress)
+            {
+            Device = new list_visa_devices_dialogue.VisaDevice(deviceAddress);
+            }
+
+        public HP6624A(list_visa_devices_dialogue.VisaDevice device)
+            {
+            Device = device;
+            }
+
+
         /// <summary>
         /// Convert the "000" or "001" response from the PSU to Bool.
         /// </summary>
@@ -17,33 +29,29 @@ namespace outphasing_pa_test_equipment_controller
         {
             return Convert.ToBoolean(Convert.ToBoolean(message));
         }
-        public HP6624A(string deviceAddress) : base(deviceAddress, "HP6624A PSU")
-        {
-
-        }
         private void SendC4Command(string header, int channel, double data)
         {
             var commandMessage = string.Format("{0} {1},{2}", header, channel, data);
-            device.RawIO.Write(commandMessage);
+            Device.connection.RawIO.Write(commandMessage);
         }
 
         private void SendC4Command(string header, int channel, bool data)
         {
             var state = data ? "1" : "0";
             var commandMessage = string.Format("{0} {1},{2}", header, channel, state);
-            device.RawIO.Write(commandMessage);
+            Device.connection.RawIO.Write(commandMessage);
         }
 
         private string ReadQ1Query(string header)
             {
             var message = string.Format("{0};", header);
-            return ReadString(message);
+            return Device.ReadString(message);
             }
 
         private string ReadQ2Query(string header, int channel)
         {
             var queryMessage = string.Format("{0} {1};", header, channel);
-            return ReadString(queryMessage);
+            return Device.ReadString(queryMessage);
         }
 
         public string GetId()

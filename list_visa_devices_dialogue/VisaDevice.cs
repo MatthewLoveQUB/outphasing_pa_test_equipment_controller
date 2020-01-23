@@ -24,14 +24,12 @@ namespace list_visa_devices_dialogue
 
     public class VisaDevice
     {
-        public MessageBasedSession device;
-        public readonly string name;
+        public MessageBasedSession connection;
 
-        public VisaDevice(string deviceAddress, string deviceName)
+        public VisaDevice(string deviceAddress)
         {
             var rm = new ResourceManager();
-            device = (MessageBasedSession)rm.Open(deviceAddress);
-            name = deviceName;
+            connection = (MessageBasedSession)rm.Open(deviceAddress);
         }
 
         /// <summary>
@@ -41,10 +39,10 @@ namespace list_visa_devices_dialogue
         /// <returns></returns>
         public string ReadString(string command, bool suppressError=true)
         {
-            device.RawIO.Write(command);
+            connection.RawIO.Write(command);
             try
             {
-                return device.RawIO.ReadString();
+                return connection.RawIO.ReadString();
             }
             catch (Ivi.Visa.IOTimeoutException e)
             {

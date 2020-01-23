@@ -63,6 +63,9 @@
     <Compile Include="KeysightE8257D.cs" />
     <Compile Include="RS_SMU200A.cs" />
     <Compile Include="TektronixRSA3408A.cs" />
+    <Compile Include="VisaDebugger.xaml.cs">
+      <DependentUpon>VisaDebugger.xaml</DependentUpon>
+    </Compile>
     <Page Include="HP6624AChannelController.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -79,6 +82,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="VisaDebugger.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

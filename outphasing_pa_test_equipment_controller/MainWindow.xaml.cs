@@ -21,8 +21,8 @@ namespace outphasing_pa_test_equipment_controller
     public partial class MainWindow : Window
         {
         HP6624A hp6624a;
-        RS_SMU200A smu200a;
         TektronixRSA3408A rsa3408a;
+        RS_SMU200A smu200a;
         KeysightE8257D e8257d;
 
         public MainWindow()
@@ -55,6 +55,26 @@ namespace outphasing_pa_test_equipment_controller
                 }
             }
 
+        public bool IsConnected(HP6624A device)
+            {
+            return IsConnected(device.Device);
+            }
+
+        public bool IsConnected(TektronixRSA3408A device)
+            {
+            return IsConnected(device.Device);
+            }
+
+        public bool IsConnected(RS_SMU200A device)
+            {
+            return IsConnected(device.Device);
+            }
+
+        public bool IsConnected(KeysightE8257D device)
+            {
+            return IsConnected(device.Device);
+            }
+
         private string GetVisaAddress()
             {
             var visaWindow = new list_visa_devices_dialogue.MainWindow();
@@ -62,46 +82,63 @@ namespace outphasing_pa_test_equipment_controller
             return visaWindow.SelectedAddress;
             }
 
-        private void ConnectToDevice<T>(T device)
+        private list_visa_devices_dialogue.VisaDevice ConnectToDevice()
             {
             var address = GetVisaAddress();
-
-            if (address == null)
-                {
-                return;
-                }
+            if (address == null) { return null; }
             try
                 {
-                var args = new object[] { address };
-                device = (T)Activator.CreateInstance(typeof(T), args);
+                var device = new list_visa_devices_dialogue.VisaDevice(address);
                 PsuConnectionStatus.Text = string.Format("Connected to {0}", address);
+                return device;
                 }
             catch
                 {
                 var message = string.Format("Could not connect to: {0}", address);
                 PsuConnectionStatus.Text = "";
                 DisplayStatusMessage(message);
+                return null;
                 }
             }
 
         private void PsuConnectionButton_Click(object sender, RoutedEventArgs e)
             {
-            ConnectToDevice(hp6624a);
+            var connection = ConnectToDevice();
+            if (!(connection == null))
+                {
+                hp6624a = new HP6624A(connection);
+                PsuDebugger.device = connection;
+                }
             }
 
         private void SpectrumAnalyzerConnectionButton_Click(object sender, RoutedEventArgs e)
             {
-            ConnectToDevice(rsa3408a);
+            var connection = ConnectToDevice();
+            if (!(connection == null))
+                {
+                rsa3408a = new TektronixRSA3408A(connection);
+                Rsa3408ADebugger.device = connection;
+                }
             }
 
         private void Smu200AConnectionButton_Click(object sender, RoutedEventArgs e)
             {
-            ConnectToDevice(smu200a);
+            var connection = ConnectToDevice();
+            if (!(connection == null))
+                {
+                smu200a = new RS_SMU200A(connection);
+                Smu200ADebugger.device = connection;
+                }
             }
 
         private void E8257DConnectionButton_Click(object sender, RoutedEventArgs e)
             {
-            ConnectToDevice(e8257d);
+            var connection = ConnectToDevice();
+            if (!(connection == null))
+                {
+                e8257d = new KeysightE8257D(connection);
+                E8257DDebugger.device = connection;
+                }
             }
 
         public void SetChannelVoltage(int channel, TextBox tb)
@@ -288,54 +325,6 @@ namespace outphasing_pa_test_equipment_controller
                 // May never actually appear
                 var message = string.Format("Could not switch channel {0}'s state", channel);
                 }
-            }
-
-        private void PsuDebugWriteButton_Click(object sender, RoutedEventArgs e)
-            {
-            var command = PsuDebugInputTextBox.Text;
-            hp6624a.device.RawIO.Write(command);
-            }
-
-        private void PsuDebugQueryButton_Click(object sender, RoutedEventArgs e)
-            {
-            var query = PsuDebugInputTextBox.Text;
-            PsuDebugOutputTextBlock.Text = hp6624a.ReadString(query);
-            }
-
-        private void Rsa3408aDebugWriteButton_Click(object sender, RoutedEventArgs e)
-            {
-            var command = Rsa3408aDebugInputTextBox.Text;
-            rsa3408a.device.RawIO.Write(command);
-            }
-
-        private void Rsa3408aDebugQueryButton_Click(object sender, RoutedEventArgs e)
-            {
-            var query = Rsa3408aDebugInputTextBox.Text;
-            Rsa3408aDebugOutputTextBlock.Text = rsa3408a.ReadString(query);
-            }
-
-        private void Smu200aDebugWriteButton_Click(object sender, RoutedEventArgs e)
-            {
-            var command = Smu200aDebugInputTextBox.Text;
-            smu200a.device.RawIO.Write(command);
-            }
-
-        private void Smu200aDebugQueryButton_Click(object sender, RoutedEventArgs e)
-            {
-            var query = Smu200aDebugInputTextBox.Text;
-            Smu200aDebugOutputTextBlock.Text = smu200a.ReadString(query);
-            }
-
-        private void E8257DDebugWriteButton_Click(object sender, RoutedEventArgs e)
-            {
-            var command = E8257DDebugInputTextBox.Text;
-            e8257d.device.RawIO.Write(command);
-            }
-
-        private void E8257DDebugQueryButton_Click(object sender, RoutedEventArgs e)
-            {
-            var query = E8257DDebugInputTextBox.Text;
-            E8257DDebugOutputTextBlock.Text = e8257d.ReadString(query);
             }
         }
     }
