@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 namespace outphasing_pa_test_equipment_controller
 {
     public class TektronixRSA3408A
-    {
+        {
         public list_visa_devices_dialogue.VisaDevice Device;
         public string SaveDir;
 
-        public TektronixRSA3408A(string deviceAddress, string saveDir="")
+        public TektronixRSA3408A(string deviceAddress, string saveDir = "")
             {
             SaveDir = saveDir;
             Device = new list_visa_devices_dialogue.VisaDevice(deviceAddress);
@@ -70,6 +70,50 @@ namespace outphasing_pa_test_equipment_controller
         public string GetFrequencyBand()
             {
             return Device.ReadString(":SENSE:FREQ:BAND?");
+            }
+
+        public void SetFrequencyCenter(double frequency)
+            {
+            var message = string.Format(":SENS:FREQ:CENT {0}", frequency);
+            Device.connection.RawIO.Write(message);
+            }
+
+        public string GetFrequencyCenter()
+            {
+            return Device.ReadString(":SENS:FREQ:CENT?");
+            }
+
+        public string GetFrequencySpan()
+            {
+            return Device.ReadString(":SENS:FREQ:SPAN?");
+            }
+
+        public void SetFrequencySpan(double frequencySpan)
+            {
+            var message = string.Format(":SENS:FREQ:SPAN {0}", frequencySpan);
+            Device.connection.RawIO.Write(message);
+            }
+
+        public string GetFrequencyStart()
+            {
+            return Device.ReadString(":SENS:FREQ:STAR?");
+            }
+
+        public void SetFrequencyStart(double startFrequency)
+            {
+            var message = string.Format(":SENS:FREQ:STAR {0}", startFrequency);
+            Device.connection.RawIO.Write(message);
+            }
+
+        public string GetFrequencyStop()
+            {
+            return Device.ReadString(":SENSE:FREQ:STOP?");
+            }
+
+        public void SetFrequencyStop(double stopFrequency)
+            {
+            var message = string.Format(":SENSE:FREQ:STOP {0}", stopFrequency);
+            Device.connection.RawIO.Write(message);
             }
     }
 }

@@ -140,15 +140,6 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="*" />
                         <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -157,6 +148,47 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
+                    <!--  Center frequency  -->
+                    <TextBlock
+                        Grid.Row="0"
+                        Grid.Column="0"
+                        Text="Frequency Center" />
+                    <Button
+                        x:Name="RsaSetCenterFrequencyButton"
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Click="RsaSetCenterFrequencyButton_Click"
+                        Content="Set" />
+                    <TextBox Grid.Row="0" Grid.Column="2" />
+                    <Button
+                        Grid.Row="0"
+                        Grid.Column="3"
+                        Content="Get" />
+                    <TextBlock Grid.Row="0" Grid.Column="4" />
+                    <!--  Frequency Span  -->
+                    <TextBlock
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Text="Feequency Span" />
+                    <Button
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Content="Set" />
+                    <TextBox Grid.Row="1" Grid.Column="2" />
+                    <Button
+                        Grid.Row="1"
+                        Grid.Column="3"
+                        Content="Get" />
+                    <!--  Channel Power  -->
+                    <TextBlock
+                        Grid.Row="2"
+                        Grid.Column="0"
+                        Text="Channel power" />
+                    <Button
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Content="Read" />
+                    <TextBlock Grid.Row="2" Grid.Column="2" />
                 </Grid>
                 <!--  Debug  -->
                 <local:VisaDebugger x:Name="Rsa3408ADebugger" Grid.Row="3" />
@@ -281,7 +313,15 @@
             </Grid>
         </Grid>
         <!--  Sweep Controls  -->
-        <Grid Grid.Row="1" />
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+        </Grid>
         <!--  Status bar  -->
         <StatusBar Grid.Row="2">
             <StatusBarItem>

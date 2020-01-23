@@ -326,5 +326,10 @@ namespace outphasing_pa_test_equipment_controller
                 var message = string.Format("Could not switch channel {0}'s state", channel);
                 }
             }
+
+        private void RsaSetCenterFrequencyButton_Click(object sender, RoutedEventArgs e)
+            {
+
+            }
         }
     }
