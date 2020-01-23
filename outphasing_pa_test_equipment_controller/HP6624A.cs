@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace outphasing_pa_test_equipment_controller
 {
-    class HP6624A : list_visa_devices_dialogue.VisaDevice
+    public class HP6624A : list_visa_devices_dialogue.VisaDevice
     {
         /// <summary>
         /// Convert the "000" or "001" response from the PSU to Bool.

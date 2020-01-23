@@ -57,9 +57,16 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="HP6624A.cs" />
+    <Compile Include="HP6624AChannelController.xaml.cs">
+      <DependentUpon>HP6624AChannelController.xaml</DependentUpon>
+    </Compile>
     <Compile Include="KeysightE8257D.cs" />
     <Compile Include="RS_SMU200A.cs" />
     <Compile Include="TektronixRSA3408A.cs" />
+    <Page Include="HP6624AChannelController.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
