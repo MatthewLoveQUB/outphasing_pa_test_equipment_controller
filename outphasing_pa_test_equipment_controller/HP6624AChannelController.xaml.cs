@@ -41,7 +41,7 @@ namespace outphasing_pa_test_equipment_controller
 
         private void ReadChannelVoltageButton_Click(object sender, RoutedEventArgs e)
             {
-            mw.ReadChannelCurrentOutput(Channel, ReadChannelVoltageTextBox);
+            mw.ReadChannelVoltageOutput(Channel, ReadChannelVoltageTextBox);
             }
 
         private void SetChannelCurrentButton_Click(object sender, RoutedEventArgs e)

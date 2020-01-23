@@ -277,7 +277,7 @@ namespace outphasing_pa_test_equipment_controller
                 var voltage = hp6624a.GetChannelOvervoltageSetting(channel);
                 if (!(tb == null))
                     {
-                    tb.Text = string.Format("{0} A", voltage);
+                    tb.Text = string.Format("{0} V", voltage);
                     }
                 return voltage;
                 }
