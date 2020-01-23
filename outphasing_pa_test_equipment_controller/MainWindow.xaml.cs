@@ -329,7 +329,71 @@ namespace outphasing_pa_test_equipment_controller
 
         private void RsaSetCenterFrequencyButton_Click(object sender, RoutedEventArgs e)
             {
+            var userInput = Convert.ToDouble(RsaSetCenterFrequencyTextBox.Text);
+            rsa3408a.SetFrequencySpan(userInput);
+            }
 
+        private void RsaGetCenterFrequencyButton_Click(object sender, RoutedEventArgs e)
+            {
+            var centerFrequency = rsa3408a.GetFrequencyCenter();
+            RsaGetCenterFrequencyTextBlock.Text = string.Format("{0} Hz", centerFrequency);
+            }
+
+        private void RsaSetFrequencySpanButton_Click(object sender, RoutedEventArgs e)
+            {
+            var userInput = Convert.ToDouble(RsaSetFrequencySpanTextBox.Text);
+            rsa3408a.SetFrequencySpan(userInput);
+            }
+
+        private void RsaGetFrequencySpanButton_Click(object sender, RoutedEventArgs e)
+            {
+            var frequencySpan = rsa3408a.GetFrequencySpan();
+            RsaGetFrequencySpanTextBlock.Text = string.Format("{0} Hz", frequencySpan);
+            }
+
+        private void RsaReadChannelPowerButton_Click(object sender, RoutedEventArgs e)
+            {
+            var channelPower = rsa3408a.ReadSpectrumChannelPower();
+            RsaReadChannelPowerTextBlock.Text = channelPower.ToString();
+            }
+
+        private void RsaRunCalibrationButton_Click(object sender, RoutedEventArgs e)
+            {
+            rsa3408a.RunCalibration();
+            }
+
+        private void RsaMarker1SetXPositionButton_Click(object sender, RoutedEventArgs e)
+            {
+            var xPosition = Convert.ToDouble(RsaMarker1SetXPositionTextbox.Text);
+            rsa3408a.SetMarkerXValue(1, xPosition);
+            }
+
+        private void RsaMarker1ReadButton_Click(object sender, RoutedEventArgs e)
+            {
+            var frequency = rsa3408a.GetMarkerXValue(1);
+            var power = rsa3408a.GetMarkerYValue(1);
+            var message = string.Format("X: {0} Hz\nY: {1} dBm", frequency, power);
+            RsaMarker1ReadTextBlock.Text = message;
+            }
+
+        private void RsaSetChannelPowerMeasurementModeButton_Click(object sender, RoutedEventArgs e)
+            {
+            rsa3408a.SetSpectrumChannelPowerMeasurementMode();
+            }
+
+        private void RsaStartSignalAcquisitionButton_Click(object sender, RoutedEventArgs e)
+            {
+            rsa3408a.StartSignalAcquisition();
+            }
+
+        private void RsaEnableContinuousModeButton_Click(object sender, RoutedEventArgs e)
+            {
+            rsa3408a.SetContinuousMode(true);
+            }
+
+        private void RsaDisableContinuousModeButton_Click(object sender, RoutedEventArgs e)
+            {
+            rsa3408a.SetContinuousMode(false);
             }
         }
     }
