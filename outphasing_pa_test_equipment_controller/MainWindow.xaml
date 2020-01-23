@@ -151,8 +151,11 @@
                     <!--  Center frequency  -->
                     <TextBlock
                         Grid.Row="0"
-                        Grid.Column="0"
-                        Text="Frequency Center" />
+                        Grid.Column="0">
+                        Center
+                        <LineBreak/>
+                        Frequency
+                    </TextBlock>
                     <Button
                         x:Name="RsaSetCenterFrequencyButton"
                         Grid.Row="0"

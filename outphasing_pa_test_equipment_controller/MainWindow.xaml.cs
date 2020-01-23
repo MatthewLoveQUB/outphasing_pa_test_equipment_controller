@@ -82,20 +82,20 @@ namespace outphasing_pa_test_equipment_controller
             return visaWindow.SelectedAddress;
             }
 
-        private list_visa_devices_dialogue.VisaDevice ConnectToDevice()
+        private list_visa_devices_dialogue.VisaDevice ConnectToDevice(TextBox tb)
             {
             var address = GetVisaAddress();
             if (address == null) { return null; }
             try
                 {
                 var device = new list_visa_devices_dialogue.VisaDevice(address);
-                PsuConnectionStatus.Text = string.Format("Connected to {0}", address);
+                tb.Text = string.Format("Connected to {0}", address);
                 return device;
                 }
             catch
                 {
                 var message = string.Format("Could not connect to: {0}", address);
-                PsuConnectionStatus.Text = "";
+                tb.Text = "";
                 DisplayStatusMessage(message);
                 return null;
                 }
@@ -103,7 +103,7 @@ namespace outphasing_pa_test_equipment_controller
 
         private void PsuConnectionButton_Click(object sender, RoutedEventArgs e)
             {
-            var connection = ConnectToDevice();
+            var connection = ConnectToDevice(PsuConnectionStatus);
             if (!(connection == null))
                 {
                 hp6624a = new HP6624A(connection);
@@ -113,7 +113,7 @@ namespace outphasing_pa_test_equipment_controller
 
         private void SpectrumAnalyzerConnectionButton_Click(object sender, RoutedEventArgs e)
             {
-            var connection = ConnectToDevice();
+            var connection = ConnectToDevice(SpectrumAnalyzerConnectionStatus);
             if (!(connection == null))
                 {
                 rsa3408a = new TektronixRSA3408A(connection);
@@ -123,7 +123,7 @@ namespace outphasing_pa_test_equipment_controller
 
         private void Smu200AConnectionButton_Click(object sender, RoutedEventArgs e)
             {
-            var connection = ConnectToDevice();
+            var connection = ConnectToDevice(SMU200AConnectionStatus);
             if (!(connection == null))
                 {
                 smu200a = new RS_SMU200A(connection);
@@ -133,7 +133,7 @@ namespace outphasing_pa_test_equipment_controller
 
         private void E8257DConnectionButton_Click(object sender, RoutedEventArgs e)
             {
-            var connection = ConnectToDevice();
+            var connection = ConnectToDevice(E8257DConnectionStatus);
             if (!(connection == null))
                 {
                 e8257d = new KeysightE8257D(connection);

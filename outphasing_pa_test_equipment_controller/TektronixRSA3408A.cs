@@ -29,6 +29,30 @@ namespace outphasing_pa_test_equipment_controller
             return Device.ReadString("*IDN?");
             }
 
+        public void RunCalibration()
+            {
+            Device.connection.RawIO.Write("*CAL?");
+            }
+
+        // Calculate Commands
+        public double GetMarkerYValue(int markerNumber)
+            {
+            var query = string.Format(":CALC{0}:MARK:Y?", markerNumber);
+            return Convert.ToDouble(Device.ReadString(query));
+            }
+
+        public double GetMarkerXValue(int markerNumber)
+            {
+            var query = string.Format(":CALC{0}:MARK:X?", markerNumber);
+            return Convert.ToDouble(Device.ReadString(query));
+            }
+
+        public void SetMarkerXValue(int markerNumber, double xValue)
+            {
+            var command = string.Format(":CALC{0}:MARK:X {1}", markerNumber, xValue);
+            Device.connection.RawIO.Write(command);
+            }
+
         // Configure Commands
         public void SetSpectrumChannelPowerMeasurementMode()
             {
@@ -36,9 +60,9 @@ namespace outphasing_pa_test_equipment_controller
             }
 
         // Fetch Commands
-        public string GetSpectrumChannelPower()
+        public double GetSpectrumChannelPower()
             {
-            return Device.ReadString(":FETC:SPEC:CHP?");
+            return Convert.ToDouble(Device.ReadString(":FETC:SPEC:CHP?"));
             }
 
         // Initiate Commands
@@ -66,6 +90,16 @@ namespace outphasing_pa_test_equipment_controller
             Device.connection.RawIO.Write(message);
             }
 
+        // Read Commands
+        // Fetch commands require you to manually stop the continuous
+        // measurements and start an acquisition or an exception will occur
+        // Read commands will stop the continuous mode on their own
+        // and take a sample
+        public double ReadSpectrumChannelPower()
+            {
+            return Convert.ToDouble(Device.ReadString(":READ:SPEC:CHP?"));
+            }
+
         // Sense Commands
         public string GetFrequencyBand()
             {
@@ -78,14 +112,14 @@ namespace outphasing_pa_test_equipment_controller
             Device.connection.RawIO.Write(message);
             }
 
-        public string GetFrequencyCenter()
+        public double GetFrequencyCenter()
             {
-            return Device.ReadString(":SENS:FREQ:CENT?");
+            return Convert.ToDouble(Device.ReadString(":SENS:FREQ:CENT?"));
             }
 
-        public string GetFrequencySpan()
+        public double GetFrequencySpan()
             {
-            return Device.ReadString(":SENS:FREQ:SPAN?");
+            return Convert.ToDouble(Device.ReadString(":SENS:FREQ:SPAN?"));
             }
 
         public void SetFrequencySpan(double frequencySpan)
@@ -94,9 +128,9 @@ namespace outphasing_pa_test_equipment_controller
             Device.connection.RawIO.Write(message);
             }
 
-        public string GetFrequencyStart()
+        public double GetFrequencyStart()
             {
-            return Device.ReadString(":SENS:FREQ:STAR?");
+            return Convert.ToDouble(Device.ReadString(":SENS:FREQ:STAR?"));
             }
 
         public void SetFrequencyStart(double startFrequency)
