@@ -82,7 +82,7 @@ namespace outphasing_pa_test_equipment_controller
             Device.connection.RawIO.Write(command);
             }
 
-        public void SetPhaseVariation(double phase)
+        public void SetSourceDeltaPhase(double phase)
             {
             var command = string.Format("PHAS {0} DEG", phase);
             Device.connection.RawIO.Write(command);
