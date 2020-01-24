@@ -81,5 +81,11 @@ namespace outphasing_pa_test_equipment_controller
             var command = string.Format("SOUR:POW:POW {0}", power);
             Device.connection.RawIO.Write(command);
             }
+
+        public void SetPhaseVariation(double phase)
+            {
+            var command = string.Format("PHAS {0} DEG", phase);
+            Device.connection.RawIO.Write(command);
+            }
         }
 }
