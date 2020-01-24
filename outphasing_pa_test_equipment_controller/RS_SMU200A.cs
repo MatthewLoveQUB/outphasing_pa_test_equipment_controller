@@ -76,15 +76,22 @@ namespace outphasing_pa_test_equipment_controller
             Device.connection.RawIO.Write("POW:MODE CW");
             }
 
-        public void SetPowerLevel(double power)
+        public void SetPowerLevel(double power, double offset=0)
             {
-            var command = string.Format("SOUR:POW:POW {0}", power);
+            var inputPower = power + offset;
+            var command = string.Format("SOUR:POW:POW {0}", inputPower);
             Device.connection.RawIO.Write(command);
             }
 
         public void SetSourceDeltaPhase(double phase)
             {
             var command = string.Format("PHAS {0} DEG", phase);
+            Device.connection.RawIO.Write(command);
+            }
+
+        public void SetRfOutputState(bool on)
+            {
+            var command = string.Format("OUTP {0}", on ? "ON" : "OFF");
             Device.connection.RawIO.Write(command);
             }
         }
