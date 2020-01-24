@@ -20,7 +20,7 @@ namespace outphasing_pa_test_equipment_controller
     /// </summary>
     public partial class VisaDebugger : UserControl
         {
-        public list_visa_devices_dialogue.VisaDevice device { get; set; }
+        public QubVisa.VisaDevice device { get; set; }
         public VisaDebugger()
             {
             InitializeComponent();

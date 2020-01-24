@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using NationalInstruments.Visa;
 using Ivi.Visa;
 
-namespace list_visa_devices_dialogue
+namespace QubVisa
 {
     public class VisaManager
     {

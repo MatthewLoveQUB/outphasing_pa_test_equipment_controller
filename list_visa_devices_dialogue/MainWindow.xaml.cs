@@ -24,10 +24,15 @@ namespace list_visa_devices_dialogue
         public ObservableCollection<string> AddressList { get; set; }
         public string SelectedAddress;
 
-        public MainWindow()
+        public MainWindow(string deviceName="")
         {
             InitializeComponent();
             this.DataContext = this;
+            if (deviceName != "")
+                {
+                var newPrompt = string.Format("Choose VISA address for {0}", deviceName);
+                AddressPromptTextBlock.Text = newPrompt;
+                }
             AddressList = new ObservableCollection<string>();
             UpdateVisaAddresses();            
         }
@@ -45,7 +50,7 @@ namespace list_visa_devices_dialogue
 
         private void UpdateVisaAddresses()
         {
-            var vm = new VisaManager();
+            var vm = new QubVisa.VisaManager();
             var addresses = vm.GetAvailableDevices();
             AddressList.Clear();
             foreach (string address in addresses)

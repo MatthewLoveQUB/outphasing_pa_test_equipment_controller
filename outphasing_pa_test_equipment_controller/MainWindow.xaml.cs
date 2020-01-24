@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using QubVisa;
 
 namespace outphasing_pa_test_equipment_controller
     {
@@ -42,7 +43,7 @@ namespace outphasing_pa_test_equipment_controller
                 message);
             }
 
-        public bool IsConnected(list_visa_devices_dialogue.VisaDevice device)
+        public bool IsConnected(VisaDevice device)
             {
             if (device == null)
                 {
@@ -82,13 +83,13 @@ namespace outphasing_pa_test_equipment_controller
             return visaWindow.SelectedAddress;
             }
 
-        private list_visa_devices_dialogue.VisaDevice ConnectToDevice(TextBox tb)
+        private VisaDevice ConnectToDevice(TextBox tb)
             {
             var address = GetVisaAddress();
             if (address == null) { return null; }
             try
                 {
-                var device = new list_visa_devices_dialogue.VisaDevice(address);
+                var device = new VisaDevice(address);
                 tb.Text = string.Format("Connected to {0}", address);
                 return device;
                 }

@@ -4,17 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace outphasing_pa_test_equipment_controller
-{
+namespace QubVisa
+    {
     public class RS_SMU200A
     {
-        public list_visa_devices_dialogue.VisaDevice Device;
+        public VisaDevice Device;
         public RS_SMU200A(string deviceAddress)
             {
-            Device = new list_visa_devices_dialogue.VisaDevice(deviceAddress);
+            Device = new VisaDevice(deviceAddress);
             }
 
-        public RS_SMU200A(list_visa_devices_dialogue.VisaDevice device)
+        public RS_SMU200A(VisaDevice device)
             {
             Device = device;
             }

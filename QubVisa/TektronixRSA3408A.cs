@@ -4,20 +4,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace outphasing_pa_test_equipment_controller
-{
+namespace QubVisa
+    {
     public class TektronixRSA3408A
         {
-        public list_visa_devices_dialogue.VisaDevice Device;
+        public VisaDevice Device;
         public string SaveDir;
 
         public TektronixRSA3408A(string deviceAddress, string saveDir = "")
             {
             SaveDir = saveDir;
-            Device = new list_visa_devices_dialogue.VisaDevice(deviceAddress);
+            Device = new VisaDevice(deviceAddress);
             }
 
-        public TektronixRSA3408A(list_visa_devices_dialogue.VisaDevice device, string saveDir = "")
+        public TektronixRSA3408A(VisaDevice device, string saveDir = "")
             {
             SaveDir = saveDir;
             Device = device;
