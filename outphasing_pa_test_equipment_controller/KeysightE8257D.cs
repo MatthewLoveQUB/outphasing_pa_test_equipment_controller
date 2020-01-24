@@ -67,8 +67,10 @@ namespace outphasing_pa_test_equipment_controller
             Device.connection.RawIO.Write(command);
             }
 
+        // Doesn't seem to work on our model
         public void SetAmplitudeLimit(double amplitude)
             {
+            throw new NotImplementedException();
             SetAmplitudeLimitLock(locked: false);
             var command = string.Format(":POW:LIM {0}", amplitude);
             Device.connection.RawIO.Write(command);
