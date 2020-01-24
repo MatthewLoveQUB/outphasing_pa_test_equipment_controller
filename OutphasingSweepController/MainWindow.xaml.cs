@@ -192,21 +192,50 @@ Keysight E8257D: {3}";
             CurrentSweepProgress.CurrentPoint = 0;
             CurrentSweepProgress.NumberOfPoints = numberOfPoints;
             CurrentSweepProgress.Running = true;
-            
-            foreach(var voltage in conf.Voltages)
+
+            // Pre-setup
+            // DC Supplies
+
+            // Spectrum Analyser
+
+            // Power Sources
+            smu200a.SetRfOutputState(on: false);
+            e8257d.SetRfOutputState(on: false);
+            smu200a.SetPowerLevel(-110);
+            e8257d.SetPowerLevel(-60);
+            smu200a.SetRfOutputState(on: true);
+            e8257d.SetRfOutputState(on: true);
+
+            foreach (var voltage in conf.Voltages)
                 {
+                // Set the voltages
+                hp6624a.SetChannelVoltage(1, voltage);
+                hp6624a.SetChannelVoltage(2, voltage);
+                hp6624a.SetChannelVoltage(3, voltage);
+                hp6624a.SetChannelVoltage(4, voltage);
+
                 for (var frequency = conf.FrequencySettings.Start;
                 frequency < conf.FrequencySettings.Stop;
                 frequency += conf.FrequencySettings.Step)
                     {
+                    // Set the frequency
+                    rsa3408a.SetFrequencyCenter(frequency);
+                    smu200a.SetSourceFrequency(frequency);
+                    e8257d.SetSourceFrequency(frequency);
+
                     for (var power = conf.PowerSettings.Start;
                         power < conf.PowerSettings.Stop;
                         power += conf.PowerSettings.Step)
                         {
+                        // Set the power
+                        smu200a.SetPowerLevel(power);
+                        e8257d.SetPowerLevel(power);
+
                         for (var phase = conf.PhaseSettings.Start;
                             phase < conf.PhaseSettings.Stop;
                             phase += conf.PhaseSettings.Step)
                             {
+                            smu200a.SetSourceDeltaPhase(phase);
                             CurrentSweepProgress.CurrentPoint += 1;
                             // Do things
                             }
