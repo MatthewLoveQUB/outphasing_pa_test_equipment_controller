@@ -274,15 +274,7 @@ namespace OutphasingSweepController
             // value in the sweep
             foreach (var voltage in conf.Voltages)
                 {
-                // Set the voltages
-                for (int i = 0; i < PsuChannelEnableCheckboxes.Count; i++)
-                    {
-                    var channelNumber = i + 1;
-                    if (PsuChannelEnableCheckboxes[i].IsChecked == true)
-                        {
-                        hp6624a.SetChannelVoltage(channelNumber, voltage);
-                        }
-                    }
+                SetPsuVoltageStepped(voltage);
                 for (var frequency = conf.FrequencySettings.Start;
                 frequency <= conf.FrequencySettings.Stop;
                 frequency += conf.FrequencySettings.Step)
