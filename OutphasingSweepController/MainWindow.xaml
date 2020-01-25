@@ -42,6 +42,7 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -202,9 +203,24 @@
                 Margin="1"
                 VerticalAlignment="Center"
                 TextAlignment="Left" />
+            <!--  Save file  -->
+            <Button
+                x:Name="SaveButton"
+                Grid.Row="9"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Click="SaveButton_Click"
+                Content="Choose save file" />
+            <TextBlock
+                x:Name="ResultsSavePathTextBlock"
+                Grid.Row="9"
+                Grid.Column="2"
+                Grid.ColumnSpan="3"
+                VerticalAlignment="Center"
+                TextAlignment="Left" />
             <Button
                 x:Name="StartSweepButton"
-                Grid.Row="9"
+                Grid.Row="10"
                 Grid.ColumnSpan="5"
                 Click="StartSweepButton_Click"
                 Content="Begin Sweep" />

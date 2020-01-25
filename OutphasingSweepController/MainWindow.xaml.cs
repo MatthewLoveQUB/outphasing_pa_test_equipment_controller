@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Collections.Generic;
 using QubVisa;
 
 namespace OutphasingSweepController
@@ -35,6 +36,8 @@ namespace OutphasingSweepController
         public double ChipTemperature { get; set; } = 25.0;
         public double EstimatedTimePerSample { get; set; } = 0.1;
         public double RampVoltageStep { get; set; } = 0.1;
+        public string ResultsSavePath { get; set; } = "";
+        public Queue<String> LogQueue = new Queue<string>();
         public MainWindow()
             {
             InitializeComponent();
@@ -110,7 +113,7 @@ namespace OutphasingSweepController
         private void AddNewLogLine(string line)
             {
             var oldLog = SweepLogTextBox.Text;
-            var newLog = oldLog + "\n" + line;
+            var newLog = oldLog + line + "\n";
             SweepLogTextBox.Text = newLog;
             }
 
@@ -162,6 +165,13 @@ namespace OutphasingSweepController
                 {
                 var msg = string.Format("On task {0} of {1}", CurrentSweepProgress.CurrentPoint, CurrentSweepProgress.NumberOfPoints);
                 AddNewLogLine(msg);
+                }
+
+            // Empty the log queue
+            while(LogQueue.Count > 0)
+                {
+                var message = LogQueue.Dequeue();
+                AddNewLogLine(message);
                 }
             }
 
@@ -232,6 +242,12 @@ namespace OutphasingSweepController
 
         private void RunSweep(MeasurementSweepConfiguration conf)
             {
+            if (ResultsSavePath == "")
+                {
+                LogQueue.Enqueue("No save path entered.");
+                return;
+                }
+
             int numberOfPoints = conf.Voltages.Count
                 * SweepPoints(conf.FrequencySettings)
                 * SweepPoints(conf.PowerSettings)
@@ -324,6 +340,20 @@ namespace OutphasingSweepController
                     estimatedSimulationTime.Days,
                     estimatedSimulationTime.Hours, 
                     estimatedSimulationTime.Minutes);
+            }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+            {
+            var saveDialog = new Microsoft.Win32.SaveFileDialog();
+            saveDialog.Filter = "CSV Files (.csv)|*.csv";
+            saveDialog.DefaultExt = ".csv";
+            var dialogSuccess = (saveDialog.ShowDialog() == true);
+
+            if (dialogSuccess)
+                {
+                ResultsSavePath = saveDialog.FileName;
+                ResultsSavePathTextBlock.Text = ResultsSavePath;
+                }
             }
         }
     }
