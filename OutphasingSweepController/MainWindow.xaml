@@ -53,43 +53,14 @@
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 Text="Frequency (GHz) [start] [step] [stop] [nsteps]" />
-            <Grid
+            <local:SweepParameterInput
+                x:Name="FrequencySweepSettingsControl"
                 Grid.Row="0"
                 Grid.Column="2"
-                Grid.ColumnSpan="3">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <TextBox
-                    x:Name="FrequencyStartTextBox"
-                    Grid.Column="0"
-                    Margin="1"
-                    LostFocus="FrequencyTextBoxes_LostFocus">
-                    1e9
-                </TextBox>
-                <TextBox
-                    x:Name="FrequencyStepTextBox"
-                    Grid.Column="1"
-                    Margin="1"
-                    LostFocus="FrequencyTextBoxes_LostFocus">
-                    10e6
-                </TextBox>
-                <TextBox
-                    x:Name="FrequencyStopTextBox"
-                    Grid.Column="2"
-                    Margin="1"
-                    LostFocus="FrequencyTextBoxes_LostFocus">
-                    5e9
-                </TextBox>
-                <TextBox
-                    x:Name="FrequencyNStepsTextBox"
-                    Grid.Column="3"
-                    Margin="1"
-                    LostFocus="FrequencyTextBoxes_LostFocus" />
-            </Grid>
+                Grid.ColumnSpan="3"
+                Start="1e9"
+                Step="1e9"
+                Stop="5e9" />
             <TextBlock
                 Grid.Row="1"
                 Grid.Column="0"

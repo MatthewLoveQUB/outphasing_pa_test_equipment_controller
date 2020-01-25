@@ -36,13 +36,6 @@ namespace OutphasingSweepController
             SetUpDefaultLastSampleText();
             //SetUpVisaConnections();
             SetUpDispatcherTimer();
-            // Force the frequency step value to update
-            UpdateSweepTextBoxes(
-                FrequencyStartTextBox,
-                FrequencyStepTextBox,
-                FrequencyStopTextBox,
-                FrequencyNStepsTextBox,
-                FrequencyStepTextBox);
             }
 
         private void PopulatePsuCheckboxList()
@@ -127,7 +120,7 @@ namespace OutphasingSweepController
         private MeasurementSweepConfiguration ParseMeasurementConfiguration()
             {
             //var frequencySettings = ParseSweepInputBox(FrequencySettingsTextBox.Text);
-            var frequencySettings = new SweepSettings(Convert.ToDouble(FrequencyStartTextBox.Text), Convert.ToDouble(FrequencyStepTextBox), Convert.ToDouble(FrequencyStopTextBox));
+            var frequencySettings = new SweepSettings(FrequencySweepSettingsControl.Start, FrequencySweepSettingsControl.Step, FrequencySweepSettingsControl.Stop);
             var powerSettings = ParseSweepInputBox(PowerSettingsTextBox.Text);
             var phaseSettings = ParseSweepInputBox(PhaseSettingsTextBox.Text);
             var temperature = Convert.ToDouble(TemperatureSettingsTextBox.Text);
@@ -223,44 +216,5 @@ namespace OutphasingSweepController
                     }
                 }
             }
-
-        private void FrequencyTextBoxes_LostFocus(object sender, RoutedEventArgs e)
-            {
-            var senderBox = (TextBox)sender;
-            UpdateSweepTextBoxes(
-                FrequencyStartTextBox,
-                FrequencyStepTextBox,
-                FrequencyStopTextBox,
-                FrequencyNStepsTextBox,
-                senderBox);
-            }
-
-        private void UpdateSweepTextBoxes(TextBox start, TextBox step, TextBox stop, TextBox nSteps, TextBox sender)
-            {
-            if (sender == nSteps)
-                {
-                var startValue = Convert.ToDouble(start.Text);
-                var stopValue = Convert.ToDouble(stop.Text);
-                var nStepsValue = Convert.ToDouble(nSteps.Text);
-                // Subtracting 1 to include the first sweep point
-                var frequencyStep = (stopValue - startValue) / (nStepsValue - 1);
-                step.Text = frequencyStep.ToString("e");
-                }
-            else if ((sender == step) || (sender == start) || (sender == stop))
-                {
-                var startValue = Convert.ToDouble(start.Text);
-                var stopValue = Convert.ToDouble(stop.Text);
-                var frequencyStep = Convert.ToDouble(step.Text);
-                var nStepsValue = (stopValue - startValue) / frequencyStep;
-                // Adding 1 to include the first sweep point
-                nSteps.Text = (1 + (int)nStepsValue).ToString();
-                }
-            else
-                {
-                // Do nothing
-                return;
-                }
-            }
-
         }
     }
