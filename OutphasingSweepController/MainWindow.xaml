@@ -48,19 +48,15 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
-            <TextBlock
-                Grid.Row="0"
-                Grid.Column="0"
-                Grid.ColumnSpan="2"
-                Text="Frequency (GHz) [start] [step] [stop] [nsteps]" />
             <local:SweepParameterInput
                 x:Name="FrequencySweepSettingsControl"
                 Grid.Row="0"
-                Grid.Column="2"
-                Grid.ColumnSpan="3"
+                Grid.Column="0"
+                Grid.ColumnSpan="5"
                 Start="1e9"
                 Step="1e9"
-                Stop="5e9" />
+                Stop="5e9"
+                SweepDescriptionText="Frequency (GHz)" />
             <TextBlock
                 Grid.Row="1"
                 Grid.Column="0"

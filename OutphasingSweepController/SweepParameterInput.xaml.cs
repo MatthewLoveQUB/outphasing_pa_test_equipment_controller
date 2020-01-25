@@ -20,6 +20,7 @@ namespace OutphasingSweepController
     /// </summary>
     public partial class SweepParameterInput : UserControl
         {
+        public string SweepDescriptionText { get; set; }
         public double Start { get; set; }
         public double Step { get; set; }
         public double Stop { get; set; }

@@ -12,29 +12,31 @@
     mc:Ignorable="d">
     <Grid>
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
+        <TextBlock Grid.Column="0" Text="{Binding SweepDescriptionText, StringFormat={}{0} [start] [step] [stop] [nSteps]}" />
         <TextBox
             x:Name="StartTextBox"
-            Grid.Column="0"
+            Grid.Column="1"
             Margin="1"
             Text="{Binding Start, StringFormat=e1}" />
         <TextBox
             x:Name="StepTextBox"
-            Grid.Column="1"
+            Grid.Column="2"
             Margin="1"
             Text="{Binding Step, StringFormat=e1}" />
         <TextBox
             x:Name="StopTextBox"
-            Grid.Column="2"
+            Grid.Column="3"
             Margin="1"
             Text="{Binding Stop, StringFormat=e1}" />
         <TextBox
             x:Name="NStepsTextBox"
-            Grid.Column="3"
+            Grid.Column="4"
             Margin="1"
             Background="LightGray"
             IsReadOnly="True" />
