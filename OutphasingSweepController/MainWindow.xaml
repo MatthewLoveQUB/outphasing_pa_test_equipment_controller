@@ -5,7 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:OutphasingSweepController"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="MainWindow"
+    Title="Outphasing Sweep Controller"
     Width="900"
     Height="350"
     mc:Ignorable="d">
@@ -50,18 +50,12 @@
             </Grid.ColumnDefinitions>
             <TextBlock
                 Grid.Row="0"
-                Grid.ColumnSpan="5"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Text="Sweep Controls" />
-            <TextBlock
-                Grid.Row="1"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 Text="Frequency (GHz) [start, step, stop]" />
             <TextBox
                 x:Name="FrequencySettingsTextBox"
-                Grid.Row="1"
+                Grid.Row="0"
                 Grid.Column="2"
                 Grid.ColumnSpan="3"
                 Margin="2"
@@ -71,13 +65,13 @@
                 VerticalContentAlignment="Center"
                 Text="1e9, 10e6, 5e9" />
             <TextBlock
-                Grid.Row="2"
+                Grid.Row="1"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 Text="Power (dBm) [start, step, stop]" />
             <TextBox
                 x:Name="PowerSettingsTextBox"
-                Grid.Row="2"
+                Grid.Row="1"
                 Grid.Column="2"
                 Grid.ColumnSpan="3"
                 Margin="2"
@@ -87,13 +81,13 @@
                 VerticalContentAlignment="Center"
                 Text="-30, 0.1, -3" />
             <TextBlock
-                Grid.Row="3"
+                Grid.Row="2"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 Text="Phase (deg) [start, step, stop]" />
             <TextBox
                 x:Name="PhaseSettingsTextBox"
-                Grid.Row="3"
+                Grid.Row="2"
                 Grid.Column="2"
                 Grid.ColumnSpan="3"
                 Margin="2"
@@ -103,13 +97,13 @@
                 VerticalContentAlignment="Center"
                 Text="0, 1, 360" />
             <TextBlock
-                Grid.Row="4"
+                Grid.Row="3"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 Text="Temperature (Celcius)" />
             <TextBox
                 x:Name="TemperatureSettingsTextBox"
-                Grid.Row="4"
+                Grid.Row="3"
                 Grid.Column="2"
                 Grid.ColumnSpan="3"
                 Margin="2"
@@ -119,13 +113,13 @@
                 VerticalContentAlignment="Center"
                 Text="25" />
             <TextBlock
-                Grid.Row="5"
+                Grid.Row="4"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 Text="Corner" />
             <TextBox
                 x:Name="CornerSettingsTextBox"
-                Grid.Row="5"
+                Grid.Row="4"
                 Grid.Column="2"
                 Grid.ColumnSpan="3"
                 Margin="2"
@@ -135,13 +129,13 @@
                 VerticalContentAlignment="Center"
                 Text="TT" />
             <TextBlock
-                Grid.Row="6"
+                Grid.Row="5"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 Text="Nominal Supply Voltage (V) (+/- 10%)" />
             <TextBox
                 x:Name="VoltageSettingsTextBox"
-                Grid.Row="6"
+                Grid.Row="5"
                 Grid.Column="2"
                 Grid.ColumnSpan="3"
                 Margin="2"
@@ -150,6 +144,39 @@
                 HorizontalContentAlignment="Left"
                 VerticalContentAlignment="Center"
                 Text="2.2" />
+            <TextBlock
+                Grid.Row="6"
+                Grid.Column="0"
+                Grid.ColumnSpan="1"
+                Text="Enabled PSU Channels" />
+            <CheckBox
+                x:Name="PsuChannel1Enable"
+                Grid.Row="6"
+                Grid.Column="1"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Content="1" />
+            <CheckBox
+                x:Name="PsuChannel2Enable"
+                Grid.Row="6"
+                Grid.Column="2"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Content="2" />
+            <CheckBox
+                x:Name="PsuChannel3Enable"
+                Grid.Row="6"
+                Grid.Column="3"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Content="3" />
+            <CheckBox
+                x:Name="PsuChannel4Enable"
+                Grid.Row="6"
+                Grid.Column="4"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Content="4" />
             <Button
                 x:Name="StartSweepButton"
                 Grid.Row="7"
