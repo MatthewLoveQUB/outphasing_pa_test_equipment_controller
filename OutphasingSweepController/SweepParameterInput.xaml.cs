@@ -24,7 +24,7 @@ namespace OutphasingSweepController
         public double Start { get; set; }
         public double Step { get; set; }
         public double Stop { get; set; }
-        private int NSteps { get; set; }
+        public int NSteps { get; set; }
 
         public SweepParameterInput()
             {

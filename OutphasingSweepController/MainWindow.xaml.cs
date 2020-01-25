@@ -29,9 +29,16 @@ namespace OutphasingSweepController
         SweepProgress CurrentSweepProgress = new SweepProgress(false, 0, 0);
         System.Windows.Threading.DispatcherTimer dispatcherTimer;
         List<CheckBox> PsuChannelEnableCheckboxes;
+        public int PsuRampUpStepTime { get; set; } = 10;
+        public double PsuNominalVoltage { get; set; } = 2.2;
+        public string ChipCorner { get; set; } = "TT";
+        public double ChipTemperature { get; set; } = 25.0;
+        public double EstimatedTimePerSample { get; set; } = 0.1;
+        public double RampVoltageStep { get; set; } = 0.1;
         public MainWindow()
             {
             InitializeComponent();
+            this.DataContext = this;
             PopulatePsuCheckboxList();
             SetUpDefaultLastSampleText();
             //SetUpVisaConnections();
@@ -107,16 +114,6 @@ namespace OutphasingSweepController
             SweepLogTextBox.Text = newLog;
             }
 
-        private SweepSettings ParseSweepInputBox(string input)
-            {
-            var rawValues = input
-                .Split(',')
-                .ToList()
-                .Select(Convert.ToDouble)
-                .ToList();
-            return new SweepSettings(start: rawValues[0], step: rawValues[1], stop: rawValues[2]);
-            }
-
         private MeasurementSweepConfiguration ParseMeasurementConfiguration()
             {
             var frequencySettings = new SweepSettings(
@@ -131,11 +128,17 @@ namespace OutphasingSweepController
                 PhaseSweepSettingsControl.Start, 
                 PhaseSweepSettingsControl.Step, 
                 PhaseSweepSettingsControl.Stop);
-            var temperature = Convert.ToDouble(TemperatureSettingsTextBox.Text);
-            var corner = CornerSettingsTextBox.Text;
-            var nominalVoltage = Convert.ToDouble(VoltageSettingsTextBox.Text);
-            var voltages = new List<Double>() { 0.9 * nominalVoltage, nominalVoltage, 1.1 * nominalVoltage };
-            return new MeasurementSweepConfiguration(frequencySettings, powerSettings, phaseSettings, temperature, corner, voltages);
+            var voltages = new List<Double>() {
+                0.9 * PsuNominalVoltage,
+                PsuNominalVoltage,
+                1.1 * PsuNominalVoltage };
+            return new MeasurementSweepConfiguration(
+                frequencySettings, 
+                powerSettings, 
+                phaseSettings, 
+                ChipTemperature, 
+                ChipCorner, 
+                voltages);
             }
 
         private void StartSweepButton_Click(object sender, RoutedEventArgs e)
@@ -162,6 +165,71 @@ namespace OutphasingSweepController
                 }
             }
 
+        private void SetAllActivePsuChannels(double voltage)
+            {
+            int numChannels = PsuChannelEnableCheckboxes.Count;
+            for (int i = 0; i < numChannels; i++)
+                {
+                int channelNumber = i + 1;
+                bool channelEnabled = PsuChannelEnableCheckboxes[i].IsChecked == true;
+                if (channelEnabled)
+                    {
+                    hp6624a.SetChannelVoltage(channelNumber, voltage);
+                    break;
+                    }
+                }
+            }
+
+        // Ramp the voltage slowly
+        // Assumes that all channels are at the same voltage
+        private void SetPsuVoltageStepped(double newVoltage)
+            {
+            // Step should be positive before we alter it depending on
+            // whether we're ramping up or down
+            var step = Math.Abs(RampVoltageStep);
+
+            int numChannels = PsuChannelEnableCheckboxes.Count;
+
+            // Read the current voltage
+            double currentVoltage = 0;
+            for (int i = 0; i < numChannels; i++)
+                {
+                int channelNumber = i + 1;
+                bool channelEnabled = PsuChannelEnableCheckboxes[i].IsChecked == true;
+                if (channelEnabled)
+                    {
+                    currentVoltage = hp6624a.GetChannelVoltageSetting(channelNumber);
+                    break;
+                    }
+                }
+
+            // End the function if the voltage is already set
+            // Unlikely due to the way floating point works
+            if (newVoltage == currentVoltage)
+                {
+                return;
+                }
+
+            // Invert the step if we're decreasing the channel voltage
+            if (newVoltage < currentVoltage)
+                {
+                step *= -1;
+                }
+
+            int numSteps = (int)(Math.Abs(currentVoltage - newVoltage) / step);
+            var intermediateVoltage = currentVoltage;
+
+            for (int currentStep = 0; currentStep < numSteps; currentStep++)
+                {
+                intermediateVoltage += step;
+                SetAllActivePsuChannels(intermediateVoltage);
+                Thread.Sleep(PsuRampUpStepTime);
+                }
+
+            // In case we overshot the voltage then just set it to the final voltage
+            SetAllActivePsuChannels(newVoltage);
+            }
+
         private void RunSweep(MeasurementSweepConfiguration conf)
             {
             int numberOfPoints = conf.Voltages.Count
@@ -173,14 +241,31 @@ namespace OutphasingSweepController
             CurrentSweepProgress.Running = true;
 
             // Pre-setup
-            // DC Supplies
+            // Zeroing the DC Supplies
+            // It's hard to tell if the output state command actually works
+            // so I'm zeroing the current limit and voltage of the disabled channels
+            for(int i = 0; i < PsuChannelEnableCheckboxes.Count; i++)
+                {
+                var channelNumber = i + 1;
+                var voltage = 0;
+                var zeroCurrent = 0;
+                var checkboxState = (PsuChannelEnableCheckboxes[i].IsChecked == true);
+                hp6624a.SetChannelVoltage(channelNumber, voltage);
+                hp6624a.SetChannelOutputState(channelNumber, checkboxState);
+                if(checkboxState == false)
+                    {
+                    hp6624a.SetChannelCurrent(channelNumber, zeroCurrent);
+                    }
+                }
 
             // Spectrum Analyser
 
-            // Power Sources
+            // Set the power sources to an extremely low
+            // power before starting the sweep
+            // in case they default to some massive value
             smu200a.SetRfOutputState(on: false);
             e8257d.SetRfOutputState(on: false);
-            smu200a.SetPowerLevel(-110);
+            smu200a.SetPowerLevel(-60);
             e8257d.SetPowerLevel(-60);
             smu200a.SetRfOutputState(on: true);
             e8257d.SetRfOutputState(on: true);
@@ -190,11 +275,14 @@ namespace OutphasingSweepController
             foreach (var voltage in conf.Voltages)
                 {
                 // Set the voltages
-                hp6624a.SetChannelVoltage(1, voltage);
-                hp6624a.SetChannelVoltage(2, voltage);
-                hp6624a.SetChannelVoltage(3, voltage);
-                hp6624a.SetChannelVoltage(4, voltage);
-
+                for (int i = 0; i < PsuChannelEnableCheckboxes.Count; i++)
+                    {
+                    var channelNumber = i + 1;
+                    if (PsuChannelEnableCheckboxes[i].IsChecked == true)
+                        {
+                        hp6624a.SetChannelVoltage(channelNumber, voltage);
+                        }
+                    }
                 for (var frequency = conf.FrequencySettings.Start;
                 frequency <= conf.FrequencySettings.Stop;
                 frequency += conf.FrequencySettings.Step)
@@ -223,6 +311,27 @@ namespace OutphasingSweepController
                         }
                     }
                 }
+            }
+
+        private void SweepSettingsControl_LostFocus(object sender, RoutedEventArgs e)
+            {
+            UpdateEstimatedSimulationTime();
+            }
+
+        private void UpdateEstimatedSimulationTime()
+            {
+            int voltagePoints = 3;
+            var freqPoints = FrequencySweepSettingsControl.NSteps;
+            var powerPoints = PowerSweepSettingsControl.NSteps;
+            var phasePoints = PhaseSweepSettingsControl.NSteps;
+            var nPoints = EstimatedTimePerSample * voltagePoints * freqPoints * powerPoints * phasePoints;
+            var estimatedSimulationTime = TimeSpan.FromSeconds(nPoints);
+            EstimatedSimulationTimeTextBlock.Text = 
+                string.Format(
+                    "Estimated Simulation Time = {0} days, {1} hours, {2} minutes", 
+                    estimatedSimulationTime.Days,
+                    estimatedSimulationTime.Hours, 
+                    estimatedSimulationTime.Minutes);
             }
         }
     }
