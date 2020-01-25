@@ -23,17 +23,17 @@
             x:Name="StartTextBox"
             Grid.Column="1"
             Margin="1"
-            Text="{Binding Start, StringFormat=e1}" />
+            Text="{Binding Start, StringFormat=g3}" />
         <TextBox
             x:Name="StepTextBox"
             Grid.Column="2"
             Margin="1"
-            Text="{Binding Step, StringFormat=e1}" />
+            Text="{Binding Step, StringFormat=g3}" />
         <TextBox
             x:Name="StopTextBox"
             Grid.Column="3"
             Margin="1"
-            Text="{Binding Stop, StringFormat=e1}" />
+            Text="{Binding Stop, StringFormat=g3}" />
         <TextBox
             x:Name="NStepsTextBox"
             Grid.Column="4"

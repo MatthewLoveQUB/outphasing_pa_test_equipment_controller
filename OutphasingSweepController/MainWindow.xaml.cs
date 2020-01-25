@@ -119,10 +119,18 @@ namespace OutphasingSweepController
 
         private MeasurementSweepConfiguration ParseMeasurementConfiguration()
             {
-            //var frequencySettings = ParseSweepInputBox(FrequencySettingsTextBox.Text);
-            var frequencySettings = new SweepSettings(FrequencySweepSettingsControl.Start, FrequencySweepSettingsControl.Step, FrequencySweepSettingsControl.Stop);
-            var powerSettings = ParseSweepInputBox(PowerSettingsTextBox.Text);
-            var phaseSettings = ParseSweepInputBox(PhaseSettingsTextBox.Text);
+            var frequencySettings = new SweepSettings(
+                FrequencySweepSettingsControl.Start, 
+                FrequencySweepSettingsControl.Step, 
+                FrequencySweepSettingsControl.Stop);
+            var powerSettings = new SweepSettings(
+                PowerSweepSettingsControl.Start, 
+                PowerSweepSettingsControl.Step, 
+                PowerSweepSettingsControl.Stop);
+            var phaseSettings = new SweepSettings(
+                PhaseSweepSettingsControl.Start, 
+                PhaseSweepSettingsControl.Step, 
+                PhaseSweepSettingsControl.Stop);
             var temperature = Convert.ToDouble(TemperatureSettingsTextBox.Text);
             var corner = CornerSettingsTextBox.Text;
             var nominalVoltage = Convert.ToDouble(VoltageSettingsTextBox.Text);

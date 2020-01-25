@@ -57,38 +57,24 @@
                 Step="1e9"
                 Stop="5e9"
                 SweepDescriptionText="Frequency (GHz)" />
-            <TextBlock
+            <local:SweepParameterInput
+                x:Name="PowerSweepSettingsControl"
                 Grid.Row="1"
                 Grid.Column="0"
-                Grid.ColumnSpan="2"
-                Text="Power (dBm) [start, step, stop]" />
-            <TextBox
-                x:Name="PowerSettingsTextBox"
-                Grid.Row="1"
-                Grid.Column="2"
-                Grid.ColumnSpan="3"
-                Margin="2"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                HorizontalContentAlignment="Left"
-                VerticalContentAlignment="Center"
-                Text="-30, 0.1, -3" />
-            <TextBlock
+                Grid.ColumnSpan="5"
+                Start="-30"
+                Step="0.1"
+                Stop="-3"
+                SweepDescriptionText="Power (dBm)" />
+            <local:SweepParameterInput
+                x:Name="PhaseSweepSettingsControl"
                 Grid.Row="2"
                 Grid.Column="0"
-                Grid.ColumnSpan="2"
-                Text="Phase (deg) [start, step, stop]" />
-            <TextBox
-                x:Name="PhaseSettingsTextBox"
-                Grid.Row="2"
-                Grid.Column="2"
-                Grid.ColumnSpan="3"
-                Margin="2"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                HorizontalContentAlignment="Left"
-                VerticalContentAlignment="Center"
-                Text="0, 1, 360" />
+                Grid.ColumnSpan="5"
+                Start="0"
+                Step="1"
+                Stop="360"
+                SweepDescriptionText="Phase (degrees)" />
             <TextBlock
                 Grid.Row="3"
                 Grid.Column="0"
