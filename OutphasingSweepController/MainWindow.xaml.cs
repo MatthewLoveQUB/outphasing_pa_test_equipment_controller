@@ -34,8 +34,15 @@ namespace OutphasingSweepController
             InitializeComponent();
             PopulatePsuCheckboxList();
             SetUpDefaultLastSampleText();
-            SetUpVisaConnections();
+            //SetUpVisaConnections();
             SetUpDispatcherTimer();
+            // Force the frequency step value to update
+            UpdateSweepTextBoxes(
+                FrequencyStartTextBox,
+                FrequencyStepTextBox,
+                FrequencyStopTextBox,
+                FrequencyNStepsTextBox,
+                FrequencyStepTextBox);
             }
 
         private void PopulatePsuCheckboxList()
@@ -119,7 +126,8 @@ namespace OutphasingSweepController
 
         private MeasurementSweepConfiguration ParseMeasurementConfiguration()
             {
-            var frequencySettings = ParseSweepInputBox(FrequencySettingsTextBox.Text);
+            //var frequencySettings = ParseSweepInputBox(FrequencySettingsTextBox.Text);
+            var frequencySettings = new SweepSettings(Convert.ToDouble(FrequencyStartTextBox.Text), Convert.ToDouble(FrequencyStepTextBox), Convert.ToDouble(FrequencyStopTextBox));
             var powerSettings = ParseSweepInputBox(PowerSettingsTextBox.Text);
             var phaseSettings = ParseSweepInputBox(PhaseSettingsTextBox.Text);
             var temperature = Convert.ToDouble(TemperatureSettingsTextBox.Text);
@@ -176,6 +184,8 @@ namespace OutphasingSweepController
             smu200a.SetRfOutputState(on: true);
             e8257d.SetRfOutputState(on: true);
 
+            // All of the sweeps are <= as we want to include the stop
+            // value in the sweep
             foreach (var voltage in conf.Voltages)
                 {
                 // Set the voltages
@@ -185,7 +195,7 @@ namespace OutphasingSweepController
                 hp6624a.SetChannelVoltage(4, voltage);
 
                 for (var frequency = conf.FrequencySettings.Start;
-                frequency < conf.FrequencySettings.Stop;
+                frequency <= conf.FrequencySettings.Stop;
                 frequency += conf.FrequencySettings.Step)
                     {
                     // Set the frequency
@@ -194,7 +204,7 @@ namespace OutphasingSweepController
                     e8257d.SetSourceFrequency(frequency);
 
                     for (var power = conf.PowerSettings.Start;
-                        power < conf.PowerSettings.Stop;
+                        power <= conf.PowerSettings.Stop;
                         power += conf.PowerSettings.Step)
                         {
                         // Set the power
@@ -202,7 +212,7 @@ namespace OutphasingSweepController
                         e8257d.SetPowerLevel(power);
 
                         for (var phase = conf.PhaseSettings.Start;
-                            phase < conf.PhaseSettings.Stop;
+                            phase <= conf.PhaseSettings.Stop;
                             phase += conf.PhaseSettings.Step)
                             {
                             smu200a.SetSourceDeltaPhase(phase);
@@ -213,5 +223,44 @@ namespace OutphasingSweepController
                     }
                 }
             }
+
+        private void FrequencyTextBoxes_LostFocus(object sender, RoutedEventArgs e)
+            {
+            var senderBox = (TextBox)sender;
+            UpdateSweepTextBoxes(
+                FrequencyStartTextBox,
+                FrequencyStepTextBox,
+                FrequencyStopTextBox,
+                FrequencyNStepsTextBox,
+                senderBox);
+            }
+
+        private void UpdateSweepTextBoxes(TextBox start, TextBox step, TextBox stop, TextBox nSteps, TextBox sender)
+            {
+            if (sender == nSteps)
+                {
+                var startValue = Convert.ToDouble(start.Text);
+                var stopValue = Convert.ToDouble(stop.Text);
+                var nStepsValue = Convert.ToDouble(nSteps.Text);
+                // Subtracting 1 to include the first sweep point
+                var frequencyStep = (stopValue - startValue) / (nStepsValue - 1);
+                step.Text = frequencyStep.ToString("e");
+                }
+            else if ((sender == step) || (sender == start) || (sender == stop))
+                {
+                var startValue = Convert.ToDouble(start.Text);
+                var stopValue = Convert.ToDouble(stop.Text);
+                var frequencyStep = Convert.ToDouble(step.Text);
+                var nStepsValue = (stopValue - startValue) / frequencyStep;
+                // Adding 1 to include the first sweep point
+                nSteps.Text = (1 + (int)nStepsValue).ToString();
+                }
+            else
+                {
+                // Do nothing
+                return;
+                }
+            }
+
         }
     }

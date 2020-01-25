@@ -22,7 +22,7 @@ DC Power: {8} W";
 TektronixRSA3408A: {1}
 R&S SMU200A: {2}
 Keysight E8257D: {3}";
-        }
 
         public const string LastSamplePsuChannelTemplate = @"PSU Channel {0}: {1} V, {2} A, {3} W";
+        }
     }
