@@ -23,21 +23,31 @@ namespace OutphasingSweepController
     /// </summary>
     public partial class MainWindow : Window
         {
-        HP6624A hp6624a;
-        TektronixRSA3408A rsa3408a;
-        RS_SMU200A smu200a;
-        KeysightE8257D e8257d;
-        SweepProgress CurrentSweepProgress = new SweepProgress(false, 0, 0);
-        System.Windows.Threading.DispatcherTimer dispatcherTimer;
-        List<CheckBox> PsuChannelEnableCheckboxes;
-        public int PsuRampUpStepTime { get; set; } = 10;
-        public double PsuNominalVoltage { get; set; } = 2.2;
+        // Misc
         public string ChipCorner { get; set; } = "TT";
         public double ChipTemperature { get; set; } = 25.0;
-        public double EstimatedTimePerSample { get; set; } = 0.1;
+        // PSU
+        HP6624A hp6624a;
+        public double PsuNominalVoltage { get; set; } = 2.2;
+        public int PsuRampUpStepTime { get; set; } = 10;
         public double RampVoltageStep { get; set; } = 0.1;
-        public string ResultsSavePath { get; set; } = "";
+        // Spectrum Analyser
+        TektronixRSA3408A rsa3408a;
+        public double Rsa3408Bandwidth { get; set; } = 10e6;
+        // UI
         public Queue<String> LogQueue = new Queue<string>();
+        List<CheckBox> PsuChannelEnableCheckboxes;
+        System.Windows.Threading.DispatcherTimer dispatcherTimer;
+        // File IO
+        public string ResultsSavePath { get; set; } = "";
+        public string Smu200aOffsetsPath { get; set; } = "";
+        public string E8257dOffsetsPath { get; set; } = "";
+        // Signal Generators
+        RS_SMU200A smu200a;
+        KeysightE8257D e8257d;
+        // Measurement
+        SweepProgress CurrentSweepProgress = new SweepProgress(false, 0, 0);
+        public double EstimatedTimePerSample { get; set; } = 0.1;
         public MainWindow()
             {
             InitializeComponent();
@@ -85,22 +95,10 @@ namespace OutphasingSweepController
 
         private void SetUpVisaConnections()
             {
-            var hp6624aAddress = GetVisaAddress("HP6624A");
-            var rsa3408Address = GetVisaAddress("Tektronix RSA3408");
-            var smu200aAddress = GetVisaAddress("R&S SMU200A");
-            var e8257dAddress = GetVisaAddress("Keysight E8257D");
-
-            hp6624a = new HP6624A(hp6624aAddress);
-            rsa3408a = new TektronixRSA3408A(rsa3408Address);
-            smu200a = new RS_SMU200A(smu200aAddress);
-            e8257d = new KeysightE8257D(e8257dAddress);
-
-            ConnectionStatusTextBlock.Text = string.Format(
-                Constants.ConnectionStatusTemplate,
-                hp6624aAddress,
-                rsa3408Address,
-                smu200aAddress,
-                e8257dAddress);
+            hp6624a = new HP6624A(GetVisaAddress("HP6624A"));
+            rsa3408a = new TektronixRSA3408A(GetVisaAddress("Tektronix RSA3408"));
+            smu200a = new RS_SMU200A(GetVisaAddress("R&S SMU200A"));
+            e8257d = new KeysightE8257D(GetVisaAddress("Keysight E8257D"));
             }
 
         private string GetVisaAddress(string deviceName)
@@ -240,11 +238,33 @@ namespace OutphasingSweepController
             SetAllActivePsuChannels(newVoltage);
             }
 
-        private void RunSweep(MeasurementSweepConfiguration conf)
+        bool MeasurementVariablesCheck()
             {
             if (ResultsSavePath == "")
                 {
                 LogQueue.Enqueue("No save path entered.");
+                return false;
+                }
+
+            if (Smu200aOffsetsPath == "")
+                {
+                LogQueue.Enqueue("No SMU200A amplitude file chosen.");
+                return false;
+                }
+
+            if (E8257dOffsetsPath == "")
+                {
+                LogQueue.Enqueue("No E8257D amplitude file chosen.");
+                return false;
+                }
+
+            return true;
+            }
+
+        private void RunSweep(MeasurementSweepConfiguration conf)
+            {
+            if (!MeasurementVariablesCheck())
+                {
                 return;
                 }
 
@@ -275,6 +295,9 @@ namespace OutphasingSweepController
                 }
 
             // Spectrum Analyser
+            rsa3408a.SetFrequencyCenter(conf.FrequencySettings.Start);
+            rsa3408a.SetContinuousMode(continuousOn: false);
+            rsa3408a.SetFrequencySpan(Rsa3408Bandwidth);
 
             // Set the power sources to an extremely low
             // power before starting the sweep
@@ -354,6 +377,26 @@ namespace OutphasingSweepController
                 ResultsSavePath = saveDialog.FileName;
                 ResultsSavePathTextBlock.Text = ResultsSavePath;
                 }
+            }
+
+        private void LoadSmu200aOffsetsButton_Click(object sender, RoutedEventArgs e)
+            {
+            Smu200aOffsetsPath = GetOffsetsPath("SMU200A");
+            }
+
+        private void LoadE8257dOffsetsButton_Click(object sender, RoutedEventArgs e)
+            {
+            E8257dOffsetsPath = GetOffsetsPath("E8257D");
+            }
+
+        private string GetOffsetsPath(string deviceName)
+            {
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog();
+            openFileDialog.Filter = string.Format(
+                "{0} Offset file (*.*)|*.*",
+                deviceName);
+            var dialogSuccess = openFileDialog.ShowDialog() == true;
+            return dialogSuccess ? openFileDialog.FileName : "";
             }
         }
     }

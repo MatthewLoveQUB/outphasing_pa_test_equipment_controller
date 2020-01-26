@@ -18,11 +18,6 @@ DC Voltage: {6} V
 DC Current: {7} A
 DC Power: {8} W";
 
-        public const string ConnectionStatusTemplate = @"HP6624: {0}
-TektronixRSA3408A: {1}
-R&S SMU200A: {2}
-Keysight E8257D: {3}";
-
         public const string LastSamplePsuChannelTemplate = @"PSU Channel {0}: {1} V, {2} A, {3} W";
         }
     }
