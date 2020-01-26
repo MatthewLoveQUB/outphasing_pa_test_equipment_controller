@@ -42,8 +42,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AmplitudeOffset.cs" />
+    <Compile Include="DeviceOffsets.cs" />
     <Compile Include="HP6624A.cs" />
     <Compile Include="KeysightE8257D.cs" />
+    <Compile Include="PowerConversion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RS_SMU200A.cs" />
     <Compile Include="TektronixRSA3408A.cs" />

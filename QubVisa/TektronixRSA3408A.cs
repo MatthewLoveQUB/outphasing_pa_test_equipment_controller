@@ -33,7 +33,12 @@ namespace QubVisa
             {
             Device.connection.RawIO.Write("*CAL?");
             }
-
+        
+        public bool OperationComplete()
+            {
+            return Convert.ToBoolean(Convert.ToInt32(Device.ReadString("*OPC?")));
+            }
+        
         // Calculate Commands
         public double GetMarkerYValue(int markerNumber)
             {

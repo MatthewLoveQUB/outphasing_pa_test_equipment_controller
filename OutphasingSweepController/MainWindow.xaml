@@ -245,7 +245,7 @@
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 Click="LoadE8257dOffsetsButton_Click"
-                Content="Load SMU200A offsets" />
+                Content="Load E8257D offsets" />
             <TextBlock
                 x:Name="E8257dOffetsFilePathTextBlock"
                 Grid.Row="11"

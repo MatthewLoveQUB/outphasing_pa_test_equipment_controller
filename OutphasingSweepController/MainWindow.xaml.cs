@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.IO;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
@@ -13,7 +14,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Collections.Generic;
 using QubVisa;
 
 namespace OutphasingSweepController
@@ -133,16 +133,24 @@ namespace OutphasingSweepController
                 PsuNominalVoltage,
                 1.1 * PsuNominalVoltage };
             return new MeasurementSweepConfiguration(
-                frequencySettings, 
-                powerSettings, 
-                phaseSettings, 
-                ChipTemperature, 
-                ChipCorner, 
-                voltages);
+                frequencySettings,
+                powerSettings,
+                phaseSettings,
+                ChipTemperature,
+                ChipCorner,
+                voltages,
+                Rsa3408Bandwidth,
+                Smu200aOffsetsPath,
+                E8257dOffsetsPath);
             }
 
         private void StartSweepButton_Click(object sender, RoutedEventArgs e)
             {
+            if (!MeasurementVariablesCheck())
+                {
+                return;
+                }
+
             var measurementSettings = ParseMeasurementConfiguration();
 
             Task.Factory.StartNew(() =>
@@ -242,11 +250,6 @@ namespace OutphasingSweepController
 
         private void RunSweep(MeasurementSweepConfiguration conf)
             {
-            if (!MeasurementVariablesCheck())
-                {
-                return;
-                }
-
             var numberOfPoints = conf.MeasurementPoints;
             CurrentSweepProgress.CurrentPoint = 0;
             CurrentSweepProgress.NumberOfPoints = numberOfPoints;
@@ -261,8 +264,8 @@ namespace OutphasingSweepController
             // Spectrum Analyser
             rsa3408a.SetFrequencyCenter(conf.Frequencies[0]);
             rsa3408a.SetContinuousMode(continuousOn: false);
-            rsa3408a.SetFrequencySpan(Rsa3408Bandwidth);
-
+            rsa3408a.SetFrequencySpan(conf.MeasurementChannelBandwidth);
+            
             // Set the power sources to an extremely low
             // power before starting the sweep
             // in case they default to some massive value
@@ -282,24 +285,71 @@ namespace OutphasingSweepController
                     {
                     // Set the frequency
                     rsa3408a.SetFrequencyCenter(frequency);
+                    rsa3408a.SetMarkerXValue(markerNumber: 1, xValue: frequency);
                     smu200a.SetSourceFrequency(frequency);
                     e8257d.SetSourceFrequency(frequency);
 
-                    foreach (var power in conf.Powers)
+                    foreach (var inputPower in conf.InputPowers)
                         {
+                        // Get the loss offset for this frequency
+                        var offsetSmu200a = conf.Smu200aOffsets.GetOffset(frequency);
+                        var offsetE8257d = conf.E8257dOffsets.GetOffset(frequency);
+
                         // Set the power
-                        smu200a.SetPowerLevel(power);
-                        e8257d.SetPowerLevel(power);
+                        smu200a.SetPowerLevel(inputPower, offsetSmu200a);
+                        e8257d.SetPowerLevel(inputPower, offsetE8257d);
 
                         foreach (var phase in conf.Phases)
                             {
                             smu200a.SetSourceDeltaPhase(phase);
                             CurrentSweepProgress.CurrentPoint += 1;
-                            // Do things
+
+                            /// Do the measurement
+                            // Sample the output signal
+                            rsa3408a.StartSignalAcquisition();
+                            // Wait until signal is acquired
+                            while (rsa3408a.OperationComplete())
+                                {
+                                // Do nothing
+                                }
+                            // Record the sample
+                            var sample = TakeMeasurementSample(conf, voltage, frequency, inputPower, phase, offsetSmu200a, offsetE8257d);
                             }
                         }
                     }
                 }
+            }
+
+        private MeasurementSample TakeMeasurementSample(
+            MeasurementSweepConfiguration conf,
+            double supplyVoltage,
+            double frequency,
+            double inputPower,
+            double phase,
+            double offsetSmu,
+            double offsetE8257d)
+            {
+            var measuredDcPowerWatts = hp6624a.GetActiveChannelsPowerWatts();
+            double measuredPoutdBm = rsa3408a.GetMarkerYValue(markerNumber: 1);
+            double channelPowerdBm = rsa3408a.ReadSpectrumChannelPower();
+            return new MeasurementSample(
+                frequency,
+                inputPower,
+                phase,
+                conf.Temperature,
+                conf.Corner,
+                supplyVoltage,
+                measuredDcPowerWatts,
+                offsetSmu,
+                offsetE8257d,
+                measuredPoutdBm,
+                conf.MeasurementChannelBandwidth,
+                channelPowerdBm);
+            }
+
+        private void SaveMeasurementSample(FileStream outputFile, MeasurementSample sample)
+            {
+
             }
 
         private void SweepSettingsControl_LostFocus(object sender, RoutedEventArgs e)
