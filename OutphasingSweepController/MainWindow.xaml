@@ -43,6 +43,8 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -203,7 +205,7 @@
                 Margin="1"
                 VerticalAlignment="Center"
                 TextAlignment="Left" />
-            <!--  Save file  -->
+            <!--  Results Save file  -->
             <Button
                 x:Name="SaveButton"
                 Grid.Row="9"
@@ -218,9 +220,38 @@
                 Grid.ColumnSpan="3"
                 VerticalAlignment="Center"
                 TextAlignment="Left" />
+            <!--  Load SMU200A Amplitude offsets  -->
+            <Button
+                x:Name="LoadSmu200aOffsetsButton"
+                Grid.Row="10"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Click="LoadSmu200aOffsetsButton_Click"
+                Content="Load SMU200A offsets" />
+            <TextBlock
+                x:Name="Smu200aOffetsFilePathTextBlock"
+                Grid.Row="10"
+                Grid.Column="2"
+                Grid.ColumnSpan="3"
+                VerticalAlignment="Center" />
+            <!--  Load E8257D Amplitude offsets  -->
+            <Button
+                x:Name="LoadE8257dOffsetsButton"
+                Grid.Row="11"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Click="LoadE8257dOffsetsButton_Click"
+                Content="Load SMU200A offsets" />
+            <TextBlock
+                x:Name="E8257dOffetsFilePathTextBlock"
+                Grid.Row="11"
+                Grid.Column="2"
+                Grid.ColumnSpan="3"
+                VerticalAlignment="Center" />
+            <!--  Start measurement button  -->
             <Button
                 x:Name="StartSweepButton"
-                Grid.Row="10"
+                Grid.Row="12"
                 Grid.ColumnSpan="5"
                 Click="StartSweepButton_Click"
                 Content="Begin Sweep" />
