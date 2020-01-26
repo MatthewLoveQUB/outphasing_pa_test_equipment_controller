@@ -14,6 +14,16 @@ namespace OutphasingSweepController
         public double Temperature;
         public string Corner;
         public List<Double> Voltages;
+        public int MeasurementPoints
+            {
+            get
+                {
+                return Frequencies.Count
+                    * Powers.Count
+                    * Phases.Count
+                    * Voltages.Count;
+                }
+            }
         public MeasurementSweepConfiguration(
             List<Double> frequencySettings,
             List<Double> powerSettings,

@@ -254,10 +254,7 @@ namespace OutphasingSweepController
                 return;
                 }
 
-            var numberOfPoints = conf.Voltages.Count
-                * conf.Frequencies.Count
-                * conf.Powers.Count
-                * conf.Phases.Count;
+            var numberOfPoints = conf.MeasurementPoints;
             CurrentSweepProgress.CurrentPoint = 0;
             CurrentSweepProgress.NumberOfPoints = numberOfPoints;
             CurrentSweepProgress.Running = true;
