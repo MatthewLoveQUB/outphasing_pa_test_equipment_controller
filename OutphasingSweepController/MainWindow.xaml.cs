@@ -29,6 +29,7 @@ namespace OutphasingSweepController
         // PSU
         HP6624A hp6624a;
         public double PsuNominalVoltage { get; set; } = 2.2;
+        public double PsuCurrentLimit { get; set; } = 0.3;
         public int PsuRampUpStepTime { get; set; } = 10;
         public double RampVoltageStep { get; set; } = 0.1;
         // Spectrum Analyser
@@ -95,7 +96,14 @@ namespace OutphasingSweepController
 
         private void SetUpVisaConnections()
             {
-            hp6624a = new HP6624A(GetVisaAddress("HP6624A"));
+            var psuChannelStates = new List<bool>()
+                {
+                PsuChannel1Enable.IsChecked == true,
+                PsuChannel2Enable.IsChecked == true,
+                PsuChannel3Enable.IsChecked == true,
+                PsuChannel4Enable.IsChecked == true
+                };
+            hp6624a = new HP6624A(GetVisaAddress("HP6624A"), psuChannelStates);
             rsa3408a = new TektronixRSA3408A(GetVisaAddress("Tektronix RSA3408"));
             smu200a = new RS_SMU200A(GetVisaAddress("R&S SMU200A"));
             e8257d = new KeysightE8257D(GetVisaAddress("Keysight E8257D"));
@@ -159,21 +167,6 @@ namespace OutphasingSweepController
                 }
             }
 
-        private void SetAllActivePsuChannels(double voltage)
-            {
-            int numChannels = PsuChannelEnableCheckboxes.Count;
-            for (int i = 0; i < numChannels; i++)
-                {
-                int channelNumber = i + 1;
-                bool channelEnabled = PsuChannelEnableCheckboxes[i].IsChecked == true;
-                if (channelEnabled)
-                    {
-                    hp6624a.SetChannelVoltage(channelNumber, voltage);
-                    break;
-                    }
-                }
-            }
-
         // Ramp the voltage slowly
         // Assumes that all channels are at the same voltage
         private void SetPsuVoltageStepped(double newVoltage)
@@ -216,12 +209,12 @@ namespace OutphasingSweepController
             for (int currentStep = 0; currentStep < numSteps; currentStep++)
                 {
                 intermediateVoltage += step;
-                SetAllActivePsuChannels(intermediateVoltage);
+                hp6624a.SetActiveChannelsVoltages(intermediateVoltage);
                 Thread.Sleep(PsuRampUpStepTime);
                 }
 
             // In case we overshot the voltage then just set it to the final voltage
-            SetAllActivePsuChannels(newVoltage);
+            hp6624a.SetActiveChannelsVoltages(newVoltage);
             }
 
         bool MeasurementVariablesCheck()
@@ -260,22 +253,10 @@ namespace OutphasingSweepController
             CurrentSweepProgress.Running = true;
 
             // Pre-setup
-            // Zeroing the DC Supplies
-            // It's hard to tell if the output state command actually works
-            // so I'm zeroing the current limit and voltage of the disabled channels
-            for(int i = 0; i < PsuChannelEnableCheckboxes.Count; i++)
-                {
-                var channelNumber = i + 1;
-                var voltage = 0;
-                var zeroCurrent = 0;
-                var checkboxState = (PsuChannelEnableCheckboxes[i].IsChecked == true);
-                hp6624a.SetChannelVoltage(channelNumber, voltage);
-                hp6624a.SetChannelOutputState(channelNumber, checkboxState);
-                if(checkboxState == false)
-                    {
-                    hp6624a.SetChannelCurrent(channelNumber, zeroCurrent);
-                    }
-                }
+            // DC supply
+            hp6624a.SetAllChannelVoltagesToZero();
+            hp6624a.SetChannelOutputStatesStrong();
+            hp6624a.SetActiveChannelsCurrent(PsuCurrentLimit);
 
             // Spectrum Analyser
             rsa3408a.SetFrequencyCenter(conf.Frequencies[0]);

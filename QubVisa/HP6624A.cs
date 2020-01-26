@@ -9,16 +9,13 @@ namespace QubVisa
     public class HP6624A
     {
         public VisaDevice Device;
-        public HP6624A(string deviceAddress)
+        public List<bool> ChannelStates;
+        public const int NumChannels = 4;
+        public HP6624A(string deviceAddress, List<bool> channelStates)
             {
             Device = new VisaDevice(deviceAddress);
+            ChannelStates = channelStates;
             }
-
-        public HP6624A(VisaDevice device)
-            {
-            Device = device;
-            }
-
 
         /// <summary>
         /// Convert the "000" or "001" response from the PSU to Bool.
@@ -107,5 +104,88 @@ namespace QubVisa
         {
             return Convert.ToDouble(ReadQ2Query("OVSET?", channel));
         }
+
+        // It's hard to tell if the output state command actually works
+        // so this "strong" command also zeros the 
+        // current limit and voltage of the disabled channels
+        public void SetChannelOutputStatesStrong()
+            {
+            var zeroVoltage = 0;
+            var zeroCurrent = 0;
+            for (int i = 0; i < NumChannels; i++)
+                {
+                var channelNumber = i + 1;
+                bool channelState = ChannelStates[channelNumber];
+                SetChannelOutputState(channelNumber, on: channelState);
+                if (!channelState)
+                    {
+                    SetChannelVoltage(channelNumber, zeroVoltage);
+                    SetChannelCurrent(channelNumber, zeroCurrent);
+                    }
+                }
+            }
+
+        // Set the states as listed in the config
+        public void SetChannelStates()
+            {
+            for(int i = 0; i < NumChannels; i++)
+                {
+                var channelNumber = i + 1;
+                SetChannelOutputState(channelNumber, ChannelStates[i]);
+                }
+            }
+
+        public void SetActiveChannelsVoltages(double voltage)
+            {
+            for(int i = 0; i < NumChannels; i++)
+                {
+                int channelNumber = i + 1;
+                var channelActive = ChannelStates[i];
+                if (channelActive)
+                    {
+                    SetChannelVoltage(channelNumber, voltage);
+                    }
+                }
+            }
+
+        public void SetAllChannelVoltagesToZero()
+            {
+            for (int i = 0; i < NumChannels; i++)
+                {
+                var channelNumber = i + 1;
+                SetChannelVoltage(channelNumber, 0.0);
+                }
+            }
+
+        public void SetActiveChannelsCurrent(double current)
+            {
+            for (int i = 0; i < NumChannels; i++)
+                {
+                int channelNumber = i + 1;
+                bool channelActive = ChannelStates[i];
+                if (channelActive)
+                    {
+                    SetChannelCurrent(channelNumber, current);
+                    }
+                }
+            }
+
+        public double GetActiveChannelsPowerWatts()
+            {
+            var power = 0.0;
+            for (int i = 0; i < NumChannels; i++)
+                {
+                int channelNumber = i + 1;
+                bool channelActive = ChannelStates[i];
+                if (channelActive)
+                    {
+                    var channelVoltage = GetChannelVoltageOutput(channelNumber);
+                    var channelCurrent = GetChannelCurrentOutput(channelNumber);
+                    var channelPower = channelCurrent * channelVoltage;
+                    power += channelPower;
+                    }
+                }
+            return power;
+            }
     }
 }
