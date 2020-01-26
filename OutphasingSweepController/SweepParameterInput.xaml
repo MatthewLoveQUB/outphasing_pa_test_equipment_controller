@@ -23,22 +23,23 @@
             x:Name="StartTextBox"
             Grid.Column="1"
             Margin="1"
-            Text="{Binding Start, StringFormat=g3}" />
+            Text="{Binding Start, StringFormat=g3, Mode=TwoWay}" />
         <TextBox
             x:Name="StepTextBox"
             Grid.Column="2"
             Margin="1"
-            Text="{Binding Step, StringFormat=g3}" />
+            Background="LightGray"
+            IsReadOnly="True"
+            Text="{Binding Step, StringFormat=g3, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
         <TextBox
             x:Name="StopTextBox"
             Grid.Column="3"
             Margin="1"
-            Text="{Binding Stop, StringFormat=g3}" />
+            Text="{Binding Stop, StringFormat=g3, Mode=TwoWay}" />
         <TextBox
             x:Name="NStepsTextBox"
             Grid.Column="4"
             Margin="1"
-            Background="LightGray"
-            IsReadOnly="True" />
+            Text="{Binding NSteps, StringFormat=g, Mode=TwoWay}" />
     </Grid>
 </UserControl>

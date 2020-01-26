@@ -26,6 +26,20 @@ namespace OutphasingSweepController
         public double Stop { get; set; }
         public int NSteps { get; set; }
 
+        public List<Double> Values { get
+                {
+                var values = new List<Double>();
+                for (var x = Start; x <= Stop; x += Step)
+                    {
+                    values.Add(x);
+                    }
+                // Due to floating-point errors
+                // let's explicitly set the final value to Stop
+                values[values.Count - 1] = Stop;
+                return values;
+                }
+            }
+
         public SweepParameterInput()
             {
             InitializeComponent();
@@ -39,10 +53,8 @@ namespace OutphasingSweepController
 
         private void UpdateFields()
             {
-            var nStepsValue = (Stop - Start) / Step;
-            // Adding 1 to include the first sweep point
-            NSteps = (1 + (int)nStepsValue);
-            NStepsTextBox.Text = NSteps.ToString();
+            Step = (Stop - Start) / ((double)NSteps - 1.0);
+            StepTextBox.Text = Step.ToString();
             }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
