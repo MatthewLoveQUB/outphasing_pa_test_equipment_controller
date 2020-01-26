@@ -48,7 +48,10 @@ namespace OutphasingSweepController
         KeysightE8257D e8257d;
         // Measurement
         SweepProgress CurrentSweepProgress = new SweepProgress(false, 0, 0);
+        MeasurementSample CurrentSample;
         public double EstimatedTimePerSample { get; set; } = 0.1;
+        public System.Diagnostics.Stopwatch MeasurementStopWatch = new System.Diagnostics.Stopwatch();
+
         public MainWindow()
             {
             InitializeComponent();
@@ -83,8 +86,6 @@ namespace OutphasingSweepController
             {
             LastSampleTextBlock.Text =
                 string.Format(Constants.LastSampleTemplate,
-                "???",
-                "???",
                 "???",
                 "???",
                 "???",
@@ -140,6 +141,7 @@ namespace OutphasingSweepController
                 ChipCorner,
                 voltages,
                 Rsa3408Bandwidth,
+                ResultsSavePath,
                 Smu200aOffsetsPath,
                 E8257dOffsetsPath);
             }
@@ -165,6 +167,32 @@ namespace OutphasingSweepController
                 {
                 var msg = string.Format("On task {0} of {1}", CurrentSweepProgress.CurrentPoint, CurrentSweepProgress.NumberOfPoints);
                 AddNewLogLine(msg);
+                var timeElapsed = MeasurementStopWatch.Elapsed;
+                var pointsRemaining = (CurrentSweepProgress.NumberOfPoints - CurrentSweepProgress.CurrentPoint);
+                var timeScaler = (pointsRemaining / CurrentSweepProgress.CurrentPoint);
+                var estimatedTime = TimeSpan.FromTicks(timeElapsed.Ticks * timeScaler);
+                msg = string.Format(
+                    "Elapsed Time: {0} days {1} hours {2} minutes",
+                    timeElapsed.Days,
+                    timeElapsed.Hours,
+                    timeElapsed.Minutes);
+                AddNewLogLine(msg);
+                msg = string.Format(
+                    "Estimated Remaining Time: {0} days {1} hours {2} minutes",
+                    estimatedTime.Days,
+                    estimatedTime.Hours,
+                    estimatedTime.Minutes);
+                if(CurrentSample != null)
+                    {
+                    LastSampleTextBlock.Text =
+                        string.Format(Constants.LastSampleTemplate,
+                        CurrentSample.Frequency,
+                        CurrentSample.InputPowerdBm,
+                        CurrentSample.GaindB,
+                        CurrentSample.PowerAddedEfficiency,
+                        CurrentSample.DrainEfficiency,
+                        CurrentSample.MeasuredPowerDcWatts);
+                    }
                 }
 
             // Empty the log queue
@@ -250,10 +278,29 @@ namespace OutphasingSweepController
 
         private void RunSweep(MeasurementSweepConfiguration conf)
             {
+            var outputFile = new StreamWriter(conf.OutputFilePath);
+            outputFile.WriteLine(
+                "Frequency (Hz)" // 1
+                + ", Input Power (dBm)"
+                + ", Phase (deg)"
+                + ", Temperature (Celcius)"
+                + ", Corner" // 5
+                + ", Supply Voltage (V)"
+                + ", DC Power (W)"
+                + ", Output Power (dBm)"
+                + ", SMU200A Input Power Offset (dB)"
+                + ", E8257D Input Power Offset (dB)" // 10
+                + ", Drain Efficiency (%)"
+                + ", Power Added Efficiency (%)"
+                + ", Channel Power (dBm)"
+                + ", Channel Measurement Bandwidth (Hz)"
+                + ", Gain (dB)"); // 15
+
             var numberOfPoints = conf.MeasurementPoints;
-            CurrentSweepProgress.CurrentPoint = 0;
+            CurrentSweepProgress.CurrentPoint = 1;
             CurrentSweepProgress.NumberOfPoints = numberOfPoints;
             CurrentSweepProgress.Running = true;
+            MeasurementStopWatch.Restart();
 
             // Pre-setup
             // DC supply
@@ -313,11 +360,15 @@ namespace OutphasingSweepController
                                 // Do nothing
                                 }
                             // Record the sample
-                            var sample = TakeMeasurementSample(conf, voltage, frequency, inputPower, phase, offsetSmu200a, offsetE8257d);
+                            CurrentSample = TakeMeasurementSample(conf, voltage, frequency, inputPower, phase, offsetSmu200a, offsetE8257d);
+                            SaveMeasurementSample(outputFile, CurrentSample);
                             }
                         }
                     }
                 }
+            outputFile.Close();
+            MeasurementStopWatch.Stop();
+            MeasurementStopWatch.Reset();
             }
 
         private MeasurementSample TakeMeasurementSample(
@@ -347,9 +398,26 @@ namespace OutphasingSweepController
                 channelPowerdBm);
             }
 
-        private void SaveMeasurementSample(FileStream outputFile, MeasurementSample sample)
+        private void SaveMeasurementSample(StreamWriter outputFile, MeasurementSample sample)
             {
-
+            outputFile.WriteLine(
+                "{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14}",
+                sample.Frequency,
+                sample.InputPowerdBm,
+                sample.PhaseDeg,
+                sample.Temperature,
+                sample.Corner,
+                sample.SupplyVoltage,
+                sample.MeasuredPowerDcWatts,
+                sample.MeasuredOutputPowerdBm,
+                sample.OffsetSmu200adB,
+                sample.OffsetE8557ddB,
+                sample.DrainEfficiency,
+                sample.PowerAddedEfficiency,
+                sample.MeasuredChannelPowerdBm,
+                sample.RsaMeasurementBandwidth,
+                sample.GaindB);
+            outputFile.Flush();
             }
 
         private void SweepSettingsControl_LostFocus(object sender, RoutedEventArgs e)

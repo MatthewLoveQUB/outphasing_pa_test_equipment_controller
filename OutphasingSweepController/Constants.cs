@@ -14,8 +14,6 @@ Pin: {2} dBm
 Gain: {3} dB
 PAE: {4} %
 Drain Efficiency: {5} %
-DC Voltage: {6} V
-DC Current: {7} A
 DC Power: {8} W";
 
         public const string LastSamplePsuChannelTemplate = @"PSU Channel {0}: {1} V, {2} A, {3} W";

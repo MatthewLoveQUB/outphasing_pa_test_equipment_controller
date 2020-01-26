@@ -52,6 +52,11 @@ namespace OutphasingSweepController
             }
         public double MeasuredChannelPowerdBm;
         public double RsaMeasurementBandwidth;
+        public double GaindB { get
+                {
+                return MeasuredOutputPowerdBm - (InputPowerdBm + 3);
+                }
+            }
 
         public MeasurementSample(
             double frequency,

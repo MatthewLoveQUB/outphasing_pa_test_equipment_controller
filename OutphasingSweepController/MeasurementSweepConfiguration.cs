@@ -15,6 +15,7 @@ namespace OutphasingSweepController
         public double Temperature;
         public string Corner;
         public List<Double> Voltages;
+        public string OutputFilePath;
         public DeviceOffsets Smu200aOffsets;
         public DeviceOffsets E8257dOffsets;
         public int MeasurementPoints
@@ -36,6 +37,7 @@ namespace OutphasingSweepController
             string corner,
             List<Double> voltages,
             double measurementBandwidth,
+            string outputFilePath,
             string Smu200aOffsetFilePath,
             string E8257dOffsetFilePath)
             {
@@ -46,6 +48,7 @@ namespace OutphasingSweepController
             Corner = corner;
             Voltages = voltages;
             MeasurementChannelBandwidth = measurementBandwidth;
+            OutputFilePath = outputFilePath;
             Smu200aOffsets = new DeviceOffsets(Smu200aOffsetFilePath);
             E8257dOffsets = new DeviceOffsets(E8257dOffsetFilePath);
             }
