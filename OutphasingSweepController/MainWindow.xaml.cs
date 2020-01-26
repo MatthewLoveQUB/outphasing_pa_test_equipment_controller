@@ -143,11 +143,6 @@ namespace OutphasingSweepController
             });
             }
 
-        private int SweepPoints(SweepSettings ss)
-            {
-            return (int)((ss.Stop - ss.Start) / ss.Step);
-            }
-
         private void dispatcherTimer_Tick(object sender, EventArgs e)
             {
             if (CurrentSweepProgress.Running)

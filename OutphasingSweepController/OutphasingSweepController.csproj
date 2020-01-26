@@ -62,7 +62,6 @@
       <DependentUpon>SweepParameterInput.xaml</DependentUpon>
     </Compile>
     <Compile Include="SweepProgress.cs" />
-    <Compile Include="SweepSettings.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
