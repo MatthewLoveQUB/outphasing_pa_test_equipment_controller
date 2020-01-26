@@ -382,11 +382,13 @@ namespace OutphasingSweepController
         private void LoadSmu200aOffsetsButton_Click(object sender, RoutedEventArgs e)
             {
             Smu200aOffsetsPath = GetOffsetsPath("SMU200A");
+            Smu200aOffetsFilePathTextBlock.Text = Smu200aOffsetsPath;
             }
 
         private void LoadE8257dOffsetsButton_Click(object sender, RoutedEventArgs e)
             {
             E8257dOffsetsPath = GetOffsetsPath("E8257D");
+            E8257dOffetsFilePathTextBlock.Text = E8257dOffsetsPath;
             }
 
         private string GetOffsetsPath(string deviceName)
@@ -394,6 +396,9 @@ namespace OutphasingSweepController
             var openFileDialog = new Microsoft.Win32.OpenFileDialog();
             openFileDialog.Filter = string.Format(
                 "{0} Offset file (*.*)|*.*",
+                deviceName);
+            openFileDialog.Title = string.Format(
+                "Open offset file for {0}",
                 deviceName);
             var dialogSuccess = openFileDialog.ShowDialog() == true;
             return dialogSuccess ? openFileDialog.FileName : "";
