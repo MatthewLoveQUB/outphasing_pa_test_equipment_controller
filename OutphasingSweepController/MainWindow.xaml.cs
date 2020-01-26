@@ -117,18 +117,9 @@ namespace OutphasingSweepController
 
         private MeasurementSweepConfiguration ParseMeasurementConfiguration()
             {
-            var frequencySettings = new SweepSettings(
-                FrequencySweepSettingsControl.Start, 
-                FrequencySweepSettingsControl.Step, 
-                FrequencySweepSettingsControl.Stop);
-            var powerSettings = new SweepSettings(
-                PowerSweepSettingsControl.Start, 
-                PowerSweepSettingsControl.Step, 
-                PowerSweepSettingsControl.Stop);
-            var phaseSettings = new SweepSettings(
-                PhaseSweepSettingsControl.Start, 
-                PhaseSweepSettingsControl.Step, 
-                PhaseSweepSettingsControl.Stop);
+            var frequencySettings = FrequencySweepSettingsControl.Values;
+            var powerSettings = PowerSweepSettingsControl.Values;
+            var phaseSettings = PhaseSweepSettingsControl.Values;
             var voltages = new List<Double>() {
                 0.9 * PsuNominalVoltage,
                 PsuNominalVoltage,
@@ -268,10 +259,10 @@ namespace OutphasingSweepController
                 return;
                 }
 
-            int numberOfPoints = conf.Voltages.Count
-                * SweepPoints(conf.FrequencySettings)
-                * SweepPoints(conf.PowerSettings)
-                * SweepPoints(conf.PhaseSettings);
+            var numberOfPoints = conf.Voltages.Count
+                * conf.Frequencies.Count
+                * conf.Powers.Count
+                * conf.Phases.Count;
             CurrentSweepProgress.CurrentPoint = 0;
             CurrentSweepProgress.NumberOfPoints = numberOfPoints;
             CurrentSweepProgress.Running = true;
@@ -295,7 +286,7 @@ namespace OutphasingSweepController
                 }
 
             // Spectrum Analyser
-            rsa3408a.SetFrequencyCenter(conf.FrequencySettings.Start);
+            rsa3408a.SetFrequencyCenter(conf.Frequencies[0]);
             rsa3408a.SetContinuousMode(continuousOn: false);
             rsa3408a.SetFrequencySpan(Rsa3408Bandwidth);
 
@@ -314,26 +305,20 @@ namespace OutphasingSweepController
             foreach (var voltage in conf.Voltages)
                 {
                 SetPsuVoltageStepped(voltage);
-                for (var frequency = conf.FrequencySettings.Start;
-                frequency <= conf.FrequencySettings.Stop;
-                frequency += conf.FrequencySettings.Step)
+                foreach (var frequency in conf.Frequencies)
                     {
                     // Set the frequency
                     rsa3408a.SetFrequencyCenter(frequency);
                     smu200a.SetSourceFrequency(frequency);
                     e8257d.SetSourceFrequency(frequency);
 
-                    for (var power = conf.PowerSettings.Start;
-                        power <= conf.PowerSettings.Stop;
-                        power += conf.PowerSettings.Step)
+                    foreach (var power in conf.Powers)
                         {
                         // Set the power
                         smu200a.SetPowerLevel(power);
                         e8257d.SetPowerLevel(power);
 
-                        for (var phase = conf.PhaseSettings.Start;
-                            phase <= conf.PhaseSettings.Stop;
-                            phase += conf.PhaseSettings.Step)
+                        foreach (var phase in conf.Phases)
                             {
                             smu200a.SetSourceDeltaPhase(phase);
                             CurrentSweepProgress.CurrentPoint += 1;

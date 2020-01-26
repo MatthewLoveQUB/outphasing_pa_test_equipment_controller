@@ -8,23 +8,23 @@ namespace OutphasingSweepController
     {
     class MeasurementSweepConfiguration
         {
-        public SweepSettings FrequencySettings;
-        public SweepSettings PowerSettings;
-        public SweepSettings PhaseSettings;
+        public List<Double> Frequencies;
+        public List<Double> Powers;
+        public List<Double> Phases;
         public double Temperature;
         public string Corner;
         public List<Double> Voltages;
         public MeasurementSweepConfiguration(
-            SweepSettings frequencySettings,
-            SweepSettings powerSettings,
-            SweepSettings phaseSettings,
+            List<Double> frequencySettings,
+            List<Double> powerSettings,
+            List<Double> phaseSettings,
             double temperature,
             string corner,
             List<Double> voltages)
             {
-            FrequencySettings = frequencySettings;
-            PowerSettings = powerSettings;
-            PhaseSettings = phaseSettings;
+            Frequencies = frequencySettings;
+            Powers = powerSettings;
+            Phases = phaseSettings;
             Temperature = temperature;
             Corner = corner;
             Voltages = voltages;
