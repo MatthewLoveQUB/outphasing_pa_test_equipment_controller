@@ -115,7 +115,7 @@ namespace QubVisa
             for (int i = 0; i < NumChannels; i++)
                 {
                 var channelNumber = i + 1;
-                bool channelState = ChannelStates[channelNumber];
+                bool channelState = ChannelStates[i];
                 SetChannelOutputState(channelNumber, on: channelState);
                 if (!channelState)
                     {

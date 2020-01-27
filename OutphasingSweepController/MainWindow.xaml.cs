@@ -77,7 +77,7 @@ namespace OutphasingSweepController
             {
             dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
             dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
-            dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
+            dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
             dispatcherTimer.Start();
             }
 
@@ -90,10 +90,18 @@ namespace OutphasingSweepController
                 PsuChannel3Enable.IsChecked == true,
                 PsuChannel4Enable.IsChecked == true
                 };
-            hp6624a = new HP6624A(GetVisaAddress("HP6624A"), psuChannelStates);
-            rsa3408a = new TektronixRSA3408A(GetVisaAddress("Tektronix RSA3408"));
-            smu200a = new RS_SMU200A(GetVisaAddress("R&S SMU200A"));
-            e8257d = new KeysightE8257D(GetVisaAddress("Keysight E8257D"));
+            //var hpAddress = GetVisaAddress("HP6624A");
+            string hpAddress = "GPIB0::14::INSTR";
+            hp6624a = new HP6624A(hpAddress, psuChannelStates);
+            //var rsaAddress = GetVisaAddress("Tektronix RSA3408");
+            string rsaAddress = "GPIB0::1::INSTR";
+            rsa3408a = new TektronixRSA3408A(rsaAddress);
+            //var smaAddress = GetVisaAddress("R&S SMU200A");
+            var smaAddress = "TCPIP0::192.168.1.101::inst0::INSTR";
+            smu200a = new RS_SMU200A(smaAddress);
+            //var e82Address = GetVisaAddress("Keysight E8257D");
+            var e82Address = "TCPIP0::192.168.1.3::inst1::INSTR";
+            e8257d = new KeysightE8257D(e82Address);
             }
 
         private string GetVisaAddress(string deviceName)
@@ -151,6 +159,8 @@ namespace OutphasingSweepController
             {
             if (CurrentSweepProgress.Running)
                 {
+                SweepLogTextBox.Text = "";
+
                 var msg = string.Format("On task {0} of {1}", CurrentSweepProgress.CurrentPoint, CurrentSweepProgress.NumberOfPoints);
                 AddNewLogLine(msg);
                 var timeElapsed = MeasurementStopWatch.Elapsed;
@@ -173,6 +183,7 @@ namespace OutphasingSweepController
                     {
                     LastSampleTextBlock.Text =
                         string.Format(Constants.LastSampleTemplate,
+                        CurrentSample.MeasuredOutputPowerdBm,
                         CurrentSample.Frequency,
                         CurrentSample.InputPowerdBm,
                         CurrentSample.GaindB,
@@ -205,7 +216,7 @@ namespace OutphasingSweepController
             for (int i = 0; i < numChannels; i++)
                 {
                 int channelNumber = i + 1;
-                bool channelEnabled = PsuChannelEnableCheckboxes[i].IsChecked == true;
+                bool channelEnabled = hp6624a.ChannelStates[i];
                 if (channelEnabled)
                     {
                     currentVoltage = hp6624a.GetChannelVoltageSetting(channelNumber);
@@ -339,14 +350,6 @@ namespace OutphasingSweepController
                             CurrentSweepProgress.CurrentPoint += 1;
 
                             /// Do the measurement
-                            // Sample the output signal
-                            rsa3408a.StartSignalAcquisition();
-                            // Wait until signal is acquired
-                            while (rsa3408a.OperationComplete())
-                                {
-                                // Do nothing
-                                }
-                            // Record the sample
                             CurrentSample = TakeMeasurementSample(conf, voltage, frequency, inputPower, phase, offsetSmu200a, offsetE8257d);
                             SaveMeasurementSample(outputFile, CurrentSample);
                             }
@@ -368,8 +371,9 @@ namespace OutphasingSweepController
             double offsetE8257d)
             {
             var measuredDcPowerWatts = hp6624a.GetActiveChannelsPowerWatts();
-            double measuredPoutdBm = rsa3408a.GetMarkerYValue(markerNumber: 1);
             double channelPowerdBm = rsa3408a.ReadSpectrumChannelPower();
+            double measuredPoutdBm = rsa3408a.GetMarkerYValue(markerNumber: 1);
+            //double channelPowerdBm = measuredPoutdBm;
             return new MeasurementSample(
                 frequency,
                 inputPower,
@@ -388,7 +392,7 @@ namespace OutphasingSweepController
         private void SaveMeasurementSample(StreamWriter outputFile, MeasurementSample sample)
             {
             outputFile.WriteLine(
-                "{0} {1} {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13} {14}",
+                "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}",
                 sample.Frequency,
                 sample.InputPowerdBm,
                 sample.PhaseDeg,
