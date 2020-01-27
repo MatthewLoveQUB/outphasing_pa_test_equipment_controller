@@ -30,6 +30,11 @@ namespace QubVisa
         {
             var rm = new ResourceManager();
             connection = (MessageBasedSession)rm.Open(deviceAddress);
+            if (deviceAddress.StartsWith("GPIB"))
+                {
+                connection.IOProtocol = IOProtocol.HS488;
+                }
+            
         }
 
         /// <summary>

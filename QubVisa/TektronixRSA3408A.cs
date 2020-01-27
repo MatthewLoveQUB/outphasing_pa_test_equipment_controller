@@ -158,6 +158,7 @@ namespace QubVisa
         public void SetChannelBandwidth(double bandwidth)
             {
             var message = string.Format(":SENS:CHP:BAND:INT {0}", bandwidth);
+            Device.connection.RawIO.Write(message);
             }
     }
 }

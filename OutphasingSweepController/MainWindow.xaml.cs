@@ -41,10 +41,10 @@ namespace OutphasingSweepController
         List<CheckBox> PsuChannelEnableCheckboxes;
         System.Windows.Threading.DispatcherTimer dispatcherTimer;
         // File IO
-        public string ResultsSavePath { get; set; } = "";
-        public string Smu200aOffsetsPath { get; set; } = "";
-        public string E8257dOffsetsPath { get; set; } = "";
-        public string Rsa3408aOffsetsPath { get; set; } = "";
+        public string ResultsSavePath { get; set; } = "C:\\Users\\matth\\Downloads\\x.csv";
+        public string Smu200aOffsetsPath { get; set; } = "C:\\Users\\matth\\Downloads\\Cable_5_offset_file.cor";
+        public string E8257dOffsetsPath { get; set; } = "C:\\Users\\matth\\Downloads\\Cable_2_offset_file.cor";
+        public string Rsa3408aOffsetsPath { get; set; } = "C:\\Users\\matth\\Downloads\\Cable_7_offset_file.cor";
         // Signal Generators
         RS_SMU200A smu200a;
         KeysightE8257D e8257d;
@@ -96,10 +96,11 @@ namespace OutphasingSweepController
             string rsaAddress;
             string smaAddress;
             string e82Address;
-            if (false)
+            if (true)
                 {
+                //hpAddress = "GPIB0::14::INSTR";
                 hpAddress = "GPIB0::14::INSTR";
-                rsaAddress = "GPIB0::1::INSTR";
+                rsaAddress = "GPIB1::1::INSTR";
                 smaAddress = "TCPIP0::192.168.1.101::inst0::INSTR";
                 e82Address = "TCPIP0::192.168.1.3::inst1::INSTR";
                 }
@@ -332,10 +333,12 @@ namespace OutphasingSweepController
             hp6624a.SetActiveChannelsCurrent(PsuCurrentLimit);
 
             // Spectrum Analyser
+            rsa3408a.SetSpectrumChannelPowerMeasurementMode();
             rsa3408a.SetFrequencyCenter(conf.Frequencies[0]);
             rsa3408a.SetContinuousMode(continuousOn: false);
             rsa3408a.SetFrequencySpan(conf.MeasurementFrequencySpan);
             rsa3408a.SetChannelBandwidth(conf.MeasurementChannelBandwidth);
+            rsa3408a.StartSignalAcquisition();
 
             // Set the power sources to an extremely low
             // power before starting the sweep
