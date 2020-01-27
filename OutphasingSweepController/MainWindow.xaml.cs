@@ -34,17 +34,21 @@ namespace OutphasingSweepController
         public double RampVoltageStep { get; set; } = 0.1;
         // Spectrum Analyser
         TektronixRSA3408A rsa3408a;
-        public double Rsa3408ChannelBandwidth { get; set; } = 100e3;
+        public double Rsa3408ChannelBandwidth { get; set; } = 25e3;
         public double Rsa3408FrequencySpan { get; set; } = 1e6;
         // UI
         public Queue<String> LogQueue = new Queue<string>();
         List<CheckBox> PsuChannelEnableCheckboxes;
         System.Windows.Threading.DispatcherTimer dispatcherTimer;
         // File IO
-        public string ResultsSavePath { get; set; } = "C:\\Users\\matth\\Downloads\\x.csv";
-        public string Smu200aOffsetsPath { get; set; } = "C:\\Users\\matth\\Downloads\\Cable_5_offset_file.cor";
-        public string E8257dOffsetsPath { get; set; } = "C:\\Users\\matth\\Downloads\\Cable_2_offset_file.cor";
-        public string Rsa3408aOffsetsPath { get; set; } = "C:\\Users\\matth\\Downloads\\Cable_7_offset_file.cor";
+        public string ResultsSavePath { get; set; } = 
+            "C:\\Users\\matth\\Downloads\\x.csv";
+        public string Smu200aOffsetsPath { get; set; } = 
+            "C:\\Users\\matth\\Downloads\\Cable_5_offset_file.cor";
+        public string E8257dOffsetsPath { get; set; } = 
+            "C:\\Users\\matth\\Downloads\\Cable_2_offset_file.cor";
+        public string Rsa3408aOffsetsPath { get; set; } = 
+            "C:\\Users\\matth\\Downloads\\Cable_7_offset_file.cor";
         // Signal Generators
         RS_SMU200A smu200a;
         KeysightE8257D e8257d;
@@ -52,7 +56,8 @@ namespace OutphasingSweepController
         SweepProgress CurrentSweepProgress = new SweepProgress(false, 0, 0);
         MeasurementSample CurrentSample;
         public double EstimatedTimePerSample { get; set; } = 0.1;
-        public System.Diagnostics.Stopwatch MeasurementStopWatch = new System.Diagnostics.Stopwatch();
+        public System.Diagnostics.Stopwatch MeasurementStopWatch = 
+            new System.Diagnostics.Stopwatch();
 
         public MainWindow()
             {
@@ -96,9 +101,12 @@ namespace OutphasingSweepController
             string rsaAddress;
             string smaAddress;
             string e82Address;
+            // Hard-coded addresses for me to save time
+            // Set it to false if someone who isn't
+            // me is somehow using this code
+            // Sorry if this causes you bother!
             if (true)
                 {
-                //hpAddress = "GPIB0::14::INSTR";
                 hpAddress = "GPIB0::14::INSTR";
                 rsaAddress = "GPIB1::1::INSTR";
                 smaAddress = "TCPIP0::192.168.1.101::inst0::INSTR";
@@ -111,7 +119,7 @@ namespace OutphasingSweepController
                 smaAddress = GetVisaAddress("R&S SMU200A");
                 e82Address = GetVisaAddress("Keysight E8257D");
                 }
-                        
+
             hp6624a = new HP6624A(hpAddress, psuChannelStates);
             rsa3408a = new TektronixRSA3408A(rsaAddress);
             smu200a = new RS_SMU200A(smaAddress);
@@ -120,16 +128,16 @@ namespace OutphasingSweepController
 
         private string GetVisaAddress(string deviceName)
             {
-            var visaWindow = new list_visa_devices_dialogue.MainWindow(deviceName);
+            var visaWindow = 
+                new list_visa_devices_dialogue.MainWindow(deviceName);
             visaWindow.ShowDialog();
             return visaWindow.SelectedAddress;
             }
 
-        private void AddNewLogLine(string line)
+        private void AddNewLogLine(string line)                                
             {
-            var oldLog = SweepLogTextBox.Text;
-            var newLog = oldLog + line + "\n";
-            SweepLogTextBox.Text = newLog;
+            SweepLogTextBox.Text = 
+                string.Format("{0}{1}\n", SweepLogTextBox.Text, line);                              
             }
 
         private MeasurementSweepConfiguration ParseMeasurementConfiguration()
@@ -158,13 +166,9 @@ namespace OutphasingSweepController
 
         private void StartSweepButton_Click(object sender, RoutedEventArgs e)
             {
-            if (!MeasurementVariablesCheck())
-                {
-                return;
-                }
+            if (!MeasurementVariablesCheck()) { return; }
 
             var measurementSettings = ParseMeasurementConfiguration();
-
             Task.Factory.StartNew(() =>
             {
                 RunSweep(measurementSettings);
@@ -173,28 +177,48 @@ namespace OutphasingSweepController
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)
             {
+            // To avoid memory leaks, wipe the log every tick
+            SweepLogTextBox.Text = "";
+
             if (CurrentSweepProgress.Running)
                 {
-                SweepLogTextBox.Text = "";
-
-                var msg = string.Format("On task {0} of {1}", CurrentSweepProgress.CurrentPoint, CurrentSweepProgress.NumberOfPoints);
+                var msg = string.Format(
+                    "On task {0} of {1}", 
+                    CurrentSweepProgress.CurrentPoint, 
+                    CurrentSweepProgress.NumberOfPoints);
                 AddNewLogLine(msg);
+
                 var timeElapsed = MeasurementStopWatch.Elapsed;
-                var pointsRemaining = (CurrentSweepProgress.NumberOfPoints - CurrentSweepProgress.CurrentPoint);
-                var timeScaler = (pointsRemaining / CurrentSweepProgress.CurrentPoint);
-                var estimatedTime = TimeSpan.FromTicks(timeElapsed.Ticks * timeScaler);
                 msg = string.Format(
                     "Elapsed Time: {0} days {1} hours {2} minutes",
                     timeElapsed.Days,
                     timeElapsed.Hours,
                     timeElapsed.Minutes);
                 AddNewLogLine(msg);
+
+                // Estimate how much time is left
+                var pointsRemaining = 
+                    CurrentSweepProgress.NumberOfPoints 
+                    - CurrentSweepProgress.CurrentPoint;
+                var ptsRemaining = (double)pointsRemaining;
+                var curPt = (double)CurrentSweepProgress.CurrentPoint;
+                var timeScaler = (long)(ptsRemaining / curPt);
+                var estimatedTime = 
+                    TimeSpan.FromTicks(timeElapsed.Ticks * timeScaler);
                 msg = string.Format(
-                    "Estimated Remaining Time: {0} days {1} hours {2} minutes",
+                    "Est. Remaining Time: {0} days {1} hours {2} minutes",
                     estimatedTime.Days,
                     estimatedTime.Hours,
                     estimatedTime.Minutes);
                 AddNewLogLine(msg);
+
+                // Print the sample rate
+                var secondsElapsed = (double)timeElapsed.Seconds;
+                var secondsPerSample = curPt / secondsElapsed;
+                msg = string.Format(
+                    "Time/sample = {0} seconds", secondsPerSample);
+                AddNewLogLine(msg);
+
                 if (CurrentSample != null)
                     {
                     LastSampleTextBlock.Text =
@@ -236,7 +260,8 @@ namespace OutphasingSweepController
                 bool channelEnabled = hp6624a.ChannelStates[i];
                 if (channelEnabled)
                     {
-                    currentVoltage = hp6624a.GetChannelVoltageSetting(channelNumber);
+                    currentVoltage = 
+                        hp6624a.GetChannelVoltageSetting(channelNumber);
                     break;
                     }
                 }
@@ -264,7 +289,8 @@ namespace OutphasingSweepController
                 Thread.Sleep(PsuRampUpStepTime);
                 }
 
-            // In case we overshot the voltage then just set it to the final voltage
+            // In case we overshot the voltage then 
+            // just set it to the final voltage
             hp6624a.SetActiveChannelsVoltages(newVoltage);
             }
 
@@ -359,15 +385,18 @@ namespace OutphasingSweepController
                     {
                     // Set the frequency
                     rsa3408a.SetFrequencyCenter(frequency);
-                    rsa3408a.SetMarkerXValue(markerNumber: 1, xValue: frequency);
+                    rsa3408a.SetMarkerXValue(
+                        markerNumber: 1, xValue: frequency);
                     smu200a.SetSourceFrequency(frequency);
                     e8257d.SetSourceFrequency(frequency);
 
                     foreach (var inputPower in conf.InputPowers)
                         {
                         // Get the loss offset for this frequency
-                        var offsetSmu200a = conf.Smu200aOffsets.GetOffset(frequency);
-                        var offsetE8257d = conf.E8257dOffsets.GetOffset(frequency);
+                        var offsetSmu200a = 
+                            conf.Smu200aOffsets.GetOffset(frequency);
+                        var offsetE8257d = 
+                            conf.E8257dOffsets.GetOffset(frequency);
 
                         // Set the power
                         smu200a.SetPowerLevel(inputPower, offsetSmu200a);
@@ -379,8 +408,18 @@ namespace OutphasingSweepController
                             CurrentSweepProgress.CurrentPoint += 1;
 
                             /// Do the measurement
-                            var offsetRsa = conf.Rsa3408aOffsets.GetOffset(frequency);
-                            CurrentSample = TakeMeasurementSample(conf, voltage, frequency, inputPower, phase, offsetSmu200a, offsetE8257d, offsetRsa);
+                            var offsetRsa = 
+                                conf.Rsa3408aOffsets.GetOffset(frequency);
+                            CurrentSample = 
+                                TakeMeasurementSample(
+                                    conf, 
+                                    voltage, 
+                                    frequency, 
+                                    inputPower, 
+                                    phase, 
+                                    offsetSmu200a, 
+                                    offsetE8257d, 
+                                    offsetRsa);
                             SaveMeasurementSample(outputFile, CurrentSample);
                             }
                         }
@@ -421,32 +460,35 @@ namespace OutphasingSweepController
                 channelPowerdBm);
             }
 
-        private void SaveMeasurementSample(StreamWriter outputFile, MeasurementSample sample)
+        private void SaveMeasurementSample(
+            StreamWriter outputFile, 
+            MeasurementSample sample)
             {
-            outputFile.WriteLine(
-                "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}",
-                sample.Frequency, // 1
-                sample.InputPowerdBm,
-                sample.PhaseDeg,
-                sample.Temperature,
-                sample.Corner, // 5
-                sample.SupplyVoltage,
-                sample.MeasuredPowerDcWatts,
-                sample.MeasuredOutputPowerdBm,
-                sample.CalibratedOutputPowerdBm,
-                sample.OffsetSmu200adB, // 10
-                sample.OffsetE8557ddB,
-                sample.OffsetRsa3408AdB,
-                sample.CalibratedDrainEfficiency,
-                sample.CalibratedPowerAddedEfficiency,
-                sample.MeasuredChannelPowerdBm, // 15
-                sample.RsaFrequencySpan,
-                sample.RsaChannelBandwidth,
-                sample.CalibratedGaindB); // 18
+            var outputLine =
+                $"{sample.Frequency}" // 1
+                + $", {sample.InputPowerdBm}"
+                + $", {sample.PhaseDeg}"
+                + $", {sample.Temperature}"
+                + $", {sample.Corner}" // 5
+                + $", {sample.SupplyVoltage}"
+                + $", {sample.MeasuredPowerDcWatts}"
+                + $", {sample.MeasuredOutputPowerdBm}"
+                + $", {sample.CalibratedOutputPowerdBm}"
+                + $", {sample.OffsetSmu200adB}" // 10
+                + $", {sample.OffsetE8557ddB}"
+                + $", {sample.OffsetRsa3408AdB}"
+                + $", {sample.CalibratedDrainEfficiency}"
+                + $", {sample.CalibratedPowerAddedEfficiency}"
+                + $", {sample.MeasuredChannelPowerdBm}" // 15
+                + $", {sample.RsaFrequencySpan}"
+                + $", {sample.RsaChannelBandwidth}"
+                + $", {sample.CalibratedGaindB}"; // 18
+            outputFile.WriteLine(outputLine);
             outputFile.Flush();
             }
 
-        private void SweepSettingsControl_LostFocus(object sender, RoutedEventArgs e)
+        private void SweepSettingsControl_LostFocus(
+            object sender, RoutedEventArgs e)
             {
             UpdateEstimatedSimulationTime();
             }
@@ -457,14 +499,17 @@ namespace OutphasingSweepController
             var freqPoints = FrequencySweepSettingsControl.NSteps;
             var powerPoints = PowerSweepSettingsControl.NSteps;
             var phasePoints = PhaseSweepSettingsControl.NSteps;
-            var nPoints = EstimatedTimePerSample * voltagePoints * freqPoints * powerPoints * phasePoints;
+            var nPoints = EstimatedTimePerSample 
+                * voltagePoints 
+                * freqPoints 
+                * powerPoints 
+                * phasePoints;
             var estimatedSimulationTime = TimeSpan.FromSeconds(nPoints);
             EstimatedSimulationTimeTextBlock.Text = 
-                string.Format(
-                    "Estimated Simulation Time = {0} days, {1} hours, {2} minutes", 
-                    estimatedSimulationTime.Days,
-                    estimatedSimulationTime.Hours, 
-                    estimatedSimulationTime.Minutes);
+                $"Estimated Simulation Time = "
+                + $"{estimatedSimulationTime.Days} days"
+                + $"{estimatedSimulationTime.Hours} hours"
+                + $"{estimatedSimulationTime.Minutes} minutes";
             }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -481,19 +526,22 @@ namespace OutphasingSweepController
                 }
             }
 
-        private void LoadSmu200aOffsetsButton_Click(object sender, RoutedEventArgs e)
+        private void LoadSmu200aOffsetsButton_Click(
+            object sender, RoutedEventArgs e)
             {
             Smu200aOffsetsPath = GetOffsetsPath("SMU200A");
             Smu200aOffsetsFilePathTextBlock.Text = Smu200aOffsetsPath;
             }
 
-        private void LoadE8257dOffsetsButton_Click(object sender, RoutedEventArgs e)
+        private void LoadE8257dOffsetsButton_Click(
+            object sender, RoutedEventArgs e)
             {
             E8257dOffsetsPath = GetOffsetsPath("E8257D");
             E8257dOffsetsFilePathTextBlock.Text = E8257dOffsetsPath;
             }
 
-        private void LoadRsa3408adOffsetsButton_Click(object sender, RoutedEventArgs e)
+        private void LoadRsa3408adOffsetsButton_Click(
+            object sender, RoutedEventArgs e)
             {
             Rsa3408aOffsetsPath = GetOffsetsPath("RSA3408A");
             Rsa3408aOffsetsFilePathTextBlock.Text = Rsa3408aOffsetsPath;
