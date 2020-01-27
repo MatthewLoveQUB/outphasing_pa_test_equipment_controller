@@ -57,8 +57,7 @@ namespace OutphasingSweepController
             InitializeComponent();
             this.DataContext = this;
             PopulatePsuCheckboxList();
-            SetUpDefaultLastSampleText();
-            //SetUpVisaConnections();
+            SetUpVisaConnections();
             SetUpDispatcherTimer();
             }
 
@@ -80,19 +79,6 @@ namespace OutphasingSweepController
             dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
             dispatcherTimer.Interval = new TimeSpan(0, 0, 1);
             dispatcherTimer.Start();
-            }
-
-        private void SetUpDefaultLastSampleText()
-            {
-            LastSampleTextBlock.Text =
-                string.Format(Constants.LastSampleTemplate,
-                "???",
-                "???",
-                "???",
-                "???",
-                "???",
-                "???",
-                "???");
             }
 
         private void SetUpVisaConnections()
@@ -182,7 +168,8 @@ namespace OutphasingSweepController
                     estimatedTime.Days,
                     estimatedTime.Hours,
                     estimatedTime.Minutes);
-                if(CurrentSample != null)
+                AddNewLogLine(msg);
+                if (CurrentSample != null)
                     {
                     LastSampleTextBlock.Text =
                         string.Format(Constants.LastSampleTemplate,
