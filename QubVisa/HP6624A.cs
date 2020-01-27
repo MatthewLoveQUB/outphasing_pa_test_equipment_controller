@@ -187,5 +187,42 @@ namespace QubVisa
                 }
             return power;
             }
+
+        public class OutphasingDcMeasurements
+            {
+            public double PowerWatts;
+            public List<double> Currents;
+
+            public OutphasingDcMeasurements(
+                double powerWatts, List<double> currents)
+                {
+                PowerWatts = powerWatts;
+                Currents = currents;
+                }
+            }
+
+        // 1 Assume the voltage is correct
+        // 2 Return the recorded currents too
+        public OutphasingDcMeasurements OutphasingOptimisedMeasurement(double voltage)
+            {
+            var power = 0.0;
+            var currents = new List<double>();
+            for (int i = 0; i < NumChannels; i++)
+                {
+                var channelNumber = i + 1;
+                if (ChannelStates[i])
+                    {
+                    var currentMeasurement =
+                        GetChannelCurrentOutput(channelNumber);
+                    currents.Add(currentMeasurement);
+                    power += voltage * currentMeasurement;
+                    }
+                else
+                    {
+                    currents.Add(0);
+                    }
+                }
+            return new OutphasingDcMeasurements(power, currents);
+            }
     }
 }
