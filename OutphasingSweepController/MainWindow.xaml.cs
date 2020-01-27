@@ -456,6 +456,18 @@ namespace OutphasingSweepController
             var measuredDcPowerWatts = hp6624a.GetActiveChannelsPowerWatts();
             double channelPowerdBm = rsa3408a.ReadSpectrumChannelPower();
             double measuredPoutdBm = rsa3408a.GetMarkerYValue(markerNumber: 1);
+            var currents = new List<double>();
+            for (int i = 0; i < HP6624A.NumChannels; i++)
+                {
+                if (hp6624a.ChannelStates[i])
+                    {
+                    currents.Add(hp6624a.GetChannelCurrentOutput(i + 1));
+                    }
+                else
+                    {
+                    currents.Add(0);
+                    }
+                }
             return new MeasurementSample(
                 frequency,
                 inputPower,
@@ -471,8 +483,7 @@ namespace OutphasingSweepController
                 conf.MeasurementFrequencySpan,
                 conf.MeasurementChannelBandwidth,
                 channelPowerdBm,
-                hp6624a.GetChannelCurrentOutput(2),
-                hp6624a.GetChannelCurrentOutput(3));
+                currents);
             }
 
         private void SaveMeasurementSample(
@@ -504,10 +515,7 @@ namespace OutphasingSweepController
                 var channelNumber = i + 1;
                 if (hp6624a.ChannelStates[i])
                     {
-                    outputLine +=
-                        string.Format(
-                            ", {0}", 
-                            hp6624a.GetChannelCurrentOutput(channelNumber));
+                    outputLine += string.Format(", {0}", sample.DcCurrent[i]);
                     }
                 }
 

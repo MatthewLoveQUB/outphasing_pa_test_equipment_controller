@@ -64,9 +64,8 @@ namespace OutphasingSweepController
                 return CalibratedOutputPowerdBm - (InputPowerdBm + 3);
                 }
             }
-        public double DcCurrent1;
-        public double DcCurrent2;
-
+        public List<double> DcCurrent;
+        
         public MeasurementSample(
             double frequency,
             double inputPowerdBm,
@@ -82,8 +81,7 @@ namespace OutphasingSweepController
             double measurementFrequencySpan,
             double measurementChannelBandwidth,
             double channelPowerdBm,
-            double dcCurrent1,
-            double dcCurrent2)
+            List<double> dcCurrent)
             {
             Frequency = frequency;
             InputPowerdBm = inputPowerdBm;
@@ -99,8 +97,7 @@ namespace OutphasingSweepController
             RsaFrequencySpan = measurementFrequencySpan;
             RsaChannelBandwidth = measurementChannelBandwidth;
             MeasuredChannelPowerdBm = channelPowerdBm;
-            DcCurrent1 = dcCurrent1;
-            DcCurrent2 = dcCurrent2;
+            DcCurrent = dcCurrent;
             }
         }
     }
