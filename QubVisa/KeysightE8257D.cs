@@ -67,15 +67,6 @@ namespace QubVisa
             Device.connection.RawIO.Write(command);
             }
 
-        // Doesn't seem to work on our model
-        public void SetAmplitudeLimit(double amplitude)
-            {
-            throw new NotImplementedException();
-            SetAmplitudeLimitLock(locked: false);
-            var command = string.Format(":POW:LIM {0}", amplitude);
-            Device.connection.RawIO.Write(command);
-            }
-
         public void SetPowerLevel(double power, double offset=0)
             {
             var inputPower = power + offset;

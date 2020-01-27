@@ -279,7 +279,8 @@ namespace OutphasingSweepController
                 step *= -1;
                 }
 
-            int numSteps = (int)(Math.Abs(currentVoltage - newVoltage) / step);
+            int numSteps = 
+                (int)(Math.Abs(currentVoltage - newVoltage) / step);
             var intermediateVoltage = currentVoltage;
 
             for (int currentStep = 0; currentStep < numSteps; currentStep++)
@@ -326,7 +327,7 @@ namespace OutphasingSweepController
         private void RunSweep(MeasurementSweepConfiguration conf)
             {
             var outputFile = new StreamWriter(conf.OutputFilePath);
-            outputFile.WriteLine(
+            var headerLine =
                 "Frequency (Hz)" // 1
                 + ", Input Power (dBm)"
                 + ", Phase (deg)"
@@ -344,10 +345,20 @@ namespace OutphasingSweepController
                 + ", Measured Channel Power (dBm)" // 15
                 + ", Measurement Frequency Span (Hz)"
                 + ", Channel Measurement Bandwidth (Hz)"
-                + ", Calibrated Gain (dB)"
-                + ", PA DC Current 1 {A}"
-                + ", PA DC Current 2 (A)"); // 20
+                + ", Calibrated Gain (dB)";
+            
+            for(int i = 0; i < HP6624A.NumChannels; i++)
+                {
+                if (hp6624a.ChannelStates[i])
+                    {
+                    headerLine +=
+                        string.Format(
+                            ", DC Current Channel {0} (A)",
+                            i + 1);
+                    }
+                }
 
+            outputFile.WriteLine(headerLine);
             var numberOfPoints = conf.MeasurementPoints;
             CurrentSweepProgress.CurrentPoint = 1;
             CurrentSweepProgress.NumberOfPoints = numberOfPoints;
@@ -486,9 +497,20 @@ namespace OutphasingSweepController
                 + $", {sample.MeasuredChannelPowerdBm}" // 15
                 + $", {sample.RsaFrequencySpan}"
                 + $", {sample.RsaChannelBandwidth}"
-                + $", {sample.CalibratedGaindB}"
-                + $", {sample.DcCurrent1}"
-                + $", {sample.DcCurrent2}";
+                + $", {sample.CalibratedGaindB}";
+
+            for(int i = 0; i < HP6624A.NumChannels; i++)
+                {
+                var channelNumber = i + 1;
+                if (hp6624a.ChannelStates[i])
+                    {
+                    outputLine +=
+                        string.Format(
+                            ", {0}", 
+                            hp6624a.GetChannelCurrentOutput(channelNumber));
+                    }
+                }
+
             outputFile.WriteLine(outputLine);
             outputFile.Flush();
             }
