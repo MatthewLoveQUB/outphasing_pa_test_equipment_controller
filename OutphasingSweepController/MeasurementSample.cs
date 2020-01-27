@@ -34,27 +34,34 @@ namespace OutphasingSweepController
             }
         public double OffsetSmu200adB;
         public double OffsetE8557ddB;
+        public double OffsetRsa3408AdB;
         public double MeasuredOutputPowerdBm;
-        public double MeasuredOutputPowerWatts {  get
+        public double CalibratedOutputPowerdBm { get
                 {
-                return PowerConversion.dBmToWatts(MeasuredOutputPowerdBm);
+                return MeasuredOutputPowerdBm + OffsetRsa3408AdB;
                 }
             }
-        public double DrainEfficiency { get
+        public double CalibratedOutputPowerWatts {  get
                 {
-                return 100.0 * (MeasuredOutputPowerWatts / MeasuredPowerDcWatts);
+                return PowerConversion.dBmToWatts(CalibratedOutputPowerdBm);
                 }
             }
-        public double PowerAddedEfficiency {  get
+        public double CalibratedDrainEfficiency { get
                 {
-                return 100.0 * ((MeasuredOutputPowerWatts - InputPowerWatts) / MeasuredPowerDcWatts);
+                return 100.0 * (CalibratedOutputPowerWatts / MeasuredPowerDcWatts);
+                }
+            }
+        public double CalibratedPowerAddedEfficiency {  get
+                {
+                return 100.0 * ((CalibratedOutputPowerWatts - InputPowerWatts) / MeasuredPowerDcWatts);
                 }
             }
         public double MeasuredChannelPowerdBm;
-        public double RsaMeasurementBandwidth;
-        public double GaindB { get
+        public double RsaFrequencySpan;
+        public double RsaChannelBandwidth;
+        public double CalibratedGaindB { get
                 {
-                return MeasuredOutputPowerdBm - (InputPowerdBm + 3);
+                return CalibratedOutputPowerdBm - (InputPowerdBm + 3);
                 }
             }
 
@@ -68,8 +75,10 @@ namespace OutphasingSweepController
             double measuredPowerDcWatts,
             double offsetSmu,
             double offsetE8257d,
+            double offsetRsa,
             double measuredPoutdBm,
-            double measurementBw,
+            double measurementFrequencySpan,
+            double measurementChannelBandwidth,
             double channelPowerdBm)
             {
             Frequency = frequency;
@@ -81,8 +90,10 @@ namespace OutphasingSweepController
             MeasuredPowerDcWatts = measuredPowerDcWatts;
             OffsetSmu200adB = offsetSmu;
             OffsetE8557ddB = offsetE8257d;
+            OffsetRsa3408AdB = offsetRsa;
             MeasuredOutputPowerdBm = measuredPoutdBm;
-            RsaMeasurementBandwidth = measurementBw;
+            RsaFrequencySpan = measurementFrequencySpan;
+            RsaChannelBandwidth = measurementChannelBandwidth;
             MeasuredChannelPowerdBm = channelPowerdBm;
             }
         }

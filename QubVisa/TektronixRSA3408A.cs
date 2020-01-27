@@ -33,12 +33,12 @@ namespace QubVisa
             {
             Device.connection.RawIO.Write("*CAL?");
             }
-        
+
         public bool OperationComplete()
             {
             return Convert.ToBoolean(Convert.ToInt32(Device.ReadString("*OPC?")));
             }
-        
+
         // Calculate Commands
         public double GetMarkerYValue(int markerNumber)
             {
@@ -153,6 +153,11 @@ namespace QubVisa
             {
             var message = string.Format(":SENSE:FREQ:STOP {0}", stopFrequency);
             Device.connection.RawIO.Write(message);
+            }
+
+        public void SetChannelBandwidth(double bandwidth)
+            {
+            var message = string.Format(":SENS:CHP:BAND:INT {0}", bandwidth);
             }
     }
 }

@@ -38,6 +38,7 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -120,7 +121,7 @@
                 Grid.ColumnSpan="1"
                 Margin="2"
                 HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
+                VerticalAlignment="Center"
                 HorizontalContentAlignment="Left"
                 VerticalContentAlignment="Center"
                 Text="{Binding PsuNominalVoltage, Mode=TwoWay}" />
@@ -233,7 +234,7 @@
                 Click="LoadSmu200aOffsetsButton_Click"
                 Content="Load SMU200A offsets" />
             <TextBlock
-                x:Name="Smu200aOffetsFilePathTextBlock"
+                x:Name="Smu200aOffsetsFilePathTextBlock"
                 Grid.Row="10"
                 Grid.Column="2"
                 Grid.ColumnSpan="3"
@@ -247,27 +248,51 @@
                 Click="LoadE8257dOffsetsButton_Click"
                 Content="Load E8257D offsets" />
             <TextBlock
-                x:Name="E8257dOffetsFilePathTextBlock"
+                x:Name="E8257dOffsetsFilePathTextBlock"
                 Grid.Row="11"
+                Grid.Column="2"
+                Grid.ColumnSpan="3"
+                VerticalAlignment="Center" />
+            <!--  Spectrum Analyser Offsets  -->
+            <Button
+                x:Name="LoadRsa3408adOffsetsButton"
+                Grid.Row="12"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Click="LoadRsa3408adOffsetsButton_Click"
+                Content="Load RSA3408A offsets" />
+            <TextBlock
+                x:Name="Rsa3408aOffsetsFilePathTextBlock"
+                Grid.Row="12"
                 Grid.Column="2"
                 Grid.ColumnSpan="3"
                 VerticalAlignment="Center" />
             <!--  Spectrum Analyzer Bandwidth  -->
             <TextBlock
-                Grid.Row="12"
+                Grid.Row="13"
                 Grid.Column="0"
-                Grid.ColumnSpan="2"
+                Grid.ColumnSpan="1"
                 VerticalAlignment="Center"
-                Text="Measurement BW (Hz)" />
+                Text="Frequency Span (Hz)" />
             <TextBox
-                Grid.Row="12"
+                Grid.Row="13"
+                Grid.Column="1"
+                Grid.ColumnSpan="1"
+                Text="{Binding Rsa3408FrequencySpan, Mode=TwoWay, StringFormat=g2}" />
+            <TextBlock
+                Grid.Row="13"
                 Grid.Column="2"
-                Grid.ColumnSpan="3"
-                Text="{Binding Rsa3408Bandwidth, Mode=TwoWay, StringFormat=g2}" />
+                VerticalAlignment="Center"
+                Text="Channel Bandwidth (Hz)" />
+            <TextBox
+                Grid.Row="13"
+                Grid.Column="3"
+                Grid.ColumnSpan="2"
+                Text="{Binding Rsa3408ChannelBandwidth, Mode=TwoWay, StringFormat=g2}" />
             <!--  Start measurement button  -->
             <Button
                 x:Name="StartSweepButton"
-                Grid.Row="13"
+                Grid.Row="14"
                 Grid.ColumnSpan="5"
                 Click="StartSweepButton_Click"
                 Content="Begin Sweep" />

@@ -18,6 +18,7 @@ namespace OutphasingSweepController
         public string OutputFilePath;
         public DeviceOffsets Smu200aOffsets;
         public DeviceOffsets E8257dOffsets;
+        public DeviceOffsets Rsa3408aOffsets;
         public int MeasurementPoints
             {
             get
@@ -29,6 +30,7 @@ namespace OutphasingSweepController
                 }
             }
         public double MeasurementChannelBandwidth;
+        public double MeasurementFrequencySpan;
         public MeasurementSweepConfiguration(
             List<Double> frequencySettings,
             List<Double> powerSettings,
@@ -37,9 +39,11 @@ namespace OutphasingSweepController
             string corner,
             List<Double> voltages,
             double measurementBandwidth,
+            double measurementSpan,
             string outputFilePath,
             string Smu200aOffsetFilePath,
-            string E8257dOffsetFilePath)
+            string E8257dOffsetFilePath,
+            string Rsa3408aOffsetsFilePath)
             {
             Frequencies = frequencySettings;
             InputPowers = powerSettings;
@@ -48,9 +52,11 @@ namespace OutphasingSweepController
             Corner = corner;
             Voltages = voltages;
             MeasurementChannelBandwidth = measurementBandwidth;
+            MeasurementFrequencySpan = measurementSpan;
             OutputFilePath = outputFilePath;
             Smu200aOffsets = new DeviceOffsets(Smu200aOffsetFilePath);
             E8257dOffsets = new DeviceOffsets(E8257dOffsetFilePath);
+            Rsa3408aOffsets = new DeviceOffsets(Rsa3408aOffsetsFilePath);
             }
         }
     }

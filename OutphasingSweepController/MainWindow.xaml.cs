@@ -34,7 +34,8 @@ namespace OutphasingSweepController
         public double RampVoltageStep { get; set; } = 0.1;
         // Spectrum Analyser
         TektronixRSA3408A rsa3408a;
-        public double Rsa3408Bandwidth { get; set; } = 10e6;
+        public double Rsa3408ChannelBandwidth { get; set; } = 100e3;
+        public double Rsa3408FrequencySpan { get; set; } = 1e6;
         // UI
         public Queue<String> LogQueue = new Queue<string>();
         List<CheckBox> PsuChannelEnableCheckboxes;
@@ -43,6 +44,7 @@ namespace OutphasingSweepController
         public string ResultsSavePath { get; set; } = "";
         public string Smu200aOffsetsPath { get; set; } = "";
         public string E8257dOffsetsPath { get; set; } = "";
+        public string Rsa3408aOffsetsPath { get; set; } = "";
         // Signal Generators
         RS_SMU200A smu200a;
         KeysightE8257D e8257d;
@@ -90,17 +92,28 @@ namespace OutphasingSweepController
                 PsuChannel3Enable.IsChecked == true,
                 PsuChannel4Enable.IsChecked == true
                 };
-            //var hpAddress = GetVisaAddress("HP6624A");
-            string hpAddress = "GPIB0::14::INSTR";
+            string hpAddress;
+            string rsaAddress;
+            string smaAddress;
+            string e82Address;
+            if (false)
+                {
+                hpAddress = "GPIB0::14::INSTR";
+                rsaAddress = "GPIB0::1::INSTR";
+                smaAddress = "TCPIP0::192.168.1.101::inst0::INSTR";
+                e82Address = "TCPIP0::192.168.1.3::inst1::INSTR";
+                }
+            else
+                {
+                hpAddress = GetVisaAddress("HP6624A");
+                rsaAddress = GetVisaAddress("Tektronix RSA3408");
+                smaAddress = GetVisaAddress("R&S SMU200A");
+                e82Address = GetVisaAddress("Keysight E8257D");
+                }
+                        
             hp6624a = new HP6624A(hpAddress, psuChannelStates);
-            //var rsaAddress = GetVisaAddress("Tektronix RSA3408");
-            string rsaAddress = "GPIB0::1::INSTR";
             rsa3408a = new TektronixRSA3408A(rsaAddress);
-            //var smaAddress = GetVisaAddress("R&S SMU200A");
-            var smaAddress = "TCPIP0::192.168.1.101::inst0::INSTR";
             smu200a = new RS_SMU200A(smaAddress);
-            //var e82Address = GetVisaAddress("Keysight E8257D");
-            var e82Address = "TCPIP0::192.168.1.3::inst1::INSTR";
             e8257d = new KeysightE8257D(e82Address);
             }
 
@@ -134,10 +147,12 @@ namespace OutphasingSweepController
                 ChipTemperature,
                 ChipCorner,
                 voltages,
-                Rsa3408Bandwidth,
+                Rsa3408ChannelBandwidth,
+                Rsa3408FrequencySpan,
                 ResultsSavePath,
                 Smu200aOffsetsPath,
-                E8257dOffsetsPath);
+                E8257dOffsetsPath,
+                Rsa3408aOffsetsPath);
             }
 
         private void StartSweepButton_Click(object sender, RoutedEventArgs e)
@@ -186,9 +201,10 @@ namespace OutphasingSweepController
                         CurrentSample.MeasuredOutputPowerdBm,
                         CurrentSample.Frequency,
                         CurrentSample.InputPowerdBm,
-                        CurrentSample.GaindB,
-                        CurrentSample.PowerAddedEfficiency,
-                        CurrentSample.DrainEfficiency,
+                        CurrentSample.CalibratedGaindB,
+                        CurrentSample.CalibratedPowerAddedEfficiency,
+                        CurrentSample.CalibratedDrainEfficiency,
+                        CurrentSample.CalibratedPowerAddedEfficiency,
                         CurrentSample.MeasuredPowerDcWatts);
                     }
                 }
@@ -271,6 +287,12 @@ namespace OutphasingSweepController
                 return false;
                 }
 
+            if (Rsa3408aOffsetsPath == "")
+                {
+                LogQueue.Enqueue("No RSA3408A amplitude file chosen.");
+                return false;
+                }
+
             return true;
             }
 
@@ -284,15 +306,18 @@ namespace OutphasingSweepController
                 + ", Temperature (Celcius)"
                 + ", Corner" // 5
                 + ", Supply Voltage (V)"
-                + ", DC Power (W)"
-                + ", Output Power (dBm)"
-                + ", SMU200A Input Power Offset (dB)"
-                + ", E8257D Input Power Offset (dB)" // 10
-                + ", Drain Efficiency (%)"
-                + ", Power Added Efficiency (%)"
-                + ", Channel Power (dBm)"
+                + ", Measured DC Power (W)"
+                + ", Measured Output Power (dBm)"
+                + ", Calibrated Output Power (dBm)"
+                + ", SMU200A Input Power Offset (dB)" // 10
+                + ", E8257D Input Power Offset (dB)"
+                + ", RSA3408A Measurement Offset (dB)"
+                + ", Calibrated Drain Efficiency (%)"
+                + ", Calibrated Power Added Efficiency (%)"
+                + ", Measured Channel Power (dBm)" // 15
+                + ", Measurement Frequency Span (Hz)"
                 + ", Channel Measurement Bandwidth (Hz)"
-                + ", Gain (dB)"); // 15
+                + ", Calibrated Gain (dB)"); // 18
 
             var numberOfPoints = conf.MeasurementPoints;
             CurrentSweepProgress.CurrentPoint = 1;
@@ -309,8 +334,9 @@ namespace OutphasingSweepController
             // Spectrum Analyser
             rsa3408a.SetFrequencyCenter(conf.Frequencies[0]);
             rsa3408a.SetContinuousMode(continuousOn: false);
-            rsa3408a.SetFrequencySpan(conf.MeasurementChannelBandwidth);
-            
+            rsa3408a.SetFrequencySpan(conf.MeasurementFrequencySpan);
+            rsa3408a.SetChannelBandwidth(conf.MeasurementChannelBandwidth);
+
             // Set the power sources to an extremely low
             // power before starting the sweep
             // in case they default to some massive value
@@ -350,7 +376,8 @@ namespace OutphasingSweepController
                             CurrentSweepProgress.CurrentPoint += 1;
 
                             /// Do the measurement
-                            CurrentSample = TakeMeasurementSample(conf, voltage, frequency, inputPower, phase, offsetSmu200a, offsetE8257d);
+                            var offsetRsa = conf.Rsa3408aOffsets.GetOffset(frequency);
+                            CurrentSample = TakeMeasurementSample(conf, voltage, frequency, inputPower, phase, offsetSmu200a, offsetE8257d, offsetRsa);
                             SaveMeasurementSample(outputFile, CurrentSample);
                             }
                         }
@@ -368,12 +395,12 @@ namespace OutphasingSweepController
             double inputPower,
             double phase,
             double offsetSmu,
-            double offsetE8257d)
+            double offsetE8257d,
+            double offsetRsa)
             {
             var measuredDcPowerWatts = hp6624a.GetActiveChannelsPowerWatts();
             double channelPowerdBm = rsa3408a.ReadSpectrumChannelPower();
             double measuredPoutdBm = rsa3408a.GetMarkerYValue(markerNumber: 1);
-            //double channelPowerdBm = measuredPoutdBm;
             return new MeasurementSample(
                 frequency,
                 inputPower,
@@ -384,7 +411,9 @@ namespace OutphasingSweepController
                 measuredDcPowerWatts,
                 offsetSmu,
                 offsetE8257d,
+                offsetRsa,
                 measuredPoutdBm,
+                conf.MeasurementFrequencySpan,
                 conf.MeasurementChannelBandwidth,
                 channelPowerdBm);
             }
@@ -392,22 +421,25 @@ namespace OutphasingSweepController
         private void SaveMeasurementSample(StreamWriter outputFile, MeasurementSample sample)
             {
             outputFile.WriteLine(
-                "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}",
-                sample.Frequency,
+                "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}",
+                sample.Frequency, // 1
                 sample.InputPowerdBm,
                 sample.PhaseDeg,
                 sample.Temperature,
-                sample.Corner,
+                sample.Corner, // 5
                 sample.SupplyVoltage,
                 sample.MeasuredPowerDcWatts,
                 sample.MeasuredOutputPowerdBm,
-                sample.OffsetSmu200adB,
+                sample.CalibratedOutputPowerdBm,
+                sample.OffsetSmu200adB, // 10
                 sample.OffsetE8557ddB,
-                sample.DrainEfficiency,
-                sample.PowerAddedEfficiency,
-                sample.MeasuredChannelPowerdBm,
-                sample.RsaMeasurementBandwidth,
-                sample.GaindB);
+                sample.OffsetRsa3408AdB,
+                sample.CalibratedDrainEfficiency,
+                sample.CalibratedPowerAddedEfficiency,
+                sample.MeasuredChannelPowerdBm, // 15
+                sample.RsaFrequencySpan,
+                sample.RsaChannelBandwidth,
+                sample.CalibratedGaindB); // 18
             outputFile.Flush();
             }
 
@@ -449,13 +481,19 @@ namespace OutphasingSweepController
         private void LoadSmu200aOffsetsButton_Click(object sender, RoutedEventArgs e)
             {
             Smu200aOffsetsPath = GetOffsetsPath("SMU200A");
-            Smu200aOffetsFilePathTextBlock.Text = Smu200aOffsetsPath;
+            Smu200aOffsetsFilePathTextBlock.Text = Smu200aOffsetsPath;
             }
 
         private void LoadE8257dOffsetsButton_Click(object sender, RoutedEventArgs e)
             {
             E8257dOffsetsPath = GetOffsetsPath("E8257D");
-            E8257dOffetsFilePathTextBlock.Text = E8257dOffsetsPath;
+            E8257dOffsetsFilePathTextBlock.Text = E8257dOffsetsPath;
+            }
+
+        private void LoadRsa3408adOffsetsButton_Click(object sender, RoutedEventArgs e)
+            {
+            Rsa3408aOffsetsPath = GetOffsetsPath("RSA3408A");
+            Rsa3408aOffsetsFilePathTextBlock.Text = Rsa3408aOffsetsPath;
             }
 
         private string GetOffsetsPath(string deviceName)
