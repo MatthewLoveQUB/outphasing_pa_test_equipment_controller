@@ -344,7 +344,9 @@ namespace OutphasingSweepController
                 + ", Measured Channel Power (dBm)" // 15
                 + ", Measurement Frequency Span (Hz)"
                 + ", Channel Measurement Bandwidth (Hz)"
-                + ", Calibrated Gain (dB)"); // 18
+                + ", Calibrated Gain (dB)"
+                + ", PA DC Current 1 {A}"
+                + ", PA DC Current 2 (A)"); // 20
 
             var numberOfPoints = conf.MeasurementPoints;
             CurrentSweepProgress.CurrentPoint = 1;
@@ -457,7 +459,9 @@ namespace OutphasingSweepController
                 measuredPoutdBm,
                 conf.MeasurementFrequencySpan,
                 conf.MeasurementChannelBandwidth,
-                channelPowerdBm);
+                channelPowerdBm,
+                hp6624a.GetChannelCurrentOutput(2),
+                hp6624a.GetChannelCurrentOutput(3));
             }
 
         private void SaveMeasurementSample(
@@ -482,7 +486,9 @@ namespace OutphasingSweepController
                 + $", {sample.MeasuredChannelPowerdBm}" // 15
                 + $", {sample.RsaFrequencySpan}"
                 + $", {sample.RsaChannelBandwidth}"
-                + $", {sample.CalibratedGaindB}"; // 18
+                + $", {sample.CalibratedGaindB}"
+                + $", {sample.DcCurrent1}"
+                + $", {sample.DcCurrent2}";
             outputFile.WriteLine(outputLine);
             outputFile.Flush();
             }
