@@ -66,7 +66,7 @@ namespace OutphasingSweepController
             PopulatePsuCheckboxList();
             SetUpVisaConnections();
             SetUpDispatcherTimer();
-            UpdateEstimatedSimulationTime();
+            UpdateEstimatedMeasurementTime();
             }
 
         private void PopulatePsuCheckboxList()
