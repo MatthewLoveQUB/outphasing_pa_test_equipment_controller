@@ -64,8 +64,9 @@ namespace OutphasingSweepController
             InitializeComponent();
             this.DataContext = this;
             PopulatePsuCheckboxList();
-            SetUpVisaConnections();
+            //SetUpVisaConnections();
             SetUpDispatcherTimer();
+            UpdateEstimatedSimulationTime();
             }
 
         private void PopulatePsuCheckboxList()
@@ -557,8 +558,8 @@ namespace OutphasingSweepController
             var estimatedSimulationTime = TimeSpan.FromSeconds(nPoints);
             EstimatedSimulationTimeTextBlock.Text = 
                 $"Estimated Simulation Time = "
-                + $"{estimatedSimulationTime.Days} days"
-                + $"{estimatedSimulationTime.Hours} hours"
+                + $"{estimatedSimulationTime.Days} days "
+                + $"{estimatedSimulationTime.Hours} hours "
                 + $"{estimatedSimulationTime.Minutes} minutes";
             }
 

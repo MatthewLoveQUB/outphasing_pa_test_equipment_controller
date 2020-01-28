@@ -29,6 +29,12 @@ namespace OutphasingSweepController
         public List<Double> Values { get
                 {
                 var values = new List<Double>();
+                if(NSteps == 1)
+                    {
+                    values.Add(Start);
+                    return values;
+                    }
+
                 for (var x = Start; x <= Stop; x += Step)
                     {
                     values.Add(x);
@@ -53,6 +59,17 @@ namespace OutphasingSweepController
 
         private void UpdateFields()
             {
+            if (NSteps == 1)
+                {
+                StopTextBox.IsReadOnly = true;
+                StopTextBox.Background = Brushes.LightGray;
+                }
+            else
+                {
+                StopTextBox.IsReadOnly = false;
+                StopTextBox.Background = Brushes.Transparent;
+                }
+
             Step = (Stop - Start) / ((double)NSteps - 1.0);
             StepTextBox.Text = Step.ToString();
             }
