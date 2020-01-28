@@ -124,6 +124,9 @@ namespace OutphasingSweepController
             rsa3408a = new TektronixRSA3408A(rsaAddress);
             smu200a = new RS_SMU200A(smaAddress);
             e8257d = new KeysightE8257D(e82Address);
+            rsa3408a.ResetDevice();
+            smu200a.ResetDevice();
+            e8257d.ResetDevice();
             }
 
         private string GetVisaAddress(string deviceName)
@@ -363,6 +366,9 @@ namespace OutphasingSweepController
             MeasurementStopWatch.Restart();
 
             // Pre-setup
+            var tasksSetFrequency = new Task[3];
+            var tasksSetPower = new Task[2];
+
             // DC supply
             hp6624a.SetAllChannelVoltagesToZero();
             hp6624a.SetChannelOutputStatesStrong();
@@ -394,23 +400,43 @@ namespace OutphasingSweepController
                 foreach (var frequency in conf.Frequencies)
                     {
                     // Set the frequency
-                    rsa3408a.SetFrequencyCenter(frequency);
-                    rsa3408a.SetMarkerXValue(
-                        markerNumber: 1, xValue: frequency);
-                    smu200a.SetSourceFrequency(frequency);
-                    e8257d.SetSourceFrequency(frequency);
+                    tasksSetFrequency[0] = Task.Factory.StartNew(() =>
+                    {
+                        rsa3408a.SetFrequencyCenter(frequency);
+                        rsa3408a.SetMarkerXValue(
+                            markerNumber: 1, xValue: frequency);
+                    });
+                    tasksSetFrequency[1] = Task.Factory.StartNew(() =>
+                    {
+                        smu200a.SetSourceFrequency(frequency);
+                    });
+                    tasksSetFrequency[2] = Task.Factory.StartNew(() =>
+                    {
+                        e8257d.SetSourceFrequency(frequency);
+                    });
+                    Task.WaitAll(tasksSetFrequency);
 
                     foreach (var inputPower in conf.InputPowers)
                         {
-                        // Get the loss offset for this frequency
-                        var offsetSmu200a = 
-                            conf.Smu200aOffsets.GetOffset(frequency);
-                        var offsetE8257d = 
-                            conf.E8257dOffsets.GetOffset(frequency);
-
+                        double offsetSmu200a = -1;
+                        double offsetE8257d = -1;
                         // Set the power
-                        smu200a.SetPowerLevel(inputPower, offsetSmu200a);
-                        e8257d.SetPowerLevel(inputPower, offsetE8257d);
+                        tasksSetPower[0] = 
+                            Task.Factory.StartNew(()=>
+                            {
+                                offsetSmu200a =
+                                    conf.Smu200aOffsets.GetOffset(frequency);
+                                smu200a.SetPowerLevel(
+                                    inputPower, offsetSmu200a);
+                            });
+                        tasksSetPower[1] =
+                            Task.Factory.StartNew(() =>
+                            {
+                                offsetE8257d =
+                                    conf.E8257dOffsets.GetOffset(frequency);
+                                e8257d.SetPowerLevel(inputPower, offsetE8257d);
+                            });
+                        Task.WaitAll(tasksSetPower);                        
 
                         foreach (var phase in conf.Phases)
                             {
@@ -450,21 +476,21 @@ namespace OutphasingSweepController
             double offsetE8257d,
             double offsetRsa)
             {
-            var tasks = new Task[2];
+            var readTasks = new Task[2];
             double channelPowerdBm = -1;
             double measuredPoutdBm = -1;
             HP6624A.OutphasingDcMeasurements dcResults = null;
-            tasks[0] = Task.Factory.StartNew(() =>
+            readTasks[0] = Task.Factory.StartNew(() =>
             {
                channelPowerdBm = rsa3408a.ReadSpectrumChannelPower();
                measuredPoutdBm = rsa3408a.GetMarkerYValue(markerNumber: 1);
             });
-            tasks[1] = Task.Factory.StartNew(() => 
+            readTasks[1] = Task.Factory.StartNew(() => 
             {
-               dcResults = 
-               hp6624a.OutphasingOptimisedMeasurement(supplyVoltage);
+                dcResults = 
+                    hp6624a.OutphasingOptimisedMeasurement(supplyVoltage);
             });
-            Task.WaitAll(tasks);
+            Task.WaitAll(readTasks);
                         
             return new MeasurementSample(
                 frequency,

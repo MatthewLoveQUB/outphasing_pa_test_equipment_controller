@@ -41,6 +41,11 @@ namespace QubVisa
                     Convert.ToInt32(Device.ReadString("*OPC?")));
             }
 
+        public void ResetDevice()
+            {
+            Device.connection.RawIO.Write("*RST");
+            }
+
         // Calculate Commands
         public double GetMarkerYValue(int markerNumber)
             {

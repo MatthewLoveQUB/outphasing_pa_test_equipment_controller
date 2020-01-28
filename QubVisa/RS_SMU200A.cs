@@ -25,6 +25,11 @@ namespace QubVisa
             return Device.ReadString("*IDN?");
             }
 
+        public void ResetDevice()
+            {
+            Device.connection.RawIO.Write("*RST");
+            }
+
         // Calibration Commands
         public void RunAllCalibrations()
             {
