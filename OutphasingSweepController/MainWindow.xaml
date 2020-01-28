@@ -13,6 +13,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="1.5*" />
+            <RowDefinition Height="20" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -20,11 +21,11 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid
+            x:Name="ControllerGrid"
             Grid.Row="1"
             Grid.Column="0"
             Grid.ColumnSpan="2">
             <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
@@ -53,9 +54,9 @@
                 Grid.Column="0"
                 Grid.ColumnSpan="5"
                 LostFocus="SweepSettingsControl_LostFocus"
-                NSteps="100"
+                NSteps="31"
                 Start="3e9"
-                Stop="7e9"
+                Stop="6e9"
                 SweepDescriptionText="Frequency (GHz)" />
             <local:SweepParameterInput
                 x:Name="PowerSweepSettingsControl"
@@ -63,7 +64,7 @@
                 Grid.Column="0"
                 Grid.ColumnSpan="5"
                 LostFocus="SweepSettingsControl_LostFocus"
-                NSteps="100"
+                NSteps="18"
                 Start="-20"
                 Stop="-3"
                 SweepDescriptionText="Power (dBm)" />
@@ -73,7 +74,7 @@
                 Grid.Column="0"
                 Grid.ColumnSpan="5"
                 LostFocus="SweepSettingsControl_LostFocus"
-                NSteps="100"
+                NSteps="121"
                 Start="0"
                 Stop="360"
                 SweepDescriptionText="Phase (degrees)" />
@@ -297,13 +298,24 @@
                 Grid.Column="3"
                 Grid.ColumnSpan="2"
                 Text="{Binding Rsa3408ChannelBandwidth, Mode=TwoWay, StringFormat=g2}" />
+        </Grid>
+        <Grid Grid.Row="2" Grid.ColumnSpan="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
             <!--  Start measurement button  -->
             <Button
                 x:Name="StartSweepButton"
-                Grid.Row="14"
-                Grid.ColumnSpan="5"
+                Grid.Column="0"
                 Click="StartSweepButton_Click"
                 Content="Begin Sweep" />
+            <Button
+                x:Name="StopSweepButton"
+                Grid.Column="1"
+                Click="StopSweepButton_Click"
+                Content="StopSweep"
+                IsEnabled="False" />
         </Grid>
         <Grid Grid.RowSpan="2" Grid.Column="2">
             <Grid.RowDefinitions>

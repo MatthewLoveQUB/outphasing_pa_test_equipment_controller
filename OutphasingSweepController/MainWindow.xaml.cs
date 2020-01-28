@@ -58,13 +58,14 @@ namespace OutphasingSweepController
         public double EstimatedTimePerSample { get; set; } = 0.32;
         public System.Diagnostics.Stopwatch MeasurementStopWatch = 
             new System.Diagnostics.Stopwatch();
+        public Task Measurement;
 
         public MainWindow()
             {
             InitializeComponent();
             this.DataContext = this;
             PopulatePsuCheckboxList();
-            SetUpVisaConnections();
+            //SetUpVisaConnections();
             SetUpDispatcherTimer();
             UpdateEstimatedMeasurementTime();
             }
@@ -172,7 +173,11 @@ namespace OutphasingSweepController
             if (!MeasurementVariablesCheck()) { return; }
 
             var measurementSettings = ParseMeasurementConfiguration();
-            Task.Factory.StartNew(() =>
+
+            StartSweepButton.IsEnabled = false;
+            StopSweepButton.IsEnabled = true;
+            
+            Measurement = Task.Factory.StartNew(() =>
             {
                 RunSweep(measurementSettings);
             });
@@ -319,6 +324,7 @@ namespace OutphasingSweepController
 
         private void RunSweep(MeasurementSweepConfiguration conf)
             {
+            ControllerGrid.IsEnabled = false;
             var outputFile = new StreamWriter(conf.OutputFilePath);
             var headerLine =
                 "Frequency (Hz)" // 1
@@ -392,8 +398,6 @@ namespace OutphasingSweepController
                 SetPsuVoltageStepped(voltage);
                 foreach (var frequency in conf.Frequencies)
                     {
-                    outputFile.Flush();
-
                     // Set the frequency
                     tasksSetFrequency[0] = Task.Factory.StartNew(() =>
                     {
@@ -452,6 +456,12 @@ namespace OutphasingSweepController
                                     offsetE8257d, 
                                     offsetRsa);
                             SaveMeasurementSample(outputFile, CurrentSample);
+
+                            // End the measurement if signalled
+                            if (!CurrentSweepProgress.Running)
+                                {
+                                return;
+                                }
                             }
                         }
                     }
@@ -459,6 +469,7 @@ namespace OutphasingSweepController
             outputFile.Close();
             MeasurementStopWatch.Stop();
             MeasurementStopWatch.Reset();
+            ControllerGrid.IsEnabled = true;
             }
 
         private MeasurementSample TakeMeasurementSample(
@@ -539,6 +550,7 @@ namespace OutphasingSweepController
                 }
 
             outputFile.WriteLine(outputLine);
+            outputFile.Flush();
             }
 
         private void SweepSettingsControl_LostFocus(
@@ -612,6 +624,18 @@ namespace OutphasingSweepController
                 deviceName);
             var dialogSuccess = openFileDialog.ShowDialog() == true;
             return dialogSuccess ? openFileDialog.FileName : "";
+            }
+
+        private void StopSweepButton_Click(object sender, RoutedEventArgs e)
+            {
+            if ((Measurement != null) 
+                && (Measurement.Status == TaskStatus.Running))
+                {
+                Measurement.Dispose();
+                CurrentSweepProgress.Running = false;
+                StopSweepButton.IsEnabled = false;
+                StartSweepButton.IsEnabled = true;
+                }
             }
         }
     }
