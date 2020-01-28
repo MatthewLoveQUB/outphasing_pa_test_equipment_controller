@@ -113,12 +113,11 @@
             <TextBlock
                 Grid.Row="5"
                 Grid.Column="0"
-                Grid.ColumnSpan="2"
-                Text="Nominal Supply Voltage (V) (+/- 10%)" />
+                Text="Supply Voltage (V)" />
             <TextBox
                 x:Name="VoltageSettingsTextBox"
                 Grid.Row="5"
-                Grid.Column="2"
+                Grid.Column="1"
                 Grid.ColumnSpan="1"
                 Margin="1"
                 HorizontalAlignment="Stretch"
@@ -126,6 +125,24 @@
                 HorizontalContentAlignment="Left"
                 VerticalContentAlignment="Center"
                 Text="{Binding PsuNominalVoltage, Mode=TwoWay}" />
+            <Grid Grid.Row="5" Grid.Column="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <CheckBox
+                    Grid.Column="0"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Content="+10%"
+                    IsChecked="{Binding PsuPlus10Percent}" />
+                <CheckBox
+                    Grid.Column="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Content="-10%"
+                    IsChecked="{Binding PsuMinus10Percent}" />
+            </Grid>
             <TextBlock
                 Grid.Row="5"
                 Grid.Column="3"

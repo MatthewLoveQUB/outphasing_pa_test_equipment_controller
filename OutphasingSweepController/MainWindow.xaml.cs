@@ -32,6 +32,9 @@ namespace OutphasingSweepController
         public double PsuCurrentLimit { get; set; } = 0.3;
         public int PsuRampUpStepTimeMilliseconds { get; set; } = 100;
         public double RampVoltageStep { get; set; } = 0.1;
+        public bool PsuPlus10Percent { get; set; } = true;
+        public bool PsuMinus10Percent { get; set; } = true;
+
         // Spectrum Analyser
         TektronixRSA3408A rsa3408a;
         public double Rsa3408ChannelBandwidth { get; set; } = 25e3;
@@ -65,7 +68,7 @@ namespace OutphasingSweepController
             InitializeComponent();
             this.DataContext = this;
             PopulatePsuCheckboxList();
-            SetUpVisaConnections();
+            //SetUpVisaConnections();
             SetUpDispatcherTimer();
             UpdateEstimatedMeasurementTime();
             }
@@ -149,10 +152,16 @@ namespace OutphasingSweepController
             var frequencySettings = FrequencySweepSettingsControl.Values;
             var powerSettings = PowerSweepSettingsControl.Values;
             var phaseSettings = PhaseSweepSettingsControl.Values;
-            var voltages = new List<Double>() {
-                0.9 * PsuNominalVoltage,
-                PsuNominalVoltage,
-                1.1 * PsuNominalVoltage };
+            var voltages = new List<Double>() { PsuNominalVoltage };
+            if (PsuPlus10Percent)
+                {
+                voltages.Add(1.1 * PsuNominalVoltage);
+                }
+            if (PsuMinus10Percent)
+                {
+                voltages.Add(0.9 * PsuNominalVoltage);
+                }
+
             return new MeasurementSweepConfiguration(
                 frequencySettings,
                 powerSettings,
