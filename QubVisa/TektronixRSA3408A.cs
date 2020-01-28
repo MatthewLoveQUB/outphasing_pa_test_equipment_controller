@@ -36,7 +36,9 @@ namespace QubVisa
 
         public bool OperationComplete()
             {
-            return Convert.ToBoolean(Convert.ToInt32(Device.ReadString("*OPC?")));
+            return 
+                Convert.ToBoolean(
+                    Convert.ToInt32(Device.ReadString("*OPC?")));
             }
 
         // Calculate Commands
@@ -54,7 +56,8 @@ namespace QubVisa
 
         public void SetMarkerXValue(int markerNumber, double xValue)
             {
-            var command = string.Format(":CALC{0}:MARK:X {1}", markerNumber, xValue);
+            var command = 
+                string.Format(":CALC{0}:MARK:X {1}", markerNumber, xValue);
             Device.connection.RawIO.Write(command);
             }
 

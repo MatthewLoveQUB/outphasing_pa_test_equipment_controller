@@ -30,7 +30,7 @@ namespace OutphasingSweepController
         HP6624A hp6624a;
         public double PsuNominalVoltage { get; set; } = 2.2;
         public double PsuCurrentLimit { get; set; } = 0.3;
-        public int PsuRampUpStepTime { get; set; } = 10;
+        public int PsuRampUpStepTimeMilliseconds { get; set; } = 100;
         public double RampVoltageStep { get; set; } = 0.1;
         // Spectrum Analyser
         TektronixRSA3408A rsa3408a;
@@ -136,8 +136,7 @@ namespace OutphasingSweepController
 
         private void AddNewLogLine(string line)                                
             {
-            SweepLogTextBox.Text = 
-                string.Format("{0}{1}\n", SweepLogTextBox.Text, line);                              
+            SweepLogTextBox.Text = $"{SweepLogTextBox.Text}{line}\n";
             }
 
         private MeasurementSweepConfiguration ParseMeasurementConfiguration()
@@ -250,11 +249,9 @@ namespace OutphasingSweepController
             // whether we're ramping up or down
             var step = Math.Abs(RampVoltageStep);
 
-            int numChannels = PsuChannelEnableCheckboxes.Count;
-
             // Read the current voltage
             double currentVoltage = 0;
-            for (int i = 0; i < numChannels; i++)
+            for (int i = 0; i < HP6624A.NumChannels; i++)
                 {
                 int channelNumber = i + 1;
                 bool channelEnabled = hp6624a.ChannelStates[i];
@@ -287,7 +284,7 @@ namespace OutphasingSweepController
                 {
                 intermediateVoltage += step;
                 hp6624a.SetActiveChannelsVoltages(intermediateVoltage);
-                Thread.Sleep(PsuRampUpStepTime);
+                Thread.Sleep(PsuRampUpStepTimeMilliseconds);
                 }
 
             // In case we overshot the voltage then 

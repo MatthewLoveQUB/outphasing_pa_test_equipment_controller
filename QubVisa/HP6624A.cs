@@ -35,7 +35,7 @@ namespace QubVisa
         private void SendC4Command(string header, int channel, bool data)
         {
             var state = data ? "1" : "0";
-            var commandMessage = string.Format("{0} {1},{2}", header, channel, state);
+            var commandMessage = $"{header} {channel},{state}";
             Device.connection.RawIO.Write(commandMessage);
         }
 
@@ -179,8 +179,10 @@ namespace QubVisa
                 bool channelActive = ChannelStates[i];
                 if (channelActive)
                     {
-                    var channelVoltage = GetChannelVoltageOutput(channelNumber);
-                    var channelCurrent = GetChannelCurrentOutput(channelNumber);
+                    var channelVoltage = 
+                        GetChannelVoltageOutput(channelNumber);
+                    var channelCurrent 
+                        = GetChannelCurrentOutput(channelNumber);
                     var channelPower = channelCurrent * channelVoltage;
                     power += channelPower;
                     }
@@ -203,7 +205,8 @@ namespace QubVisa
 
         // 1 Assume the voltage is correct
         // 2 Return the recorded currents too
-        public OutphasingDcMeasurements OutphasingOptimisedMeasurement(double voltage)
+        public OutphasingDcMeasurements 
+            OutphasingOptimisedMeasurement(double voltage)
             {
             var power = 0.0;
             var currents = new List<double>();
