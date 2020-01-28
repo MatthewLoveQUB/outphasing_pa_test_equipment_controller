@@ -84,7 +84,7 @@ namespace OutphasingSweepController
             {
             dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
             dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
-            dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 2);
             dispatcherTimer.Start();
             }
 
@@ -181,56 +181,46 @@ namespace OutphasingSweepController
 
             if (CurrentSweepProgress.Running)
                 {
-                var msg = string.Format(
-                    "On task {0} of {1}", 
-                    CurrentSweepProgress.CurrentPoint, 
-                    CurrentSweepProgress.NumberOfPoints);
-                AddNewLogLine(msg);
-
+                var curPt = CurrentSweepProgress.CurrentPoint;
+                var nPts = CurrentSweepProgress.NumberOfPoints;
                 var timeElapsed = MeasurementStopWatch.Elapsed;
-                msg = string.Format(
-                    "Elapsed Time: {0} days {1} hours {2} minutes",
-                    timeElapsed.Days,
-                    timeElapsed.Hours,
-                    timeElapsed.Minutes);
-                AddNewLogLine(msg);
-
-                // Estimate how much time is left
-                var pointsRemaining = 
-                    CurrentSweepProgress.NumberOfPoints 
-                    - CurrentSweepProgress.CurrentPoint;
-                var ptsRemaining = (double)pointsRemaining;
-                var curPt = (double)CurrentSweepProgress.CurrentPoint;
-                var timeScaler = (long)(ptsRemaining / curPt);
+                var ptsRemaining = nPts - curPt;
+                var timeScaler = (double)ptsRemaining / (double)curPt;
                 var estimatedTime = 
-                    TimeSpan.FromTicks(timeElapsed.Ticks * timeScaler);
-                msg = string.Format(
-                    "Est. Remaining Time: {0} days {1} hours {2} minutes",
-                    estimatedTime.Days,
-                    estimatedTime.Hours,
-                    estimatedTime.Minutes);
-                AddNewLogLine(msg);
-
-                // Print the sample rate
-                var secondsElapsed = (double)timeElapsed.Seconds;
-                var secondsPerSample = curPt / secondsElapsed;
-                msg = string.Format(
-                    "Time/sample = {0} seconds", secondsPerSample);
-                AddNewLogLine(msg);
+                    TimeSpan.FromTicks(timeElapsed.Ticks * (long)timeScaler);
+                var samplesPerSecond = curPt / (double)timeElapsed.Seconds;
+                var secondsPerSample = 1 / samplesPerSecond;
 
                 if (CurrentSample != null)
                     {
-                    LastSampleTextBlock.Text =
-                        string.Format(Constants.LastSampleTemplate,
-                        CurrentSample.MeasuredOutputPowerdBm,
-                        CurrentSample.Frequency,
-                        CurrentSample.InputPowerdBm,
-                        CurrentSample.CalibratedGaindB,
-                        CurrentSample.CalibratedPowerAddedEfficiency,
-                        CurrentSample.CalibratedDrainEfficiency,
-                        CurrentSample.CalibratedPowerAddedEfficiency,
-                        CurrentSample.MeasuredPowerDcWatts);
+                    LastSampleTextBlock.Text = 
+                        $@"Pout: {CurrentSample.CalibratedOutputPowerdBm} dBm\n"
+                        + $"Frequency: {CurrentSample.Frequency} Hz\n"
+                        + $"Pin: {CurrentSample.InputPowerdBm} dBm\n"
+                        + $"Gain: {CurrentSample.CalibratedGaindB} dB\n"
+                        + $"PAE: {CurrentSample.CalibratedPowerAddedEfficiency} %\n"
+                        + $"Drain Efficiency: {CurrentSample.CalibratedDrainEfficiency} %\n"
+                        + $"DC Power: {CurrentSample.MeasuredPowerDcWatts} W\n";
                     }
+
+                // Print current point
+                var msg = $"On task {curPt} of {nPts}";
+                AddNewLogLine(msg);
+                // Print elapsed time
+                msg = "Elapsed Time: "
+                    + $"{timeElapsed.Days} days "
+                    + $"{timeElapsed.Hours} hours "
+                    + $"{timeElapsed.Minutes} minutes";
+                AddNewLogLine(msg);
+                // Print sample rate
+                AddNewLogLine($"Sample Rate = {samplesPerSecond} S/s");
+                AddNewLogLine($"Sample Time = {secondsPerSample} s");
+                // Print estimated remaining time
+                msg = "Est. Remaining Time: "
+                    + $"{estimatedTime.Days} days "
+                    + $"{estimatedTime.Hours} hours "
+                    + $"{estimatedTime.Minutes} minutes";
+                AddNewLogLine(msg);
                 }
 
             // Empty the log queue
