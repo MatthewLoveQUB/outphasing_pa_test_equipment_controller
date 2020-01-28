@@ -209,6 +209,7 @@ namespace OutphasingSweepController
                         + $"Measured Channel Power {CurrentSample.MeasuredChannelPowerdBm:F2} dBm\n"
                         + $"Frequency: {CurrentSample.Frequency:G2} Hz\n"
                         + $"Pin: {CurrentSample.InputPowerdBm:F2} dBm\n"
+                        + $"Supply Voltage: {CurrentSample.SupplyVoltage:F2} V\n"
                         + $"Calibrated Gain: {CurrentSample.CalibratedGaindB:F2} dB\n"
                         + $"Calibrated PAE: {CurrentSample.CalibratedPowerAddedEfficiency:F2} %\n"
                         + $"Calibrated Drain Efficiency: {CurrentSample.CalibratedDrainEfficiency:F2} %\n"
@@ -369,6 +370,9 @@ namespace OutphasingSweepController
             // Pre-setup
             var tasksSetFrequency = new Task[3];
             var tasksSetPower = new Task[2];
+            double offsetSmu200a = -1;
+            double offsetE8257d = -1;
+            double offsetRsa = -1;
 
             // DC supply
             hp6624a.SetAllChannelVoltagesToZero();
@@ -384,9 +388,11 @@ namespace OutphasingSweepController
             rsa3408a.SetChannelBandwidth(conf.MeasurementChannelBandwidth);
             rsa3408a.StartSignalAcquisition();
 
-            rsa3408a.SetMarkerState(markerNumber: 1, view: 1, on: true);
-            rsa3408a.SetMarkerXToPositionMode(1,1);
-
+            //rsa3408a.SetMarkerState(markerNumber: 1, view: 1, on: true);
+            //rsa3408a.SetMarkerXToPositionMode(1,1);
+            // When the frequency changes, the marker should automatially
+            // track to the new centre frequency
+            //rsa3408a.SetMarkerXValue(markerNumber: 1, view: 1, xValue: conf.Frequencies[0]);
             // Set the power sources to an extremely low
             // power before starting the sweep
             // in case they default to some massive value
@@ -402,43 +408,40 @@ namespace OutphasingSweepController
             foreach (var voltage in conf.Voltages)
                 {
                 SetPsuVoltageStepped(voltage);
+
+                
+
                 foreach (var frequency in conf.Frequencies)
                     {
-                    // Set the frequency
                     tasksSetFrequency[0] = Task.Factory.StartNew(() =>
                     {
                         rsa3408a.SetFrequencyCenter(frequency);
-                        rsa3408a.SetMarkerXValue(
-                            markerNumber: 1, view: 1, xValue: frequency);
+                        offsetRsa = conf.Rsa3408aOffsets.GetOffset(frequency);
                     });
                     tasksSetFrequency[1] = Task.Factory.StartNew(() =>
                     {
                         smu200a.SetSourceFrequency(frequency);
+                        offsetSmu200a = conf.Smu200aOffsets.GetOffset(frequency);
                     });
                     tasksSetFrequency[2] = Task.Factory.StartNew(() =>
                     {
                         e8257d.SetSourceFrequency(frequency);
+                        offsetE8257d = conf.E8257dOffsets.GetOffset(frequency);
                     });
                     Task.WaitAll(tasksSetFrequency);
 
                     foreach (var inputPower in conf.InputPowers)
                         {
-                        double offsetSmu200a = -1;
-                        double offsetE8257d = -1;
+                        outputFile.Flush();
                         // Set the power
                         tasksSetPower[0] = 
                             Task.Factory.StartNew(()=>
                             {
-                                offsetSmu200a =
-                                    conf.Smu200aOffsets.GetOffset(frequency);
-                                smu200a.SetPowerLevel(
-                                    inputPower, offsetSmu200a);
+                                smu200a.SetPowerLevel(inputPower, offsetSmu200a);
                             });
                         tasksSetPower[1] =
                             Task.Factory.StartNew(() =>
                             {
-                                offsetE8257d =
-                                    conf.E8257dOffsets.GetOffset(frequency);
                                 e8257d.SetPowerLevel(inputPower, offsetE8257d);
                             });
                         Task.WaitAll(tasksSetPower);                        
@@ -448,9 +451,6 @@ namespace OutphasingSweepController
                             smu200a.SetSourceDeltaPhase(phase);
                             CurrentSweepProgress.CurrentPoint += 1;
 
-                            /// Do the measurement
-                            var offsetRsa = 
-                                conf.Rsa3408aOffsets.GetOffset(frequency);
                             CurrentSample = 
                                 TakeMeasurementSample(
                                     conf, 
@@ -466,6 +466,7 @@ namespace OutphasingSweepController
                             // End the measurement if signalled
                             if (!CurrentSweepProgress.Running)
                                 {
+                                outputFile.Flush();
                                 outputFile.Close();
                                 smu200a.SetRfOutputState(on: false);
                                 e8257d.SetRfOutputState(on: false);
@@ -496,14 +497,15 @@ namespace OutphasingSweepController
             HP6624A.OutphasingDcMeasurements dcResults = null;
             readTasks[0] = Task.Factory.StartNew(() =>
             {
-                dcResults =
-                    hp6624a.OutphasingOptimisedMeasurement(supplyVoltage);
+                channelPowerdBm = rsa3408a.ReadSpectrumChannelPower();
+                measuredPoutdBm = channelPowerdBm;// rsa3408a.GetMarkerYValue(markerNumber: 1, view: 1);
             });
             readTasks[1] = Task.Factory.StartNew(() =>
             {
-               channelPowerdBm = rsa3408a.ReadSpectrumChannelPower();
-               measuredPoutdBm = rsa3408a.GetMarkerYValue(markerNumber: 1, view: 1);
+                dcResults =
+                    hp6624a.OutphasingOptimisedMeasurement(supplyVoltage);
             });
+            
             Task.WaitAll(readTasks);
                         
             return new MeasurementSample(
@@ -558,7 +560,6 @@ namespace OutphasingSweepController
                 }
 
             outputFile.WriteLine(outputLine);
-            outputFile.Flush();
             }
 
         private void SweepSettingsControl_LostFocus(
@@ -636,13 +637,9 @@ namespace OutphasingSweepController
 
         private void StopSweepButton_Click(object sender, RoutedEventArgs e)
             {
-            if ((Measurement != null) 
-                && (Measurement.Status == TaskStatus.Running))
-                {
-                CurrentSweepProgress.Running = false;
-                StopSweepButton.IsEnabled = false;
-                StartSweepButton.IsEnabled = true;
-                }
+            CurrentSweepProgress.Running = false;
+            StopSweepButton.IsEnabled = false;
+            StartSweepButton.IsEnabled = true;
             ControllerGrid.IsEnabled = true;
             }
         }
