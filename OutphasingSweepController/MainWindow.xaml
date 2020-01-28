@@ -68,16 +68,27 @@
                 Start="-20"
                 Stop="-3"
                 SweepDescriptionText="Power (dBm)" />
-            <local:SweepParameterInput
-                x:Name="PhaseSweepSettingsControl"
-                Grid.Row="2"
-                Grid.Column="0"
-                Grid.ColumnSpan="5"
-                LostFocus="SweepSettingsControl_LostFocus"
-                NSteps="181"
-                Start="0"
-                Stop="180"
-                SweepDescriptionText="Phase (degrees)" />
+            <Grid Grid.Row="2" Grid.ColumnSpan="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="5*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <local:SweepParameterInput
+                    x:Name="PhaseSweepSettingsControl"
+                    Grid.Column="0"
+                    LostFocus="SweepSettingsControl_LostFocus"
+                    NSteps="181"
+                    Start="0"
+                    Stop="180"
+                    SweepDescriptionText="Phase (degrees)" />
+                <CheckBox
+                    Grid.Column="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Content="+/- Search"
+                    IsChecked="{Binding PeakTroughSearch}" />
+            </Grid>
+
             <TextBlock
                 Grid.Row="3"
                 Grid.Column="0"
