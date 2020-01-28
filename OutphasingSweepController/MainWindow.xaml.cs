@@ -69,7 +69,7 @@ namespace OutphasingSweepController
             InitializeComponent();
             this.DataContext = this;
             PopulatePsuCheckboxList();
-            //SetUpVisaConnections();
+            SetUpVisaConnections();
             SetUpDispatcherTimer();
             UpdateEstimatedMeasurementTime();
             }
@@ -525,7 +525,7 @@ namespace OutphasingSweepController
                 {
                 smu200a.SetSourceDeltaPhase(phase);
                 CurrentSweepProgress.CurrentPoint += 1;
-                TakeMeasurementSample(
+                var sample = TakeMeasurementSample(
                     conf,
                     supplyVoltage,
                     frequency,
@@ -534,18 +534,20 @@ namespace OutphasingSweepController
                     offsetSmu200a,
                     offsetE8257d,
                     offsetRsa);
+                samples.Add(sample);
                 }
 
             var orderedSamples = samples.OrderByDescending(
-                sample => sample.MeasuredChannelPowerdBm);
+                sample => sample.MeasuredChannelPowerdBm).ToList();
 
             // Do the peak sweep
                 {
                 double phaseStep = 1.0;
-                const double exitThreshold = 1.0;
+                const double exitThreshold = 0.5;
                 var bestSample = orderedSamples.First();
 
                 // Take a new sample next to it
+                smu200a.SetSourceDeltaPhase(bestSample.PhaseDeg + phaseStep);
                 var newSample = TakeMeasurementSample(
                     conf,
                     supplyVoltage,
@@ -605,10 +607,11 @@ namespace OutphasingSweepController
             // Do the minima sweep
                 {
                 double phaseStep = 0.1;
-                const double exitThreshold = 1.0;
+                const double exitThreshold = 0.5;
                 var bestSample = orderedSamples.Last();
 
                 // Take a new sample next to it
+                smu200a.SetSourceDeltaPhase(bestSample.PhaseDeg + phaseStep);
                 var newSample = TakeMeasurementSample(
                     conf,
                     supplyVoltage,
@@ -637,10 +640,8 @@ namespace OutphasingSweepController
                 var currentPhase = bestSample.PhaseDeg;
                 // Keep looping until we've moved exitThreshold dB
                 // away from the best found value
-                while (
-                    (newSample.MeasuredChannelPowerdBm
-                    - bestSample.MeasuredChannelPowerdBm)
-                    < exitThreshold)
+                while ((Math.Abs(newSample.MeasuredChannelPowerdBm - bestSample.MeasuredChannelPowerdBm)) < exitThreshold
+                    || (newSample.MeasuredChannelPowerdBm < bestSample.MeasuredChannelPowerdBm))
                     {
                     currentPhase += phaseStep;
                     smu200a.SetSourceDeltaPhase(currentPhase);
@@ -657,8 +658,7 @@ namespace OutphasingSweepController
                     CurrentSweepProgress.NumberOfPoints++;
                     samples.Add(newSample);
 
-                    if (newSample.MeasuredChannelPowerdBm
-                    > bestSample.MeasuredChannelPowerdBm)
+                    if (newSample.MeasuredChannelPowerdBm < bestSample.MeasuredChannelPowerdBm)
                         {
                         bestSample = newSample;
                         }
@@ -668,7 +668,7 @@ namespace OutphasingSweepController
             // Save the new samples
             foreach (var sample in samples)
                 {
-                SaveMeasurementSample(outputFile, CurrentSample);
+                SaveMeasurementSample(outputFile, sample);
                 }
             }
 
