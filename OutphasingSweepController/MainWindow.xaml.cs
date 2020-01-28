@@ -450,10 +450,22 @@ namespace OutphasingSweepController
             double offsetE8257d,
             double offsetRsa)
             {
-            double channelPowerdBm = rsa3408a.ReadSpectrumChannelPower();
-            double measuredPoutdBm = rsa3408a.GetMarkerYValue(markerNumber: 1);
-            var dcResults =
-                hp6624a.OutphasingOptimisedMeasurement(supplyVoltage);
+            var tasks = new Task[2];
+            double channelPowerdBm = -1;
+            double measuredPoutdBm = -1;
+            HP6624A.OutphasingDcMeasurements dcResults = null;
+            tasks[0] = Task.Factory.StartNew(() =>
+            {
+               channelPowerdBm = rsa3408a.ReadSpectrumChannelPower();
+               measuredPoutdBm = rsa3408a.GetMarkerYValue(markerNumber: 1);
+            });
+            tasks[1] = Task.Factory.StartNew(() => 
+            {
+               dcResults = 
+               hp6624a.OutphasingOptimisedMeasurement(supplyVoltage);
+            });
+            Task.WaitAll(tasks);
+                        
             return new MeasurementSample(
                 frequency,
                 inputPower,
