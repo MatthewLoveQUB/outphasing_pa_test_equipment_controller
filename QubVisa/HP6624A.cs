@@ -28,7 +28,8 @@ namespace QubVisa
         }
         private void SendC4Command(string header, int channel, double data)
         {
-            var commandMessage = string.Format("{0} {1},{2}", header, channel, data);
+            var commandMessage = 
+                string.Format("{0} {1},{2}", header, channel, data);
             Device.connection.RawIO.Write(commandMessage);
         }
 
