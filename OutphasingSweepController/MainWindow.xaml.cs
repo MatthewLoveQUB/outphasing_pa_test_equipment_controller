@@ -55,7 +55,7 @@ namespace OutphasingSweepController
         // Measurement
         SweepProgress CurrentSweepProgress = new SweepProgress(false, 0, 0);
         MeasurementSample CurrentSample;
-        public double EstimatedTimePerSample { get; set; } = 0.1;
+        public double EstimatedTimePerSample { get; set; } = 0.32;
         public System.Diagnostics.Stopwatch MeasurementStopWatch = 
             new System.Diagnostics.Stopwatch();
 
@@ -192,13 +192,13 @@ namespace OutphasingSweepController
                 var timeScaler = (double)ptsRemaining / (double)curPt;
                 var estimatedTime = 
                     TimeSpan.FromTicks(timeElapsed.Ticks * (long)timeScaler);
-                var samplesPerSecond = curPt / (double)timeElapsed.Seconds;
+                var samplesPerSecond = curPt / (double)timeElapsed.TotalSeconds;
                 var secondsPerSample = 1 / samplesPerSecond;
 
                 if (CurrentSample != null)
                     {
                     LastSampleTextBlock.Text = 
-                        $@"Pout: {CurrentSample.CalibratedOutputPowerdBm} dBm\n"
+                        $"Pout: {CurrentSample.CalibratedOutputPowerdBm} dBm\n"
                         + $"Frequency: {CurrentSample.Frequency} Hz\n"
                         + $"Pin: {CurrentSample.InputPowerdBm} dBm\n"
                         + $"Gain: {CurrentSample.CalibratedGaindB} dB\n"
@@ -214,16 +214,18 @@ namespace OutphasingSweepController
                 msg = "Elapsed Time: "
                     + $"{timeElapsed.Days} days "
                     + $"{timeElapsed.Hours} hours "
-                    + $"{timeElapsed.Minutes} minutes";
+                    + $"{timeElapsed.Minutes} minutes "
+                    + $"{timeElapsed.Seconds} seconds";
                 AddNewLogLine(msg);
                 // Print sample rate
-                AddNewLogLine($"Sample Rate = {samplesPerSecond} S/s");
-                AddNewLogLine($"Sample Time = {secondsPerSample} s");
+                AddNewLogLine($"Sample Rate = {samplesPerSecond:F2} S/s");
+                AddNewLogLine($"Sample Time = {secondsPerSample:F2} s");
                 // Print estimated remaining time
                 msg = "Est. Remaining Time: "
                     + $"{estimatedTime.Days} days "
                     + $"{estimatedTime.Hours} hours "
-                    + $"{estimatedTime.Minutes} minutes";
+                    + $"{estimatedTime.Minutes} minutes "
+                    + $"{estimatedTime.Seconds} seconds";
                 AddNewLogLine(msg);
                 }
 
@@ -475,13 +477,13 @@ namespace OutphasingSweepController
             HP6624A.OutphasingDcMeasurements dcResults = null;
             readTasks[0] = Task.Factory.StartNew(() =>
             {
+                dcResults =
+                    hp6624a.OutphasingOptimisedMeasurement(supplyVoltage);
+            });
+            readTasks[1] = Task.Factory.StartNew(() =>
+            {
                channelPowerdBm = rsa3408a.ReadSpectrumChannelPower();
                measuredPoutdBm = rsa3408a.GetMarkerYValue(markerNumber: 1);
-            });
-            readTasks[1] = Task.Factory.StartNew(() => 
-            {
-                dcResults = 
-                    hp6624a.OutphasingOptimisedMeasurement(supplyVoltage);
             });
             Task.WaitAll(readTasks);
                         
@@ -542,10 +544,10 @@ namespace OutphasingSweepController
         private void SweepSettingsControl_LostFocus(
             object sender, RoutedEventArgs e)
             {
-            UpdateEstimatedSimulationTime();
+            UpdateEstimatedMeasurementTime();
             }
 
-        private void UpdateEstimatedSimulationTime()
+        private void UpdateEstimatedMeasurementTime()
             {
             int voltagePoints = 3;
             var freqPoints = FrequencySweepSettingsControl.NSteps;
@@ -556,12 +558,12 @@ namespace OutphasingSweepController
                 * freqPoints 
                 * powerPoints 
                 * phasePoints;
-            var estimatedSimulationTime = TimeSpan.FromSeconds(nPoints);
+            var estimatedMeasurementTime = TimeSpan.FromSeconds(nPoints);
             EstimatedSimulationTimeTextBlock.Text = 
-                $"Estimated Simulation Time = "
-                + $"{estimatedSimulationTime.Days} days "
-                + $"{estimatedSimulationTime.Hours} hours "
-                + $"{estimatedSimulationTime.Minutes} minutes";
+              $"Estimated Measurement Time = "
+                + $"{estimatedMeasurementTime.Days} days "
+                + $"{estimatedMeasurementTime.Hours} hours "
+                + $"{estimatedMeasurementTime.Minutes} minutes";
             }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
