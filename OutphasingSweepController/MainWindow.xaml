@@ -74,9 +74,9 @@
                 Grid.Column="0"
                 Grid.ColumnSpan="5"
                 LostFocus="SweepSettingsControl_LostFocus"
-                NSteps="121"
+                NSteps="181"
                 Start="0"
-                Stop="360"
+                Stop="180"
                 SweepDescriptionText="Phase (degrees)" />
             <TextBlock
                 Grid.Row="3"
