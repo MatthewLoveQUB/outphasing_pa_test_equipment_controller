@@ -47,23 +47,42 @@ namespace QubVisa
             }
 
         // Calculate Commands
-        public double GetMarkerYValue(int markerNumber)
+        public double GetMarkerYValue(int markerNumber, int view)
             {
-            var query = string.Format(":CALC{0}:MARK:Y?", markerNumber);
+            var query = string.Format(":CALC{0}:MARK{1}:Y?", view, markerNumber);
             return Convert.ToDouble(Device.ReadString(query));
             }
 
-        public double GetMarkerXValue(int markerNumber)
+        public double GetMarkerXValue(int markerNumber, int view)
             {
-            var query = string.Format(":CALC{0}:MARK:X?", markerNumber);
+            var query = string.Format(":CALC{0}:MARK{1}:X?", view, markerNumber);
             return Convert.ToDouble(Device.ReadString(query));
             }
 
-        public void SetMarkerXValue(int markerNumber, double xValue)
+        public void SetMarkerXValue(int markerNumber, int view, double xValue)
             {
             var command = 
-                string.Format(":CALC{0}:MARK:X {1}", markerNumber, xValue);
+                string.Format(":CALC{0}:MARK{1}:X {2}", view, markerNumber, xValue);
             Device.connection.RawIO.Write(command);
+            }
+
+        public void SetMarkerXToPositionMode(int markerNumber, int view)
+            {
+            var msg = string.Format(
+                ":CALC{0}:MARK{1}:MODE POS",
+                view,
+                markerNumber);
+            Device.connection.RawIO.Write(msg);
+            }
+
+        public void SetMarkerState(int markerNumber, int view, bool on)
+            {
+            string msg = string.Format(
+                ":CALC{0}:MARK{1}:STATe {2}",
+                view,
+                markerNumber,
+                on ? "ON" : "OFF");
+            Device.connection.RawIO.Write(msg);
             }
 
         // Configure Commands

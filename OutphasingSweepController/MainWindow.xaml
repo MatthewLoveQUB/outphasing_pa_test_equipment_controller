@@ -314,7 +314,7 @@
                 x:Name="StopSweepButton"
                 Grid.Column="1"
                 Click="StopSweepButton_Click"
-                Content="StopSweep"
+                Content="Stop Sweep"
                 IsEnabled="False" />
         </Grid>
         <Grid Grid.RowSpan="2" Grid.Column="2">

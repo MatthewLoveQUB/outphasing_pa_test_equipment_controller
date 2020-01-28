@@ -65,7 +65,7 @@ namespace OutphasingSweepController
             InitializeComponent();
             this.DataContext = this;
             PopulatePsuCheckboxList();
-            //SetUpVisaConnections();
+            SetUpVisaConnections();
             SetUpDispatcherTimer();
             UpdateEstimatedMeasurementTime();
             }
@@ -176,7 +176,8 @@ namespace OutphasingSweepController
 
             StartSweepButton.IsEnabled = false;
             StopSweepButton.IsEnabled = true;
-            
+            ControllerGrid.IsEnabled = false;
+
             Measurement = Task.Factory.StartNew(() =>
             {
                 RunSweep(measurementSettings);
@@ -202,14 +203,16 @@ namespace OutphasingSweepController
 
                 if (CurrentSample != null)
                     {
-                    LastSampleTextBlock.Text = 
-                        $"Pout: {CurrentSample.CalibratedOutputPowerdBm} dBm\n"
-                        + $"Frequency: {CurrentSample.Frequency} Hz\n"
-                        + $"Pin: {CurrentSample.InputPowerdBm} dBm\n"
-                        + $"Gain: {CurrentSample.CalibratedGaindB} dB\n"
-                        + $"PAE: {CurrentSample.CalibratedPowerAddedEfficiency} %\n"
-                        + $"Drain Efficiency: {CurrentSample.CalibratedDrainEfficiency} %\n"
-                        + $"DC Power: {CurrentSample.MeasuredPowerDcWatts} W\n";
+                    LastSampleTextBlock.Text =
+                        $"Calibrated Pout: {CurrentSample.CalibratedOutputPowerdBm:F2} dBm\n"
+                        + $"Measured Pout: {CurrentSample.MeasuredOutputPowerdBm:F2} dBm\n"
+                        + $"Measured Channel Power {CurrentSample.MeasuredChannelPowerdBm:F2} dBm\n"
+                        + $"Frequency: {CurrentSample.Frequency:G2} Hz\n"
+                        + $"Pin: {CurrentSample.InputPowerdBm:F2} dBm\n"
+                        + $"Calibrated Gain: {CurrentSample.CalibratedGaindB:F2} dB\n"
+                        + $"Calibrated PAE: {CurrentSample.CalibratedPowerAddedEfficiency:F2} %\n"
+                        + $"Calibrated Drain Efficiency: {CurrentSample.CalibratedDrainEfficiency:F2} %\n"
+                        + $"Measured DC Power: {CurrentSample.MeasuredPowerDcWatts:F2} W\n";
                     }
 
                 // Print current point
@@ -324,7 +327,6 @@ namespace OutphasingSweepController
 
         private void RunSweep(MeasurementSweepConfiguration conf)
             {
-            ControllerGrid.IsEnabled = false;
             var outputFile = new StreamWriter(conf.OutputFilePath);
             var headerLine =
                 "Frequency (Hz)" // 1
@@ -375,11 +377,15 @@ namespace OutphasingSweepController
 
             // Spectrum Analyser
             rsa3408a.SetSpectrumChannelPowerMeasurementMode();
-            rsa3408a.SetFrequencyCenter(conf.Frequencies[0]);
             rsa3408a.SetContinuousMode(continuousOn: false);
+
+            rsa3408a.SetFrequencyCenter(conf.Frequencies[0]);
             rsa3408a.SetFrequencySpan(conf.MeasurementFrequencySpan);
             rsa3408a.SetChannelBandwidth(conf.MeasurementChannelBandwidth);
             rsa3408a.StartSignalAcquisition();
+
+            rsa3408a.SetMarkerState(markerNumber: 1, view: 1, on: true);
+            rsa3408a.SetMarkerXToPositionMode(1,1);
 
             // Set the power sources to an extremely low
             // power before starting the sweep
@@ -403,7 +409,7 @@ namespace OutphasingSweepController
                     {
                         rsa3408a.SetFrequencyCenter(frequency);
                         rsa3408a.SetMarkerXValue(
-                            markerNumber: 1, xValue: frequency);
+                            markerNumber: 1, view: 1, xValue: frequency);
                     });
                     tasksSetFrequency[1] = Task.Factory.StartNew(() =>
                     {
@@ -460,6 +466,9 @@ namespace OutphasingSweepController
                             // End the measurement if signalled
                             if (!CurrentSweepProgress.Running)
                                 {
+                                outputFile.Close();
+                                smu200a.SetRfOutputState(on: false);
+                                e8257d.SetRfOutputState(on: false);
                                 return;
                                 }
                             }
@@ -469,7 +478,6 @@ namespace OutphasingSweepController
             outputFile.Close();
             MeasurementStopWatch.Stop();
             MeasurementStopWatch.Reset();
-            ControllerGrid.IsEnabled = true;
             }
 
         private MeasurementSample TakeMeasurementSample(
@@ -494,7 +502,7 @@ namespace OutphasingSweepController
             readTasks[1] = Task.Factory.StartNew(() =>
             {
                channelPowerdBm = rsa3408a.ReadSpectrumChannelPower();
-               measuredPoutdBm = rsa3408a.GetMarkerYValue(markerNumber: 1);
+               measuredPoutdBm = rsa3408a.GetMarkerYValue(markerNumber: 1, view: 1);
             });
             Task.WaitAll(readTasks);
                         
@@ -631,11 +639,11 @@ namespace OutphasingSweepController
             if ((Measurement != null) 
                 && (Measurement.Status == TaskStatus.Running))
                 {
-                Measurement.Dispose();
                 CurrentSweepProgress.Running = false;
                 StopSweepButton.IsEnabled = false;
                 StartSweepButton.IsEnabled = true;
                 }
+            ControllerGrid.IsEnabled = true;
             }
         }
     }
