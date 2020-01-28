@@ -64,7 +64,7 @@ namespace OutphasingSweepController
             InitializeComponent();
             this.DataContext = this;
             PopulatePsuCheckboxList();
-            //SetUpVisaConnections();
+            SetUpVisaConnections();
             SetUpDispatcherTimer();
             UpdateEstimatedSimulationTime();
             }
@@ -390,6 +390,8 @@ namespace OutphasingSweepController
                 SetPsuVoltageStepped(voltage);
                 foreach (var frequency in conf.Frequencies)
                     {
+                    outputFile.Flush();
+
                     // Set the frequency
                     tasksSetFrequency[0] = Task.Factory.StartNew(() =>
                     {
@@ -530,12 +532,11 @@ namespace OutphasingSweepController
                 var channelNumber = i + 1;
                 if (hp6624a.ChannelStates[i])
                     {
-                    outputLine += string.Format(", {0}", sample.DcCurrent[i]);
+                    outputLine += $", {sample.DcCurrent[i]}";
                     }
                 }
 
             outputFile.WriteLine(outputLine);
-            outputFile.Flush();
             }
 
         private void SweepSettingsControl_LostFocus(
