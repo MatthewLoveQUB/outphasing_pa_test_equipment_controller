@@ -7,7 +7,7 @@ using QubVisa;
 
 namespace OutphasingSweepController
     {
-    class MeasurementSample
+    public class MeasurementSample
         {
         public readonly MeasurementSampleConfiguration Conf;
         public double InputPowerdBm { get

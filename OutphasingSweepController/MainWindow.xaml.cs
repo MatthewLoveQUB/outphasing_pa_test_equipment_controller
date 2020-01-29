@@ -10,22 +10,28 @@ using QubVisa;
 
 namespace OutphasingSweepController
     {
-    enum SearchMode
+    public enum SearchMode
         {
         Peak,
         Trough
         }
 
-    enum NewSampleResult
+    public enum NewSampleResult
         {
         Better,
         Worse
         }
 
-    enum PhaseSweepLoopStatus
+    public enum PhaseSweepLoopStatus
         {
         Continue,
         Stop
+        }
+
+    public enum Gradient
+        {
+        Positive,
+        Negative
         }
 
     /// <summary>
@@ -530,24 +536,26 @@ namespace OutphasingSweepController
         private MeasurementSample TakeMeasurementSample(
             MeasurementSampleConfiguration conf)
             {
-            var readTasks = new Task[2];
             double channelPowerdBm = -1;
             double measuredPoutdBm = -1;
             HP6624A.OutphasingDcMeasurements dcResults = null;
-            readTasks[0] = Task.Factory.StartNew(() =>
-            {
-                channelPowerdBm = this.rsa3408a.ReadSpectrumChannelPower();
-                //measuredPoutdBm 
-                //    = rsa3408a.GetMarkerYValue(markerNumber: 1, view: 1);
-                measuredPoutdBm = channelPowerdBm;
-            });
-            readTasks[1] = Task.Factory.StartNew(() =>
-            {
-                dcResults = 
-                this.hp6624a.OutphasingOptimisedMeasurement(
-                    conf.SupplyVoltage);
-            });
-            Task.WaitAll(readTasks);
+            var readTasks = new List<Task>()
+                {
+                Task.Factory.StartNew(() =>
+                {
+                    channelPowerdBm = this.rsa3408a.ReadSpectrumChannelPower();
+                    //measuredPoutdBm 
+                    //    = rsa3408a.GetMarkerYValue(markerNumber: 1, view: 1);
+                    measuredPoutdBm = channelPowerdBm;
+                }),
+                Task.Factory.StartNew(() =>
+                {
+                    dcResults =
+                    this.hp6624a.OutphasingOptimisedMeasurement(
+                        conf.SupplyVoltage);
+                })
+                };
+            Task.WaitAll(readTasks.ToArray());
 
             return new MeasurementSample(
                 conf,
@@ -574,28 +582,16 @@ namespace OutphasingSweepController
             MeasurementSample newSample;
             MeasurementSampleConfiguration sampleConfig;
 
-            // Take a new sample next to it
-            currentPhase = bestSample.Conf.Phase + phaseStep;
-            this.smu200a.SetSourceDeltaPhase(currentPhase);
-            sampleConfig = new MeasurementSampleConfiguration(
-                sweepConf,
-                supplyVoltage,
-                frequency,
-                inputPower,
-                currentPhase,
-                offset);
-            newSample = TakeMeasurementSample(sampleConfig);
-            this.CurrentSweepProgress.CurrentPoint++;
-            this.CurrentSweepProgress.NumberOfPoints++;
-            samples.Add(newSample);
-
-            // Is the new sample is better
-            // If not, search in the other direction
-            if (PeakTroughComparison(searchMode, bestSample, newSample)
-                == NewSampleResult.Worse)
-                {
-                phaseStep *= -1;
-                }
+            phaseStep = FindSearchDirection(
+                searchMode, 
+                samples, 
+                bestSample, 
+                sweepConf, 
+                offset, 
+                supplyVoltage, 
+                frequency, 
+                inputPower, 
+                phaseStep);
 
             currentPhase = bestSample.Conf.Phase;
             newSample = bestSample;
@@ -628,6 +624,79 @@ namespace OutphasingSweepController
                     bestSample = newSample;
                     }
                 }
+            }
+
+        public double FindSearchDirection(
+            SearchMode searchMode,
+            List<MeasurementSample> samples,
+            MeasurementSample bestSample,
+            MeasurementSweepConfiguration sweepConf,
+            CurrentOffset offset,
+            double supplyVoltage,
+            double frequency,
+            double inputPower,
+            double phaseStep)
+            {
+            var corePhase = bestSample.Conf.Phase;
+            double scalar = 0.0;
+
+            while (true)
+                {
+                scalar += 1.0;
+
+                var phasePos = corePhase + (scalar * phaseStep);
+                var sampleConfigPos = new MeasurementSampleConfiguration(
+                    sweepConf,
+                    supplyVoltage,
+                    frequency,
+                    inputPower,
+                    phasePos,
+                    offset);
+                this.smu200a.SetSourceDeltaPhase(phasePos);
+                var samplePos = TakeMeasurementSample(sampleConfigPos);
+                var gradientPos = this.GetGradient(bestSample, samplePos);
+
+                var phaseNeg = corePhase - (scalar * phaseStep);
+                var sampleConfigNeg = new MeasurementSampleConfiguration(
+                    sweepConf,
+                    supplyVoltage,
+                    frequency,
+                    inputPower,
+                    phasePos,
+                    offset);
+                this.smu200a.SetSourceDeltaPhase(phasePos);
+                var sampleNeg = TakeMeasurementSample(sampleConfigPos);
+                var gradientNeg = this.GetGradient(bestSample, sampleNeg);
+
+                samples.Add(samplePos);
+                samples.Add(sampleNeg);
+
+                // If both adjacent points move in the same direction
+                // then there's no clear direction to move in
+                if (gradientNeg == gradientPos)
+                    {
+                    continue;
+                    }
+
+                if(searchMode == SearchMode.Peak)
+                    {
+                    return (gradientPos == Gradient.Positive) ? 1.0 : -1.0;
+                    }
+                else
+                    {
+                    return (gradientPos == Gradient.Negative) ? 1.0 : -1.0;
+                    }
+                }
+            }
+
+        private Gradient GetGradient(
+            MeasurementSample sampleRef,
+            MeasurementSample sampleNew)
+            {
+            return (sampleNew.MeasuredChannelPowerdBm
+                > sampleRef.MeasuredChannelPowerdBm)
+                ? Gradient.Positive
+                : Gradient.Negative;
             }
 
         private NewSampleResult PeakTroughComparison(
