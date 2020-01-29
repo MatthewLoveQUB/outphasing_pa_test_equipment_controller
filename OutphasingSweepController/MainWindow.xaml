@@ -40,6 +40,7 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
@@ -68,35 +69,49 @@
                 Start="-20"
                 Stop="-3"
                 SweepDescriptionText="Power (dBm)" />
-            <Grid Grid.Row="2" Grid.ColumnSpan="5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="5*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <local:SweepParameterInput
-                    x:Name="PhaseSweepSettingsControl"
-                    Grid.Column="0"
-                    LostFocus="SweepSettingsControl_LostFocus"
-                    NSteps="181"
-                    Start="0"
-                    Stop="180"
-                    SweepDescriptionText="Phase (degrees)" />
-                <CheckBox
-                    Grid.Column="1"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Content="+/- Search"
-                    IsChecked="{Binding PeakTroughSearch}" />
-            </Grid>
-
+            <local:SweepParameterInput
+                x:Name="PhaseSweepSettingsControl"
+                Grid.Row="2"
+                Grid.Column="0"
+                Grid.ColumnSpan="5"
+                LostFocus="SweepSettingsControl_LostFocus"
+                NSteps="181"
+                Start="0"
+                Stop="180"
+                SweepDescriptionText="Phase (degrees)" />
+            <CheckBox
+                Grid.Row="3"
+                Grid.Column="0"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Content="+/- Search"
+                IsChecked="{Binding PeakTroughSearch}" />
             <TextBlock
                 Grid.Row="3"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                Text="Peak [step, threshold;...]" />
+            <TextBox
+                Grid.Row="3"
+                Grid.Column="2"
+                Margin="1" />
+            <TextBlock
+                Grid.Row="3"
+                Grid.Column="3"
+                VerticalAlignment="Center"
+                Text="Trough [step, threshold;...]" />
+            <TextBox
+                Grid.Row="3"
+                Grid.Column="4"
+                Margin="1" />
+            <TextBlock
+                Grid.Row="4"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 Text="Temperature (Celcius)" />
             <TextBox
                 x:Name="TemperatureSettingsTextBox"
-                Grid.Row="3"
+                Grid.Row="4"
                 Grid.Column="2"
                 Grid.ColumnSpan="3"
                 Margin="1"
@@ -106,13 +121,13 @@
                 VerticalContentAlignment="Center"
                 Text="{Binding ChipTemperature, Mode=TwoWay}" />
             <TextBlock
-                Grid.Row="4"
+                Grid.Row="5"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 Text="Corner" />
             <TextBox
                 x:Name="CornerSettingsTextBox"
-                Grid.Row="4"
+                Grid.Row="5"
                 Grid.Column="2"
                 Grid.ColumnSpan="3"
                 Margin="1"
@@ -122,12 +137,12 @@
                 VerticalContentAlignment="Center"
                 Text="{Binding ChipCorner, Mode=TwoWay}" />
             <TextBlock
-                Grid.Row="5"
+                Grid.Row="6"
                 Grid.Column="0"
                 Text="Supply Voltage (V)" />
             <TextBox
                 x:Name="VoltageSettingsTextBox"
-                Grid.Row="5"
+                Grid.Row="6"
                 Grid.Column="1"
                 Grid.ColumnSpan="1"
                 Margin="1"
@@ -136,7 +151,7 @@
                 HorizontalContentAlignment="Left"
                 VerticalContentAlignment="Center"
                 Text="{Binding PsuNominalVoltage, Mode=TwoWay}" />
-            <Grid Grid.Row="5" Grid.Column="2">
+            <Grid Grid.Row="6" Grid.Column="2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
@@ -155,31 +170,31 @@
                     IsChecked="{Binding PsuMinus10Percent}" />
             </Grid>
             <TextBlock
-                Grid.Row="5"
+                Grid.Row="6"
                 Grid.Column="3"
                 VerticalAlignment="Center"
                 Text="Current Limit (A)" />
             <TextBox
-                Grid.Row="5"
+                Grid.Row="6"
                 Grid.Column="4"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Center"
                 Text="{Binding PsuCurrentLimit, Mode=TwoWay}" />
             <TextBlock
-                Grid.Row="6"
+                Grid.Row="7"
                 Grid.Column="0"
                 Grid.ColumnSpan="1"
                 Text="Enabled PSU Channels" />
             <CheckBox
                 x:Name="PsuChannel1Enable"
-                Grid.Row="6"
+                Grid.Row="7"
                 Grid.Column="1"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Content="1" />
             <CheckBox
                 x:Name="PsuChannel2Enable"
-                Grid.Row="6"
+                Grid.Row="7"
                 Grid.Column="2"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
@@ -187,7 +202,7 @@
                 IsChecked="True" />
             <CheckBox
                 x:Name="PsuChannel3Enable"
-                Grid.Row="6"
+                Grid.Row="7"
                 Grid.Column="3"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
@@ -195,44 +210,44 @@
                 IsChecked="True" />
             <CheckBox
                 x:Name="PsuChannel4Enable"
-                Grid.Row="6"
+                Grid.Row="7"
                 Grid.Column="4"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Content="4" />
             <TextBlock
-                Grid.Row="7"
+                Grid.Row="8"
                 Grid.Column="0"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Center"
                 Text="PSU Ramp up step (ms)" />
             <TextBox
-                Grid.Row="7"
+                Grid.Row="8"
                 Grid.Column="1"
                 Margin="1"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Center"
                 Text="{Binding PsuRampUpStepTimeMilliseconds, Mode=TwoWay}" />
             <TextBlock
-                Grid.Row="7"
+                Grid.Row="8"
                 Grid.Column="2"
                 VerticalAlignment="Center"
                 Text="Ramp Volts/step" />
             <TextBox
-                Grid.Row="7"
+                Grid.Row="8"
                 Grid.Column="3"
                 Margin="1"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Center"
                 Text="{Binding RampVoltageStep, Mode=TwoWay}" />
             <TextBlock
-                Grid.Row="8"
+                Grid.Row="9"
                 Grid.Column="0"
                 VerticalAlignment="Center"
                 Text="Est. Time/sample (s)" />
             <TextBox
                 x:Name="SampleTimeBox"
-                Grid.Row="8"
+                Grid.Row="9"
                 Grid.Column="1"
                 Margin="1"
                 HorizontalAlignment="Stretch"
@@ -241,7 +256,7 @@
                 Text="{Binding EstimatedTimePerSample, Mode=TwoWay}" />
             <TextBlock
                 x:Name="EstimatedSimulationTimeTextBlock"
-                Grid.Row="8"
+                Grid.Row="9"
                 Grid.Column="2"
                 Grid.ColumnSpan="3"
                 Margin="1"
@@ -250,14 +265,14 @@
             <!--  Results Save file  -->
             <Button
                 x:Name="SaveButton"
-                Grid.Row="9"
+                Grid.Row="10"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 Click="SaveButton_Click"
                 Content="Choose save file" />
             <TextBlock
                 x:Name="ResultsSavePathTextBlock"
-                Grid.Row="9"
+                Grid.Row="10"
                 Grid.Column="2"
                 Grid.ColumnSpan="3"
                 VerticalAlignment="Center"
@@ -265,64 +280,64 @@
             <!--  Load SMU200A Amplitude offsets  -->
             <Button
                 x:Name="LoadSmu200aOffsetsButton"
-                Grid.Row="10"
+                Grid.Row="11"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 Click="LoadSmu200aOffsetsButton_Click"
                 Content="Load SMU200A offsets" />
             <TextBlock
                 x:Name="Smu200aOffsetsFilePathTextBlock"
-                Grid.Row="10"
+                Grid.Row="11"
                 Grid.Column="2"
                 Grid.ColumnSpan="3"
                 VerticalAlignment="Center" />
             <!--  Load E8257D Amplitude offsets  -->
             <Button
                 x:Name="LoadE8257dOffsetsButton"
-                Grid.Row="11"
+                Grid.Row="12"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 Click="LoadE8257dOffsetsButton_Click"
                 Content="Load E8257D offsets" />
             <TextBlock
                 x:Name="E8257dOffsetsFilePathTextBlock"
-                Grid.Row="11"
+                Grid.Row="12"
                 Grid.Column="2"
                 Grid.ColumnSpan="3"
                 VerticalAlignment="Center" />
             <!--  Spectrum Analyser Offsets  -->
             <Button
                 x:Name="LoadRsa3408adOffsetsButton"
-                Grid.Row="12"
+                Grid.Row="13"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
                 Click="LoadRsa3408adOffsetsButton_Click"
                 Content="Load RSA3408A offsets" />
             <TextBlock
                 x:Name="Rsa3408aOffsetsFilePathTextBlock"
-                Grid.Row="12"
+                Grid.Row="13"
                 Grid.Column="2"
                 Grid.ColumnSpan="3"
                 VerticalAlignment="Center" />
             <!--  Spectrum Analyzer Bandwidth  -->
             <TextBlock
-                Grid.Row="13"
+                Grid.Row="14"
                 Grid.Column="0"
                 Grid.ColumnSpan="1"
                 VerticalAlignment="Center"
                 Text="Frequency Span (Hz)" />
             <TextBox
-                Grid.Row="13"
+                Grid.Row="14"
                 Grid.Column="1"
                 Grid.ColumnSpan="1"
                 Text="{Binding Rsa3408FrequencySpan, Mode=TwoWay, StringFormat=g2}" />
             <TextBlock
-                Grid.Row="13"
+                Grid.Row="14"
                 Grid.Column="2"
                 VerticalAlignment="Center"
                 Text="Channel Bandwidth (Hz)" />
             <TextBox
-                Grid.Row="13"
+                Grid.Row="14"
                 Grid.Column="3"
                 Grid.ColumnSpan="2"
                 Text="{Binding Rsa3408ChannelBandwidth, Mode=TwoWay, StringFormat=g2}" />
