@@ -18,6 +18,12 @@ using QubVisa;
 
 namespace OutphasingSweepController
     {
+    enum SearchMode
+        {
+        Peak,
+        Trough
+        }
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -69,7 +75,7 @@ namespace OutphasingSweepController
             InitializeComponent();
             this.DataContext = this;
             PopulatePsuCheckboxList();
-            SetUpVisaConnections();
+            //SetUpVisaConnections();
             SetUpDispatcherTimer();
             UpdateEstimatedMeasurementTime();
             }
@@ -457,48 +463,30 @@ namespace OutphasingSweepController
                             });
                         Task.WaitAll(tasksSetPower);
 
-                        if (conf.PeakTroughPhaseSearch)
+                        var samples = MeasurementPhaseSweep(
+                            conf,
+                            outputFile,
+                            voltage,
+                            frequency,
+                            inputPower,
+                            offsetSmu200a,
+                            offsetE8257d,
+                            offsetRsa);
+
+                        // Save the new samples
+                        foreach (var sample in samples)
                             {
-                            DoPeakTroughSearch(
-                                conf,
-                                outputFile,
-                                voltage,
-                                frequency,
-                                inputPower,
-                                offsetSmu200a,
-                                offsetE8257d,
-                                offsetRsa);
+                            SaveMeasurementSample(outputFile, sample);
                             }
-                        else
+
+                        // End the measurement if signalled
+                        if (!CurrentSweepProgress.Running)
                             {
-                            foreach (var phase in conf.Phases)
-                                {
-                                smu200a.SetSourceDeltaPhase(phase);
-                                CurrentSweepProgress.CurrentPoint += 1;
-
-                                CurrentSample =
-                                    TakeMeasurementSample(
-                                        conf,
-                                        voltage,
-                                        frequency,
-                                        inputPower,
-                                        phase,
-                                        offsetSmu200a,
-                                        offsetE8257d,
-                                        offsetRsa);
-                                SaveMeasurementSample(
-                                    outputFile, CurrentSample);
-
-                                // End the measurement if signalled
-                                if (!CurrentSweepProgress.Running)
-                                    {
-                                    outputFile.Flush();
-                                    outputFile.Close();
-                                    smu200a.SetRfOutputState(on: false);
-                                    e8257d.SetRfOutputState(on: false);
-                                    return;
-                                    }
-                                }
+                            outputFile.Flush();
+                            outputFile.Close();
+                            smu200a.SetRfOutputState(on: false);
+                            e8257d.SetRfOutputState(on: false);
+                            return;
                             }
                         }
                     }
@@ -508,9 +496,9 @@ namespace OutphasingSweepController
             MeasurementStopWatch.Reset();
             }
 
-        private void DoPeakTroughSearch(
+        private void BasicPhaseSweep(
+            List<MeasurementSample> samples,
             MeasurementSweepConfiguration conf,
-            StreamWriter outputFile,
             double supplyVoltage,
             double frequency,
             double inputPower,
@@ -518,10 +506,8 @@ namespace OutphasingSweepController
             double offsetE8257d,
             double offsetRsa)
             {
-            var samples = new List<MeasurementSample>();
-
             // Do the coarse sweep
-            foreach(var phase in conf.Phases)
+            foreach (var phase in conf.Phases)
                 {
                 smu200a.SetSourceDeltaPhase(phase);
                 CurrentSweepProgress.CurrentPoint += 1;
@@ -536,9 +522,37 @@ namespace OutphasingSweepController
                     offsetRsa);
                 samples.Add(sample);
                 }
+            }
 
-            var orderedSamples = samples.OrderByDescending(
-                sample => sample.MeasuredChannelPowerdBm).ToList();
+        private List<MeasurementSample> MeasurementPhaseSweep(
+            MeasurementSweepConfiguration conf,
+            StreamWriter outputFile,
+            double supplyVoltage,
+            double frequency,
+            double inputPower,
+            double offsetSmu200a,
+            double offsetE8257d,
+            double offsetRsa)
+            {
+            var samples = new List<MeasurementSample>();
+            BasicPhaseSweep(
+                samples, 
+                conf, 
+                supplyVoltage, 
+                frequency, 
+                inputPower, 
+                offsetSmu200a, 
+                offsetSmu200a, 
+                offsetRsa);
+
+            if (!conf.PeakTroughPhaseSearch)
+                {
+                return samples;
+                }
+
+                var orderedSamples = 
+                samples.OrderByDescending(
+                    sample => sample.MeasuredChannelPowerdBm).ToList();
 
             // Do the peak sweep
                 {
@@ -665,11 +679,7 @@ namespace OutphasingSweepController
                     }
                 }
 
-            // Save the new samples
-            foreach (var sample in samples)
-                {
-                SaveMeasurementSample(outputFile, sample);
-                }
+            return samples;
             }
 
         private MeasurementSample TakeMeasurementSample(
