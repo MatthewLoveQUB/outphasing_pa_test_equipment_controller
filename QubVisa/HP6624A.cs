@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace QubVisa
     {
@@ -202,6 +203,52 @@ namespace QubVisa
                 this.PowerWatts = powerWatts;
                 this.Currents = currents;
                 }
+            }
+
+        // Ramp the voltage slowly
+        // Assumes that all channels are at the same voltage
+        public void SetPsuVoltageStepped(
+            double newVoltage,
+            double rampVoltageStep,
+            int rampUpStepDelayMilliseconds)
+            {
+            // Will change sign depending on ramp up/down later
+            var step = Math.Abs(rampVoltageStep);
+
+            // Read the current voltage
+            double currentVoltage = 0;
+            for (int i = 0; i < HP6624A.NumChannels; i++)
+                {
+                bool channelEnabled = this.ChannelStates[i];
+                if (channelEnabled)
+                    {
+                    var channel = i + 1;
+                    currentVoltage =
+                        this.GetChannelVoltageSetting(channel);
+                    break;
+                    }
+                }
+
+            if (newVoltage == currentVoltage) { return; }
+            // Invert the step if we're decreasing the channel voltage
+            if (newVoltage < currentVoltage)
+                {
+                step *= -1;
+                }
+
+            int numSteps =
+                (int)(Math.Abs(currentVoltage - newVoltage) / step);
+            var intermediateVoltage = currentVoltage;
+
+            for (int currentStep = 0; currentStep < numSteps; currentStep++)
+                {
+                intermediateVoltage += step;
+                this.SetActiveChannelsVoltages(intermediateVoltage);
+                Thread.Sleep(rampUpStepDelayMilliseconds);
+                }
+
+            // Set to V_stop in case of overshoot
+            this.SetActiveChannelsVoltages(newVoltage);
             }
 
         // 1 Assume the voltage is correct

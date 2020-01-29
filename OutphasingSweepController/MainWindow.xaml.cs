@@ -1,19 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.IO;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using QubVisa;
 
 namespace OutphasingSweepController
@@ -62,13 +54,13 @@ namespace OutphasingSweepController
         List<CheckBox> PsuChannelEnableCheckboxes;
         System.Windows.Threading.DispatcherTimer dispatcherTimer;
         // File IO
-        public string ResultsSavePath { get; set; } = 
+        public string ResultsSavePath { get; set; } =
             "C:\\Users\\matth\\Downloads\\x.csv";
-        public string Smu200aOffsetsPath { get; set; } = 
+        public string Smu200aOffsetsPath { get; set; } =
             "C:\\Users\\matth\\Downloads\\Cable_5_offset_file.cor";
-        public string E8257dOffsetsPath { get; set; } = 
+        public string E8257dOffsetsPath { get; set; } =
             "C:\\Users\\matth\\Downloads\\Cable_2_offset_file.cor";
-        public string Rsa3408aOffsetsPath { get; set; } = 
+        public string Rsa3408aOffsetsPath { get; set; } =
             "C:\\Users\\matth\\Downloads\\Cable_7_offset_file.cor";
         // Signal Generators
         RS_SMU200A smu200a;
@@ -78,7 +70,7 @@ namespace OutphasingSweepController
         SweepProgress CurrentSweepProgress = new SweepProgress(false, 0, 0);
         MeasurementSample CurrentSample;
         public double EstimatedTimePerSample { get; set; } = 0.32;
-        public System.Diagnostics.Stopwatch MeasurementStopWatch = 
+        public System.Diagnostics.Stopwatch MeasurementStopWatch =
             new System.Diagnostics.Stopwatch();
         public Task Measurement;
 
@@ -91,10 +83,14 @@ namespace OutphasingSweepController
             SetUpDispatcherTimer();
             UpdateEstimatedMeasurementTime();
 
-            this.ResultsSavePathTextBlock.Text = this.ResultsSavePath;
-            this.Smu200aOffsetsFilePathTextBlock.Text = this.Smu200aOffsetsPath;
-            this.E8257dOffsetsFilePathTextBlock.Text = this.E8257dOffsetsPath;
-            this.Rsa3408aOffsetsFilePathTextBlock.Text = this.Rsa3408aOffsetsPath;
+            this.ResultsSavePathTextBlock.Text = 
+                this.ResultsSavePath;
+            this.Smu200aOffsetsFilePathTextBlock.Text = 
+                this.Smu200aOffsetsPath;
+            this.E8257dOffsetsFilePathTextBlock.Text = 
+                this.E8257dOffsetsPath;
+            this.Rsa3408aOffsetsFilePathTextBlock.Text = 
+                this.Rsa3408aOffsetsPath;
             }
 
         private void PopulatePsuCheckboxList()
@@ -111,8 +107,10 @@ namespace OutphasingSweepController
 
         private void SetUpDispatcherTimer()
             {
-            this.dispatcherTimer = new System.Windows.Threading.DispatcherTimer();
-            this.dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick);
+            this.dispatcherTimer = 
+                new System.Windows.Threading.DispatcherTimer();
+            this.dispatcherTimer.Tick += 
+                new EventHandler(dispatcherTimer_Tick);
             this.dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 2);
             this.dispatcherTimer.Start();
             }
@@ -131,9 +129,6 @@ namespace OutphasingSweepController
             string smaAddress;
             string e82Address;
             // Hard-coded addresses for me to save time
-            // Set it to false if someone who isn't
-            // me is somehow using this code
-            // Sorry if this causes you bother!
             if (true)
                 {
                 hpAddress = "GPIB0::14::INSTR";
@@ -160,13 +155,13 @@ namespace OutphasingSweepController
 
         private string GetVisaAddress(string deviceName)
             {
-            var visaWindow = 
+            var visaWindow =
                 new list_visa_devices_dialogue.MainWindow(deviceName);
             visaWindow.ShowDialog();
             return visaWindow.SelectedAddress;
             }
 
-        private void AddNewLogLine(string line)                                
+        private void AddNewLogLine(string line)
             {
             this.SweepLogTextBox.Text = $"{this.SweepLogTextBox.Text}{line}\n";
             }
@@ -201,8 +196,15 @@ namespace OutphasingSweepController
                 this.Rsa3408aOffsetsPath,
                 this.PeakTroughSearch,
                 new PhaseSearchSettings(
-                    this.PeakSearchSettingsTextBox.Text, 
+                    this.PeakSearchSettingsTextBox.Text,
                     this.TroughSearchSettingsTextBox.Text));
+            }
+
+        private void ToggleGuiActive(bool on)
+            {
+            this.StartSweepButton.IsEnabled = on;
+            this.StopSweepButton.IsEnabled = !on;
+            this.ControllerGrid.IsEnabled = on;
             }
 
         private void StartSweepButton_Click(object sender, RoutedEventArgs e)
@@ -210,11 +212,7 @@ namespace OutphasingSweepController
             if (!MeasurementVariablesCheck()) { return; }
 
             var measurementSettings = ParseMeasurementConfiguration();
-
-            this.StartSweepButton.IsEnabled = false;
-            this.StopSweepButton.IsEnabled = true;
-            this.ControllerGrid.IsEnabled = false;
-
+            this.ToggleGuiActive(on: false);
             this.Measurement = Task.Factory.StartNew(() =>
             {
                 RunSweep(measurementSettings);
@@ -233,7 +231,7 @@ namespace OutphasingSweepController
                 var timeElapsed = this.MeasurementStopWatch.Elapsed;
                 var ptsRemaining = nPts - curPt;
                 var timeScaler = (double)ptsRemaining / (double)curPt;
-                var estimatedTime = 
+                var estimatedTime =
                     TimeSpan.FromTicks(timeElapsed.Ticks * (long)timeScaler);
                 var samplesPerSecond = curPt / (double)timeElapsed.TotalSeconds;
                 var secondsPerSample = 1 / samplesPerSecond;
@@ -276,63 +274,14 @@ namespace OutphasingSweepController
                 }
 
             // Empty the log queue
-            while(this.LogQueue.Count > 0)
+            while (this.LogQueue.Count > 0)
                 {
                 var message = this.LogQueue.Dequeue();
                 AddNewLogLine(message);
                 }
             }
 
-        // Ramp the voltage slowly
-        // Assumes that all channels are at the same voltage
-        private void SetPsuVoltageStepped(double newVoltage)
-            {
-            // Step should be positive before we alter it depending on
-            // whether we're ramping up or down
-            var step = Math.Abs(this.RampVoltageStep);
-
-            // Read the current voltage
-            double currentVoltage = 0;
-            for (int i = 0; i < HP6624A.NumChannels; i++)
-                {
-                int channelNumber = i + 1;
-                bool channelEnabled = this.hp6624a.ChannelStates[i];
-                if (channelEnabled)
-                    {
-                    currentVoltage =
-                        this.hp6624a.GetChannelVoltageSetting(channelNumber);
-                    break;
-                    }
-                }
-
-            // End the function if the voltage is already set
-            // Unlikely due to the way floating point works
-            if (newVoltage == currentVoltage)
-                {
-                return;
-                }
-
-            // Invert the step if we're decreasing the channel voltage
-            if (newVoltage < currentVoltage)
-                {
-                step *= -1;
-                }
-
-            int numSteps = 
-                (int)(Math.Abs(currentVoltage - newVoltage) / step);
-            var intermediateVoltage = currentVoltage;
-
-            for (int currentStep = 0; currentStep < numSteps; currentStep++)
-                {
-                intermediateVoltage += step;
-                this.hp6624a.SetActiveChannelsVoltages(intermediateVoltage);
-                Thread.Sleep(this.PsuRampUpStepTimeMilliseconds);
-                }
-
-            // In case we overshot the voltage then 
-            // just set it to the final voltage
-            this.hp6624a.SetActiveChannelsVoltages(newVoltage);
-            }
+        
 
         bool MeasurementVariablesCheck()
             {
@@ -385,15 +334,13 @@ namespace OutphasingSweepController
                 + ", Measurement Frequency Span (Hz)"
                 + ", Channel Measurement Bandwidth (Hz)"
                 + ", Calibrated Gain (dB)";
-            
-            for(int i = 0; i < HP6624A.NumChannels; i++)
+
+            for (int i = 0; i < HP6624A.NumChannels; i++)
                 {
                 if (this.hp6624a.ChannelStates[i])
                     {
-                    headerLine +=
-                        string.Format(
-                            ", DC Current Channel {0} (A)",
-                            i + 1);
+                    int channel = i + 1;
+                    headerLine += $", DC Current Channel {channel} (A)";
                     }
                 }
 
@@ -407,9 +354,6 @@ namespace OutphasingSweepController
             // Pre-setup
             var tasksSetFrequency = new Task[3];
             var tasksSetPower = new Task[2];
-            double offsetSmu200a = -1;
-            double offsetE8257d = -1;
-            double offsetRsa = -1;
 
             // DC supply
             this.hp6624a.SetAllChannelVoltagesToZero();
@@ -444,40 +388,45 @@ namespace OutphasingSweepController
             // value in the sweep
             foreach (var voltage in conf.Voltages)
                 {
-                SetPsuVoltageStepped(voltage);
-                
+                this.hp6624a.SetPsuVoltageStepped(voltage, 
+                    this.RampVoltageStep, 
+                    this.PsuRampUpStepTimeMilliseconds);
+
                 foreach (var frequency in conf.Frequencies)
                     {
+                    var offsets = new CurrentOffset(
+                        conf.Smu200aOffsets.GetOffset(frequency),
+                        conf.E8257dOffsets.GetOffset(frequency),
+                        conf.Rsa3408aOffsets.GetOffset(frequency));
+
                     tasksSetFrequency[0] = Task.Factory.StartNew(() =>
                     {
                         this.rsa3408a.SetFrequencyCenter(frequency);
-                        offsetRsa = conf.Rsa3408aOffsets.GetOffset(frequency);
                     });
                     tasksSetFrequency[1] = Task.Factory.StartNew(() =>
                     {
                         this.smu200a.SetSourceFrequency(frequency);
-                        offsetSmu200a = conf.Smu200aOffsets.GetOffset(frequency);
                     });
                     tasksSetFrequency[2] = Task.Factory.StartNew(() =>
                     {
                         this.e8257d.SetSourceFrequency(frequency);
-                        offsetE8257d = conf.E8257dOffsets.GetOffset(frequency);
                     });
                     Task.WaitAll(tasksSetFrequency);
 
                     foreach (var inputPower in conf.InputPowers)
                         {
                         outputFile.Flush();
-                        // Set the power
-                        tasksSetPower[0] = 
-                            Task.Factory.StartNew(()=>
+                        tasksSetPower[0] =
+                            Task.Factory.StartNew(() =>
                             {
-                                this.smu200a.SetPowerLevel(inputPower, offsetSmu200a);
+                                this.smu200a.SetPowerLevel(
+                                    inputPower, offsets.Smu200a);
                             });
                         tasksSetPower[1] =
                             Task.Factory.StartNew(() =>
                             {
-                                this.e8257d.SetPowerLevel(inputPower, offsetE8257d);
+                                this.e8257d.SetPowerLevel(
+                                    inputPower, offsets.E8257d);
                             });
                         Task.WaitAll(tasksSetPower);
 
@@ -487,15 +436,15 @@ namespace OutphasingSweepController
                             frequency,
                             inputPower,
                             -1e12,
-                            offsetSmu200a,
-                            offsetE8257d,
-                            offsetRsa);
+                            offsets.Smu200a,
+                            offsets.E8257d,
+                            offsets.Rsa3408a);
 
-                        Thread.Sleep(3000);
                         var samples = MeasurementPhaseSweep(sampleConf);
                         foreach (var sample in samples)
                             {
-                            SaveMeasurementSample(outputFile, sample);
+                            OutphasingMeasurement.SaveSample(
+                                outputFile, sample, this.hp6624a);
                             }
 
                         // End the measurement if signalled
@@ -521,6 +470,21 @@ namespace OutphasingSweepController
             {
             conf.Phase = phase;
             this.smu200a.SetSourceDeltaPhase(conf.Phase);
+            }
+
+        private void BasicPhaseSweep(
+            List<MeasurementSample> samples,
+            MeasurementSampleConfiguration conf)
+            {
+            // Do the coarse sweep
+            foreach (var phase in conf.Conf.Phases)
+                {
+                SetSignalPhase(ref conf, phase);
+                this.CurrentSweepProgress.CurrentPoint++;
+                conf.Phase = phase;
+                var sample = TakeMeasurementSample(conf);
+                samples.Add(sample);
+                }
             }
 
         private NewSampleResult PeakTroughComparison(
@@ -566,10 +530,10 @@ namespace OutphasingSweepController
             {
             var newPwr = newSample.MeasuredChannelPowerdBm;
             var bestPwr = bestSample.MeasuredChannelPowerdBm;
-            
+
             if (searchMode == SearchMode.Peak)
                 {
-                if((bestPwr - newPwr) < threshold)
+                if ((bestPwr - newPwr) < threshold)
                     {
                     return PhaseSweepLoopStatus.Continue;
                     }
@@ -591,6 +555,68 @@ namespace OutphasingSweepController
                 }
             }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="searchMode"></param>
+        /// <param name="samples"></param>
+        /// <param name="orderedSamples">
+        ///     Ordered in descending channel power
+        /// </param>
+        /// <param name="conf"></param>
+        /// <param name="supplyVoltage"></param>
+        /// <param name="frequency"></param>
+        /// <param name="inputPower"></param>
+        /// <param name="offsetSmu200a"></param>
+        /// <param name="offsetE8257d"></param>
+        /// <param name="offsetRsa"></param>
+        private void FindPeakOrTrough(
+            SearchMode searchMode,
+            List<MeasurementSample> samples,
+            MeasurementSample startBestSample,
+            MeasurementSampleConfiguration conf,
+            double exitThreshold,
+            double phaseStep)
+            {
+            var bestSample = startBestSample;
+            double currentPhase;
+
+            // Take a new sample next to it
+            currentPhase = bestSample.Conf.Phase + phaseStep;
+            SetSignalPhase(ref conf, currentPhase);
+            this.CurrentSample = TakeMeasurementSample(conf);
+            this.CurrentSweepProgress.CurrentPoint++;
+            this.CurrentSweepProgress.NumberOfPoints++;
+            samples.Add(this.CurrentSample);
+
+            // Is the new sample is better
+            // If not, search in the other direction
+            if (PeakTroughComparison(searchMode, ref bestSample, this.CurrentSample)
+                == NewSampleResult.Worse)
+                {
+                phaseStep *= -1;
+                }
+
+            currentPhase = bestSample.Conf.Phase;
+            // Keep looping until we've moved exitThreshold dB
+            // away from the best found value
+            while (EvaluateNewSample(
+                bestSample,
+                this.CurrentSample,
+                searchMode,
+                exitThreshold)
+                == PhaseSweepLoopStatus.Continue)
+                {
+                currentPhase += phaseStep;
+                SetSignalPhase(ref conf, currentPhase);
+                this.CurrentSample = TakeMeasurementSample(conf);
+                this.CurrentSweepProgress.CurrentPoint++;
+                this.CurrentSweepProgress.NumberOfPoints++;
+                samples.Add(this.CurrentSample);
+                PeakTroughComparison(searchMode, ref bestSample, this.CurrentSample);
+                }
+            }
+
         private List<MeasurementSample> MeasurementPhaseSweep(
             MeasurementSampleConfiguration conf)
             {
@@ -602,7 +628,7 @@ namespace OutphasingSweepController
                 return samples;
                 }
 
-            foreach (var peakSearchSetting 
+            foreach (var peakSearchSetting
                 in conf.Conf.PhasePeakTroughSearchSettings.PeakSettings)
                 {
                 var orderedSamples =
@@ -637,114 +663,6 @@ namespace OutphasingSweepController
             return samples;
             }
 
-        private void BasicPhaseSweep(
-            List<MeasurementSample> samples,
-            MeasurementSampleConfiguration conf)
-            {
-            // Do the coarse sweep
-            foreach (var phase in conf.Conf.Phases)
-                {
-                SetSignalPhase(ref conf, phase);
-                this.CurrentSweepProgress.CurrentPoint++;
-
-                // The phase gets edited during every iteration 
-                // so this is to make sure values are kept
-                var newConf = new MeasurementSampleConfiguration(
-                    conf.Conf,
-                    conf.SupplyVoltage,
-                    conf.Frequency,
-                    conf.InputPower,
-                    conf.Phase,
-                    conf.Offset.Smu200a,
-                    conf.Offset.E8257d,
-                    conf.Offset.Rsa3408a);
-
-                var sample = TakeMeasurementSample(newConf);
-                samples.Add(sample);
-                }
-            }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="searchMode"></param>
-        /// <param name="samples"></param>
-        /// <param name="orderedSamples">
-        ///     Ordered in descending channel power
-        /// </param>
-        /// <param name="conf"></param>
-        /// <param name="supplyVoltage"></param>
-        /// <param name="frequency"></param>
-        /// <param name="inputPower"></param>
-        /// <param name="offsetSmu200a"></param>
-        /// <param name="offsetE8257d"></param>
-        /// <param name="offsetRsa"></param>
-        private void FindPeakOrTrough(
-            SearchMode searchMode,
-            List<MeasurementSample> samples,
-            MeasurementSample startBestSample,
-            MeasurementSampleConfiguration conf,
-            double exitThreshold,
-            double phaseStep)
-            {
-            var bestSample = startBestSample;
-            double currentPhase;
-
-
-            // Take a new sample next to it
-            currentPhase = bestSample.Conf.Phase + phaseStep;
-            SetSignalPhase(ref conf, currentPhase);
-            var newConf = new MeasurementSampleConfiguration(
-                    conf.Conf,
-                    conf.SupplyVoltage,
-                    conf.Frequency,
-                    conf.InputPower,
-                    conf.Phase,
-                    conf.Offset.Smu200a,
-                    conf.Offset.E8257d,
-                    conf.Offset.Rsa3408a);
-            var newSample = TakeMeasurementSample(newConf);
-            CurrentSweepProgress.CurrentPoint++;
-            this.CurrentSweepProgress.NumberOfPoints++;
-            samples.Add(newSample);
-
-            // Is the new sample is better
-            // If not, search in the other direction
-            if (PeakTroughComparison(searchMode, ref bestSample, newSample)
-                == NewSampleResult.Worse)
-                {
-                phaseStep *= -1;
-                }
-
-            currentPhase = bestSample.Conf.Phase;
-            // Keep looping until we've moved exitThreshold dB
-            // away from the best found value
-            while (EvaluateNewSample(
-                bestSample,
-                newSample,
-                searchMode,
-                exitThreshold)
-                == PhaseSweepLoopStatus.Continue)
-                {
-                currentPhase += phaseStep;
-                SetSignalPhase(ref conf, currentPhase);
-                newConf = new MeasurementSampleConfiguration(
-                    conf.Conf,
-                    conf.SupplyVoltage,
-                    conf.Frequency,
-                    conf.InputPower,
-                    conf.Phase,
-                    conf.Offset.Smu200a,
-                    conf.Offset.E8257d,
-                    conf.Offset.Rsa3408a);
-                newSample = TakeMeasurementSample(newConf);
-                this.CurrentSweepProgress.CurrentPoint++;
-                this.CurrentSweepProgress.NumberOfPoints++;
-                samples.Add(newSample);
-                PeakTroughComparison(searchMode, ref bestSample, newSample);
-                }
-            }
-
         private MeasurementSample TakeMeasurementSample(
             MeasurementSampleConfiguration conf)
             {
@@ -762,51 +680,15 @@ namespace OutphasingSweepController
                 dcResults =
                     this.hp6624a.OutphasingOptimisedMeasurement(conf.SupplyVoltage);
             });
-            
+
             Task.WaitAll(readTasks);
 
             return new MeasurementSample(
-                conf, 
-                dcResults.PowerWatts, 
-                measuredPoutdBm, 
-                channelPowerdBm, 
+                conf,
+                dcResults.PowerWatts,
+                measuredPoutdBm,
+                channelPowerdBm,
                 dcResults.Currents);
-            }
-
-        private void SaveMeasurementSample(
-            StreamWriter outputFile, 
-            MeasurementSample sample)
-            {
-            var outputLine =
-                $"{sample.Conf.Frequency}" // 1
-                + $", {sample.InputPowerdBm}"
-                + $", {sample.Conf.Phase}"
-                + $", {sample.Conf.Conf.Temperature}"
-                + $", {sample.Conf.Conf.Corner}" // 5
-                + $", {sample.Conf.SupplyVoltage}"
-                + $", {sample.MeasuredPowerDcWatts}"
-                + $", {sample.MeasuredOutputPowerdBm}"
-                + $", {sample.CalibratedOutputPowerdBm}"
-                + $", {sample.Conf.Offset.Smu200a}" // 10
-                + $", {sample.Conf.Offset.E8257d}"
-                + $", {sample.Conf.Offset.Rsa3408a}"
-                + $", {sample.CalibratedDrainEfficiency}"
-                + $", {sample.CalibratedPowerAddedEfficiency}"
-                + $", {sample.MeasuredChannelPowerdBm}" // 15
-                + $", {sample.Conf.Conf.MeasurementFrequencySpan}"
-                + $", {sample.Conf.Conf.MeasurementChannelBandwidth}"
-                + $", {sample.CalibratedGaindB}";
-
-            for(int i = 0; i < HP6624A.NumChannels; i++)
-                {
-                var channelNumber = i + 1;
-                if (this.hp6624a.ChannelStates[i])
-                    {
-                    outputLine += $", {sample.DcCurrent[i]}";
-                    }
-                }
-
-            outputFile.WriteLine(outputLine);
             }
 
         private void SweepSettingsControl_LostFocus(
@@ -817,25 +699,16 @@ namespace OutphasingSweepController
 
         private void UpdateEstimatedMeasurementTime()
             {
-            int voltagePoints = 1;
-            if (this.PsuPlus10Percent)
-                {
-                voltagePoints++;
-                }
-            if (this.PsuMinus10Percent)
-                {
-                voltagePoints++;
-                }
-            var freqPoints = this.FrequencySweepSettingsControl.NSteps;
-            var powerPoints = this.PowerSweepSettingsControl.NSteps;
-            var phasePoints = this.PhaseSweepSettingsControl.NSteps;
-            var nPoints = this.EstimatedTimePerSample 
-                * voltagePoints 
-                * freqPoints 
-                * powerPoints 
-                * phasePoints;
+            var voltagePoints = 1
+                + Convert.ToInt64(this.PsuPlus10Percent)
+                + Convert.ToInt64(this.PsuMinus10Percent);
+            var nPoints = this.EstimatedTimePerSample
+                * voltagePoints
+                * this.FrequencySweepSettingsControl.NSteps
+                * this.PowerSweepSettingsControl.NSteps
+                * this.PhaseSweepSettingsControl.NSteps;
             var estimatedMeasurementTime = TimeSpan.FromSeconds(nPoints);
-            this.EstimatedSimulationTimeTextBlock.Text = 
+            this.EstimatedSimulationTimeTextBlock.Text =
               $"Estimated Measurement Time = "
                 + $"{estimatedMeasurementTime.Days} days "
                 + $"{estimatedMeasurementTime.Hours} hours "
@@ -847,9 +720,7 @@ namespace OutphasingSweepController
             var saveDialog = new Microsoft.Win32.SaveFileDialog();
             saveDialog.Filter = "CSV Files (.csv)|*.csv";
             saveDialog.DefaultExt = ".csv";
-            var dialogSuccess = (saveDialog.ShowDialog() == true);
-
-            if (dialogSuccess)
+            if ((saveDialog.ShowDialog() == true))
                 {
                 this.ResultsSavePath = saveDialog.FileName;
                 this.ResultsSavePathTextBlock.Text = this.ResultsSavePath;
@@ -892,10 +763,8 @@ namespace OutphasingSweepController
 
         private void StopSweepButton_Click(object sender, RoutedEventArgs e)
             {
+            this.ToggleGuiActive(on: true);
             this.CurrentSweepProgress.Running = false;
-            this.StopSweepButton.IsEnabled = false;
-            this.StartSweepButton.IsEnabled = true;
-            this.ControllerGrid.IsEnabled = true;
             }
         }
     }
