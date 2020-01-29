@@ -68,11 +68,9 @@ namespace OutphasingSweepController
         // Measurement
         public bool PeakTroughSearch { get; set; } = true;
         SweepProgress CurrentSweepProgress = new SweepProgress(false, 0, 0);
-        MeasurementSample CurrentSample;
         public double EstimatedTimePerSample { get; set; } = 0.32;
         public System.Diagnostics.Stopwatch MeasurementStopWatch =
             new System.Diagnostics.Stopwatch();
-        public Task Measurement;
 
         public MainWindow()
             {
@@ -213,7 +211,7 @@ namespace OutphasingSweepController
 
             var measurementSettings = ParseMeasurementConfiguration();
             this.ToggleGuiActive(on: false);
-            this.Measurement = Task.Factory.StartNew(() =>
+            Task.Factory.StartNew(() =>
             {
                 RunSweep(measurementSettings);
             });
@@ -235,21 +233,6 @@ namespace OutphasingSweepController
                     TimeSpan.FromTicks(timeElapsed.Ticks * (long)timeScaler);
                 var samplesPerSecond = curPt / (double)timeElapsed.TotalSeconds;
                 var secondsPerSample = 1 / samplesPerSecond;
-
-                if (this.CurrentSample != null)
-                    {
-                    this.LastSampleTextBlock.Text =
-                        $"Calibrated Pout: {this.CurrentSample.CalibratedOutputPowerdBm:F2} dBm\n"
-                        + $"Measured Pout: {this.CurrentSample.MeasuredOutputPowerdBm:F2} dBm\n"
-                        + $"Measured Channel Power {this.CurrentSample.MeasuredChannelPowerdBm:F2} dBm\n"
-                        + $"Frequency: {this.CurrentSample.Conf.Frequency:G2} Hz\n"
-                        + $"Pin: {this.CurrentSample.InputPowerdBm:F2} dBm\n"
-                        + $"Supply Voltage: {this.CurrentSample.Conf.SupplyVoltage:F2} V\n"
-                        + $"Calibrated Gain: {this.CurrentSample.CalibratedGaindB:F2} dB\n"
-                        + $"Calibrated PAE: {this.CurrentSample.CalibratedPowerAddedEfficiency:F2} %\n"
-                        + $"Calibrated Drain Efficiency: {this.CurrentSample.CalibratedDrainEfficiency:F2} %\n"
-                        + $"Measured DC Power: {this.CurrentSample.MeasuredPowerDcWatts:F2} W\n";
-                    }
 
                 // Print current point
                 var msg = $"On task {curPt} of {nPts}";
@@ -280,9 +263,7 @@ namespace OutphasingSweepController
                 AddNewLogLine(message);
                 }
             }
-
         
-
         bool MeasurementVariablesCheck()
             {
             if (this.ResultsSavePath == "")
@@ -312,9 +293,9 @@ namespace OutphasingSweepController
             return true;
             }
 
-        private void RunSweep(MeasurementSweepConfiguration conf)
+        private void RunSweep(MeasurementSweepConfiguration sweepConf)
             {
-            var outputFile = new StreamWriter(conf.OutputFilePath);
+            var outputFile = new StreamWriter(sweepConf.OutputFilePath);
             var headerLine =
                 "Frequency (Hz)" // 1
                 + ", Input Power (dBm)"
@@ -345,7 +326,7 @@ namespace OutphasingSweepController
                 }
 
             outputFile.WriteLine(headerLine);
-            var numberOfPoints = conf.MeasurementPoints;
+            var numberOfPoints = sweepConf.MeasurementPoints;
             this.CurrentSweepProgress.CurrentPoint = 1;
             this.CurrentSweepProgress.NumberOfPoints = numberOfPoints;
             this.CurrentSweepProgress.Running = true;
@@ -364,9 +345,9 @@ namespace OutphasingSweepController
             this.rsa3408a.SetSpectrumChannelPowerMeasurementMode();
             this.rsa3408a.SetContinuousMode(continuousOn: false);
 
-            this.rsa3408a.SetFrequencyCenter(conf.Frequencies[0]);
-            this.rsa3408a.SetFrequencySpan(conf.MeasurementFrequencySpan);
-            this.rsa3408a.SetChannelBandwidth(conf.MeasurementChannelBandwidth);
+            this.rsa3408a.SetFrequencyCenter(sweepConf.Frequencies[0]);
+            this.rsa3408a.SetFrequencySpan(sweepConf.MeasurementFrequencySpan);
+            this.rsa3408a.SetChannelBandwidth(sweepConf.MeasurementChannelBandwidth);
             this.rsa3408a.StartSignalAcquisition();
 
             //rsa3408a.SetMarkerState(markerNumber: 1, view: 1, on: true);
@@ -386,18 +367,18 @@ namespace OutphasingSweepController
 
             // All of the sweeps are <= as we want to include the stop
             // value in the sweep
-            foreach (var voltage in conf.Voltages)
+            foreach (var voltage in sweepConf.Voltages)
                 {
                 this.hp6624a.SetPsuVoltageStepped(voltage, 
                     this.RampVoltageStep, 
                     this.PsuRampUpStepTimeMilliseconds);
 
-                foreach (var frequency in conf.Frequencies)
+                foreach (var frequency in sweepConf.Frequencies)
                     {
                     var offsets = new CurrentOffset(
-                        conf.Smu200aOffsets.GetOffset(frequency),
-                        conf.E8257dOffsets.GetOffset(frequency),
-                        conf.Rsa3408aOffsets.GetOffset(frequency));
+                        sweepConf.Smu200aOffsets.GetOffset(frequency),
+                        sweepConf.E8257dOffsets.GetOffset(frequency),
+                        sweepConf.Rsa3408aOffsets.GetOffset(frequency));
 
                     tasksSetFrequency[0] = Task.Factory.StartNew(() =>
                     {
@@ -413,9 +394,18 @@ namespace OutphasingSweepController
                     });
                     Task.WaitAll(tasksSetFrequency);
 
-                    foreach (var inputPower in conf.InputPowers)
+                    foreach (var inputPower in sweepConf.InputPowers)
                         {
                         outputFile.Flush();
+                        if (!this.CurrentSweepProgress.Running)
+                            {
+                            outputFile.Flush();
+                            outputFile.Close();
+                            this.smu200a.SetRfOutputState(on: false);
+                            this.e8257d.SetRfOutputState(on: false);
+                            return;
+                            }
+
                         tasksSetPower[0] =
                             Task.Factory.StartNew(() =>
                             {
@@ -430,31 +420,17 @@ namespace OutphasingSweepController
                             });
                         Task.WaitAll(tasksSetPower);
 
-                        var sampleConf = new MeasurementSampleConfiguration(
-                            conf,
+                        var samples = MeasurementPhaseSweep(
+                            sweepConf,
+                            offsets,
                             voltage,
                             frequency,
-                            inputPower,
-                            -1e12,
-                            offsets.Smu200a,
-                            offsets.E8257d,
-                            offsets.Rsa3408a);
+                            inputPower);
 
-                        var samples = MeasurementPhaseSweep(sampleConf);
                         foreach (var sample in samples)
                             {
                             OutphasingMeasurement.SaveSample(
                                 outputFile, sample, this.hp6624a);
-                            }
-
-                        // End the measurement if signalled
-                        if (!this.CurrentSweepProgress.Running)
-                            {
-                            outputFile.Flush();
-                            outputFile.Close();
-                            this.smu200a.SetRfOutputState(on: false);
-                            this.e8257d.SetRfOutputState(on: false);
-                            return;
                             }
                         }
                     }
@@ -464,188 +440,46 @@ namespace OutphasingSweepController
             this.MeasurementStopWatch.Reset();
             }
 
-        private void SetSignalPhase(
-            ref MeasurementSampleConfiguration conf,
-            double phase)
-            {
-            conf.Phase = phase;
-            this.smu200a.SetSourceDeltaPhase(conf.Phase);
-            }
-
-        private void BasicPhaseSweep(
-            List<MeasurementSample> samples,
-            MeasurementSampleConfiguration conf)
-            {
-            // Do the coarse sweep
-            foreach (var phase in conf.Conf.Phases)
-                {
-                SetSignalPhase(ref conf, phase);
-                this.CurrentSweepProgress.CurrentPoint++;
-                conf.Phase = phase;
-                var sample = TakeMeasurementSample(conf);
-                samples.Add(sample);
-                }
-            }
-
-        private NewSampleResult PeakTroughComparison(
-            SearchMode searchMode,
-            ref MeasurementSample bestSample,
-            MeasurementSample newSample)
-            {
-            var newPower = newSample.MeasuredChannelPowerdBm;
-            var bestPower = bestSample.MeasuredChannelPowerdBm;
-            var newGreater = newPower > bestPower;
-
-            if (searchMode == SearchMode.Peak)
-                {
-                if (newGreater)
-                    {
-                    bestSample = newSample;
-                    return NewSampleResult.Better;
-                    }
-                else
-                    {
-                    return NewSampleResult.Worse;
-                    }
-                }
-            else
-                {
-                if (!newGreater)
-                    {
-                    bestSample = newSample;
-                    return NewSampleResult.Better;
-                    }
-                else
-                    {
-                    return NewSampleResult.Worse;
-                    }
-                }
-            }
-
-        private PhaseSweepLoopStatus EvaluateNewSample(
-            MeasurementSample bestSample,
-            MeasurementSample newSample,
-            SearchMode searchMode,
-            double threshold)
-            {
-            var newPwr = newSample.MeasuredChannelPowerdBm;
-            var bestPwr = bestSample.MeasuredChannelPowerdBm;
-
-            if (searchMode == SearchMode.Peak)
-                {
-                if ((bestPwr - newPwr) < threshold)
-                    {
-                    return PhaseSweepLoopStatus.Continue;
-                    }
-                else
-                    {
-                    return PhaseSweepLoopStatus.Stop;
-                    }
-                }
-            else
-                {
-                if ((newPwr - bestPwr) < threshold)
-                    {
-                    return PhaseSweepLoopStatus.Continue;
-                    }
-                else
-                    {
-                    return PhaseSweepLoopStatus.Stop;
-                    }
-                }
-            }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="searchMode"></param>
-        /// <param name="samples"></param>
-        /// <param name="orderedSamples">
-        ///     Ordered in descending channel power
-        /// </param>
-        /// <param name="conf"></param>
-        /// <param name="supplyVoltage"></param>
-        /// <param name="frequency"></param>
-        /// <param name="inputPower"></param>
-        /// <param name="offsetSmu200a"></param>
-        /// <param name="offsetE8257d"></param>
-        /// <param name="offsetRsa"></param>
-        private void FindPeakOrTrough(
-            SearchMode searchMode,
-            List<MeasurementSample> samples,
-            MeasurementSample startBestSample,
-            MeasurementSampleConfiguration conf,
-            double exitThreshold,
-            double phaseStep)
-            {
-            var bestSample = startBestSample;
-            double currentPhase;
-
-            // Take a new sample next to it
-            currentPhase = bestSample.Conf.Phase + phaseStep;
-            SetSignalPhase(ref conf, currentPhase);
-            this.CurrentSample = TakeMeasurementSample(conf);
-            this.CurrentSweepProgress.CurrentPoint++;
-            this.CurrentSweepProgress.NumberOfPoints++;
-            samples.Add(this.CurrentSample);
-
-            // Is the new sample is better
-            // If not, search in the other direction
-            if (PeakTroughComparison(searchMode, ref bestSample, this.CurrentSample)
-                == NewSampleResult.Worse)
-                {
-                phaseStep *= -1;
-                }
-
-            currentPhase = bestSample.Conf.Phase;
-            // Keep looping until we've moved exitThreshold dB
-            // away from the best found value
-            while (EvaluateNewSample(
-                bestSample,
-                this.CurrentSample,
-                searchMode,
-                exitThreshold)
-                == PhaseSweepLoopStatus.Continue)
-                {
-                currentPhase += phaseStep;
-                SetSignalPhase(ref conf, currentPhase);
-                this.CurrentSample = TakeMeasurementSample(conf);
-                this.CurrentSweepProgress.CurrentPoint++;
-                this.CurrentSweepProgress.NumberOfPoints++;
-                samples.Add(this.CurrentSample);
-                PeakTroughComparison(searchMode, ref bestSample, this.CurrentSample);
-                }
-            }
-
         private List<MeasurementSample> MeasurementPhaseSweep(
-            MeasurementSampleConfiguration conf)
+            MeasurementSweepConfiguration sweepConfig,
+            CurrentOffset offset,
+            double supplyVoltage,
+            double frequency,
+            double inputPower)
             {
             var samples = new List<MeasurementSample>();
-            BasicPhaseSweep(samples, conf);
+            BasicPhaseSweep(
+                samples, 
+                sweepConfig, 
+                supplyVoltage, 
+                frequency, 
+                inputPower, 
+                offset);
 
-            if (!conf.Conf.PeakTroughPhaseSearch)
-                {
-                return samples;
-                }
+            if (!sweepConfig.PeakTroughPhaseSearch) {return samples;}
 
             foreach (var peakSearchSetting
-                in conf.Conf.PhasePeakTroughSearchSettings.PeakSettings)
+                in sweepConfig.PhasePeakTroughSearchSettings.PeakSettings)
                 {
                 var orderedSamples =
                 samples.OrderByDescending(
                     sample => sample.MeasuredChannelPowerdBm).ToList();
                 var bestSample = orderedSamples.First();
                 FindPeakOrTrough(
-                    SearchMode.Peak,
+                    SearchMode.Trough,
                     samples,
                     bestSample,
-                    conf,
+                    sweepConfig,
+                    offset,
+                    supplyVoltage,
+                    frequency,
+                    inputPower,
                     peakSearchSetting.ThresholddB,
                     peakSearchSetting.StepDeg);
                 }
 
             foreach (var troughSearchSetting
-                in conf.Conf.PhasePeakTroughSearchSettings.TroughSettings)
+                in sweepConfig.PhasePeakTroughSearchSettings.TroughSettings)
                 {
                 var orderedSamples =
                 samples.OrderByDescending(
@@ -655,12 +489,42 @@ namespace OutphasingSweepController
                     SearchMode.Trough,
                     samples,
                     bestSample,
-                    conf,
+                    sweepConfig,
+                    offset,
+                    supplyVoltage,
+                    frequency,
+                    inputPower,
                     troughSearchSetting.ThresholddB,
                     troughSearchSetting.StepDeg);
                 }
 
             return samples;
+            }
+
+        private void BasicPhaseSweep(
+            List<MeasurementSample> samples,
+            MeasurementSweepConfiguration sweepConf,
+            double supplyVoltage,
+            double frequency,
+            double inputPower,
+            CurrentOffset offset)
+            {
+            // Do the coarse sweep
+            foreach (var phase in sweepConf.Phases)
+                {
+                this.smu200a.SetSourceDeltaPhase(phase);
+                this.CurrentSweepProgress.CurrentPoint++;
+
+                var sampleConfig = new MeasurementSampleConfiguration(
+                    sweepConf,
+                    supplyVoltage,
+                    frequency,
+                    inputPower,
+                    phase,
+                    offset);
+                var sample = TakeMeasurementSample(sampleConfig);
+                samples.Add(sample);
+                }
             }
 
         private MeasurementSample TakeMeasurementSample(
@@ -673,14 +537,16 @@ namespace OutphasingSweepController
             readTasks[0] = Task.Factory.StartNew(() =>
             {
                 channelPowerdBm = this.rsa3408a.ReadSpectrumChannelPower();
-                measuredPoutdBm = channelPowerdBm;// rsa3408a.GetMarkerYValue(markerNumber: 1, view: 1);
+                //measuredPoutdBm 
+                //    = rsa3408a.GetMarkerYValue(markerNumber: 1, view: 1);
+                measuredPoutdBm = channelPowerdBm;
             });
             readTasks[1] = Task.Factory.StartNew(() =>
             {
-                dcResults =
-                    this.hp6624a.OutphasingOptimisedMeasurement(conf.SupplyVoltage);
+                dcResults = 
+                this.hp6624a.OutphasingOptimisedMeasurement(
+                    conf.SupplyVoltage);
             });
-
             Task.WaitAll(readTasks);
 
             return new MeasurementSample(
@@ -689,6 +555,110 @@ namespace OutphasingSweepController
                 measuredPoutdBm,
                 channelPowerdBm,
                 dcResults.Currents);
+            }
+
+        private void FindPeakOrTrough(
+            SearchMode searchMode,
+            List<MeasurementSample> samples,
+            MeasurementSample startBestSample,
+            MeasurementSweepConfiguration sweepConf,
+            CurrentOffset offset,
+            double supplyVoltage,
+            double frequency,
+            double inputPower,
+            double exitThreshold,
+            double phaseStep)
+            {
+            var bestSample = startBestSample;
+            double currentPhase;
+            MeasurementSample newSample;
+            MeasurementSampleConfiguration sampleConfig;
+
+            // Take a new sample next to it
+            currentPhase = bestSample.Conf.Phase + phaseStep;
+            this.smu200a.SetSourceDeltaPhase(currentPhase);
+            sampleConfig = new MeasurementSampleConfiguration(
+                sweepConf,
+                supplyVoltage,
+                frequency,
+                inputPower,
+                currentPhase,
+                offset);
+            newSample = TakeMeasurementSample(sampleConfig);
+            this.CurrentSweepProgress.CurrentPoint++;
+            this.CurrentSweepProgress.NumberOfPoints++;
+            samples.Add(newSample);
+
+            // Is the new sample is better
+            // If not, search in the other direction
+            if (PeakTroughComparison(searchMode, bestSample, newSample)
+                == NewSampleResult.Worse)
+                {
+                phaseStep *= -1;
+                }
+
+            currentPhase = bestSample.Conf.Phase;
+            newSample = bestSample;
+            // Keep looping until we've moved exitThreshold dB
+            // away from the best found value
+            while (EvaluateNewSample(
+                bestSample,
+                newSample,
+                searchMode,
+                exitThreshold)
+                == PhaseSweepLoopStatus.Continue)
+                {
+                currentPhase += phaseStep;
+                this.smu200a.SetSourceDeltaPhase(currentPhase);
+                sampleConfig = new MeasurementSampleConfiguration(
+                    sweepConf,
+                    supplyVoltage,
+                    frequency,
+                    inputPower,
+                    currentPhase,
+                    offset);
+                newSample = TakeMeasurementSample(sampleConfig);
+                this.CurrentSweepProgress.CurrentPoint++;
+                this.CurrentSweepProgress.NumberOfPoints++;
+                samples.Add(newSample);
+                var newRes = 
+                    PeakTroughComparison(searchMode, bestSample, newSample);
+                if (newRes == NewSampleResult.Better)
+                    {
+                    bestSample = newSample;
+                    }
+                }
+            }
+
+        private NewSampleResult PeakTroughComparison(
+            SearchMode mode,
+            MeasurementSample bestSample,
+            MeasurementSample newSample)
+            {
+            var newPower = newSample.MeasuredChannelPowerdBm;
+            var bestPower = bestSample.MeasuredChannelPowerdBm;
+            var newGreater = newPower > bestPower;
+            var peakBetter = (mode == SearchMode.Peak) && newGreater;
+            var troughBetter = (mode == SearchMode.Trough) && !newGreater;
+            var better = peakBetter || troughBetter;
+            return better ? NewSampleResult.Better : NewSampleResult.Worse;
+            }
+
+        private PhaseSweepLoopStatus EvaluateNewSample(
+            MeasurementSample bestSample,
+            MeasurementSample newSample,
+            SearchMode searchMode,
+            double threshold)
+            {
+            var newPwr = newSample.MeasuredChannelPowerdBm;
+            var bestPwr = bestSample.MeasuredChannelPowerdBm;
+            var peakContinue = (searchMode == SearchMode.Peak) 
+                && ((bestPwr - newPwr) < threshold);
+            var troughContinue = (searchMode == SearchMode.Trough)
+                && ((newPwr - bestPwr) < threshold);
+            var continueMeasure = peakContinue || troughContinue;
+            return continueMeasure ? 
+                PhaseSweepLoopStatus.Continue : PhaseSweepLoopStatus.Stop;
             }
 
         private void SweepSettingsControl_LostFocus(

@@ -38,16 +38,14 @@ namespace OutphasingSweepController
             double frequency,
             double inputPower,
             double phase,
-            double offsetSmu200a,
-            double offsetE8257d,
-            double offsetRsa)
+            CurrentOffset offset)
             {
             this.Conf = conf;
             this.SupplyVoltage = supplyVoltage;
             this.Frequency = frequency;
             this.InputPower = inputPower;
             this.Phase = phase;
-            this.Offset = new CurrentOffset(offsetSmu200a, offsetE8257d, offsetRsa);
+            this.Offset = offset;
             }
         }
     }
