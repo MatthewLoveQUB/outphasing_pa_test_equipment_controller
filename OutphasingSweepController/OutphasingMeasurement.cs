@@ -7,6 +7,7 @@ using System.IO;
 
 namespace OutphasingSweepController
     {
+    // Write a sample to a file stream
     static class OutphasingMeasurement
         {
         public static void SaveSample(

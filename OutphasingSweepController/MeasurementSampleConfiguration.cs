@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace OutphasingSweepController
     {
+    // The offset values in dB for the latest frequency
     public class CurrentOffset
         {
         public double Smu200a;
