@@ -58,6 +58,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="MeasurementSample.cs" />
+    <Compile Include="SampleConfiguration.cs" />
     <Compile Include="SweepParameterInput.xaml.cs">
       <DependentUpon>SweepParameterInput.xaml</DependentUpon>
     </Compile>

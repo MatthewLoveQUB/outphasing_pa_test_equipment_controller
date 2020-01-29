@@ -236,9 +236,9 @@ namespace OutphasingSweepController
                         $"Calibrated Pout: {CurrentSample.CalibratedOutputPowerdBm:F2} dBm\n"
                         + $"Measured Pout: {CurrentSample.MeasuredOutputPowerdBm:F2} dBm\n"
                         + $"Measured Channel Power {CurrentSample.MeasuredChannelPowerdBm:F2} dBm\n"
-                        + $"Frequency: {CurrentSample.Frequency:G2} Hz\n"
+                        + $"Frequency: {CurrentSample.Conf.Frequency:G2} Hz\n"
                         + $"Pin: {CurrentSample.InputPowerdBm:F2} dBm\n"
-                        + $"Supply Voltage: {CurrentSample.SupplyVoltage:F2} V\n"
+                        + $"Supply Voltage: {CurrentSample.Conf.SupplyVoltage:F2} V\n"
                         + $"Calibrated Gain: {CurrentSample.CalibratedGaindB:F2} dB\n"
                         + $"Calibrated PAE: {CurrentSample.CalibratedPowerAddedEfficiency:F2} %\n"
                         + $"Calibrated Drain Efficiency: {CurrentSample.CalibratedDrainEfficiency:F2} %\n"
@@ -475,16 +475,17 @@ namespace OutphasingSweepController
                             });
                         Task.WaitAll(tasksSetPower);
 
-                        var samples = MeasurementPhaseSweep(
+                        var sampleConf = new MeasurementSampleConfiguration(
                             conf,
                             voltage,
                             frequency,
                             inputPower,
+                            -1e12,
                             offsetSmu200a,
                             offsetE8257d,
                             offsetRsa);
 
-                        // Save the new samples
+                        var samples = MeasurementPhaseSweep(sampleConf);
                         foreach (var sample in samples)
                             {
                             SaveMeasurementSample(outputFile, sample);
@@ -507,30 +508,25 @@ namespace OutphasingSweepController
             MeasurementStopWatch.Reset();
             }
 
+        private void SetSignalPhase(
+            ref MeasurementSampleConfiguration conf,
+            double phase)
+            {
+            conf.Phase = phase;
+            smu200a.SetSourceDeltaPhase(conf.Phase);
+            }
+
         private void BasicPhaseSweep(
             List<MeasurementSample> samples,
-            MeasurementSweepConfiguration conf,
-            double supplyVoltage,
-            double frequency,
-            double inputPower,
-            double offsetSmu200a,
-            double offsetE8257d,
-            double offsetRsa)
+            MeasurementSampleConfiguration conf)
             {
             // Do the coarse sweep
-            foreach (var phase in conf.Phases)
+            foreach (var phase in conf.Conf.Phases)
                 {
-                smu200a.SetSourceDeltaPhase(phase);
-                CurrentSweepProgress.CurrentPoint += 1;
-                var sample = TakeMeasurementSample(
-                    conf,
-                    supplyVoltage,
-                    frequency,
-                    inputPower,
-                    phase,
-                    offsetSmu200a,
-                    offsetE8257d,
-                    offsetRsa);
+                SetSignalPhase(ref conf, phase);
+                CurrentSweepProgress.CurrentPoint++;
+                conf.Phase = phase;
+                var sample = TakeMeasurementSample(conf);
                 samples.Add(sample);
                 }
             }
@@ -622,91 +618,56 @@ namespace OutphasingSweepController
             SearchMode searchMode,
             List<MeasurementSample> samples,
             MeasurementSample startBestSample,
-            MeasurementSweepConfiguration conf,
-            double supplyVoltage,
-            double frequency,
-            double inputPower,
-            double offsetSmu200a,
-            double offsetE8257d,
-            double offsetRsa,
+            MeasurementSampleConfiguration conf,
             double exitThreshold,
             double phaseStep)
             {
             var bestSample = startBestSample;
-            MeasurementSample newSample;
+            double currentPhase;
 
             // Take a new sample next to it
-            smu200a.SetSourceDeltaPhase(bestSample.PhaseDeg + phaseStep);
-            newSample = TakeMeasurementSample(
-                conf,
-                supplyVoltage,
-                frequency,
-                inputPower,
-                bestSample.PhaseDeg + phaseStep,
-                offsetSmu200a,
-                offsetE8257d,
-                offsetRsa);
+            currentPhase = bestSample.Conf.Phase + phaseStep;
+            SetSignalPhase(ref conf, currentPhase);
+            this.CurrentSample = TakeMeasurementSample(conf);
             CurrentSweepProgress.CurrentPoint++;
             CurrentSweepProgress.NumberOfPoints++;
-            samples.Add(newSample);
+            samples.Add(this.CurrentSample);
 
             // Is the new sample is better
             // If not, search in the other direction
-            if (PeakTroughComparison(searchMode, ref bestSample, newSample) 
+            if (PeakTroughComparison(searchMode, ref bestSample, this.CurrentSample) 
                 == NewSampleResult.Worse)
                 {
                 phaseStep *= -1;
                 }
 
-            var currentPhase = bestSample.PhaseDeg;
+            currentPhase = bestSample.Conf.Phase;
             // Keep looping until we've moved exitThreshold dB
             // away from the best found value
             while (EvaluateNewSample(
-                bestSample, 
-                newSample, 
+                bestSample,
+                this.CurrentSample, 
                 searchMode, 
                 exitThreshold) 
                 == PhaseSweepLoopStatus.Continue)
                 {
                 currentPhase += phaseStep;
-                smu200a.SetSourceDeltaPhase(currentPhase);
-                newSample = TakeMeasurementSample(
-                    conf,
-                    supplyVoltage,
-                    frequency,
-                    inputPower,
-                    currentPhase,
-                    offsetSmu200a,
-                    offsetE8257d,
-                    offsetRsa);
+                SetSignalPhase(ref conf, currentPhase);
+                this.CurrentSample = TakeMeasurementSample(conf);
                 CurrentSweepProgress.CurrentPoint++;
                 CurrentSweepProgress.NumberOfPoints++;
-                samples.Add(newSample);
-                PeakTroughComparison(searchMode, ref bestSample, newSample);
+                samples.Add(this.CurrentSample);
+                PeakTroughComparison(searchMode, ref bestSample, this.CurrentSample);
                 }
             }
 
         private List<MeasurementSample> MeasurementPhaseSweep(
-            MeasurementSweepConfiguration conf,
-            double supplyVoltage,
-            double frequency,
-            double inputPower,
-            double offsetSmu200a,
-            double offsetE8257d,
-            double offsetRsa)
+            MeasurementSampleConfiguration conf)
             {
             var samples = new List<MeasurementSample>();
-            BasicPhaseSweep(
-                samples, 
-                conf, 
-                supplyVoltage, 
-                frequency, 
-                inputPower, 
-                offsetSmu200a, 
-                offsetSmu200a, 
-                offsetRsa);
+            BasicPhaseSweep(samples, conf);
 
-            if (!conf.PeakTroughPhaseSearch)
+            if (!conf.Conf.PeakTroughPhaseSearch)
                 {
                 return samples;
                 }
@@ -723,12 +684,6 @@ namespace OutphasingSweepController
                 samples,
                 bestSample,
                 conf,
-                supplyVoltage,
-                frequency,
-                inputPower,
-                offsetSmu200a,
-                offsetE8257d,
-                offsetRsa,
                 exitThreshold,
                 phaseStep);
 
@@ -740,12 +695,6 @@ namespace OutphasingSweepController
                 samples,
                 bestSample,
                 conf,
-                supplyVoltage,
-                frequency,
-                inputPower,
-                offsetSmu200a,
-                offsetE8257d,
-                offsetRsa,
                 exitThreshold,
                 phaseStep);
 
@@ -753,14 +702,7 @@ namespace OutphasingSweepController
             }
 
         private MeasurementSample TakeMeasurementSample(
-            MeasurementSweepConfiguration conf,
-            double supplyVoltage,
-            double frequency,
-            double inputPower,
-            double phase,
-            double offsetSmu,
-            double offsetE8257d,
-            double offsetRsa)
+            MeasurementSampleConfiguration conf)
             {
             var readTasks = new Task[2];
             double channelPowerdBm = -1;
@@ -774,26 +716,16 @@ namespace OutphasingSweepController
             readTasks[1] = Task.Factory.StartNew(() =>
             {
                 dcResults =
-                    hp6624a.OutphasingOptimisedMeasurement(supplyVoltage);
+                    hp6624a.OutphasingOptimisedMeasurement(conf.SupplyVoltage);
             });
             
             Task.WaitAll(readTasks);
 
             return new MeasurementSample(
-                frequency,
-                inputPower,
-                phase,
-                conf.Temperature,
-                conf.Corner,
-                supplyVoltage,
-                dcResults.PowerWatts,
-                offsetSmu,
-                offsetE8257d,
-                offsetRsa,
-                measuredPoutdBm,
-                conf.MeasurementFrequencySpan,
-                conf.MeasurementChannelBandwidth,
-                channelPowerdBm,
+                conf, 
+                dcResults.PowerWatts, 
+                measuredPoutdBm, 
+                channelPowerdBm, 
                 dcResults.Currents);
             }
 
@@ -802,23 +734,23 @@ namespace OutphasingSweepController
             MeasurementSample sample)
             {
             var outputLine =
-                $"{sample.Frequency}" // 1
+                $"{sample.Conf.Frequency}" // 1
                 + $", {sample.InputPowerdBm}"
-                + $", {sample.PhaseDeg}"
-                + $", {sample.Temperature}"
-                + $", {sample.Corner}" // 5
-                + $", {sample.SupplyVoltage}"
+                + $", {sample.Conf.Phase}"
+                + $", {sample.Conf.Conf.Temperature}"
+                + $", {sample.Conf.Conf.Corner}" // 5
+                + $", {sample.Conf.SupplyVoltage}"
                 + $", {sample.MeasuredPowerDcWatts}"
                 + $", {sample.MeasuredOutputPowerdBm}"
                 + $", {sample.CalibratedOutputPowerdBm}"
-                + $", {sample.OffsetSmu200adB}" // 10
-                + $", {sample.OffsetE8557ddB}"
-                + $", {sample.OffsetRsa3408AdB}"
+                + $", {sample.Conf.Offset.Smu200a}" // 10
+                + $", {sample.Conf.Offset.E8257d}"
+                + $", {sample.Conf.Offset.Rsa3408a}"
                 + $", {sample.CalibratedDrainEfficiency}"
                 + $", {sample.CalibratedPowerAddedEfficiency}"
                 + $", {sample.MeasuredChannelPowerdBm}" // 15
-                + $", {sample.RsaFrequencySpan}"
-                + $", {sample.RsaChannelBandwidth}"
+                + $", {sample.Conf.Conf.MeasurementFrequencySpan}"
+                + $", {sample.Conf.Conf.MeasurementChannelBandwidth}"
                 + $", {sample.CalibratedGaindB}";
 
             for(int i = 0; i < HP6624A.NumChannels; i++)

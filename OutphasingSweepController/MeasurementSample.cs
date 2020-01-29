@@ -9,9 +9,12 @@ namespace OutphasingSweepController
     {
     class MeasurementSample
         {
-        public double Frequency;
-        // Input power without offsets
-        public double InputPowerdBm;
+        public readonly MeasurementSampleConfiguration Conf;
+        public double InputPowerdBm { get
+                {
+                return Conf.InputPower;
+                }
+            }
         public double InputPowerWatts
             {
             get
@@ -19,10 +22,6 @@ namespace OutphasingSweepController
                 return PowerConversion.dBmToWatts(InputPowerdBm);
                 }
             }
-        public double PhaseDeg;
-        public double Temperature;
-        public string Corner;
-        public double SupplyVoltage;
         // Measurement values
         public double MeasuredPowerDcWatts;
         public double MeasuredPowerDcdBm
@@ -32,13 +31,10 @@ namespace OutphasingSweepController
                 return PowerConversion.WattsTodBm(MeasuredPowerDcWatts);
                 }
             }
-        public double OffsetSmu200adB;
-        public double OffsetE8557ddB;
-        public double OffsetRsa3408AdB;
         public double MeasuredOutputPowerdBm;
         public double CalibratedOutputPowerdBm { get
                 {
-                return MeasuredOutputPowerdBm + OffsetRsa3408AdB;
+                return MeasuredOutputPowerdBm + Conf.Offset.Rsa3408a;
                 }
             }
         public double CalibratedOutputPowerWatts {  get
@@ -48,17 +44,18 @@ namespace OutphasingSweepController
             }
         public double CalibratedDrainEfficiency { get
                 {
-                return 100.0 * (CalibratedOutputPowerWatts / MeasuredPowerDcWatts);
+                return 100.0 * 
+                    (CalibratedOutputPowerWatts / MeasuredPowerDcWatts);
                 }
             }
         public double CalibratedPowerAddedEfficiency {  get
                 {
-                return 100.0 * ((CalibratedOutputPowerWatts - InputPowerWatts) / MeasuredPowerDcWatts);
+                return 100.0 * 
+                    ((CalibratedOutputPowerWatts - InputPowerWatts) 
+                    / MeasuredPowerDcWatts);
                 }
             }
         public double MeasuredChannelPowerdBm;
-        public double RsaFrequencySpan;
-        public double RsaChannelBandwidth;
         public double CalibratedGaindB { get
                 {
                 return CalibratedOutputPowerdBm - (InputPowerdBm + 3);
@@ -67,35 +64,15 @@ namespace OutphasingSweepController
         public List<double> DcCurrent;
         
         public MeasurementSample(
-            double frequency,
-            double inputPowerdBm,
-            double phaseDeg,
-            double temperature,
-            string corner,
-            double supplyVoltage,
+            MeasurementSampleConfiguration conf,
             double measuredPowerDcWatts,
-            double offsetSmu,
-            double offsetE8257d,
-            double offsetRsa,
             double measuredPoutdBm,
-            double measurementFrequencySpan,
-            double measurementChannelBandwidth,
             double channelPowerdBm,
             List<double> dcCurrent)
             {
-            Frequency = frequency;
-            InputPowerdBm = inputPowerdBm;
-            PhaseDeg = phaseDeg;
-            Temperature = temperature;
-            Corner = corner;
-            SupplyVoltage = supplyVoltage;
+            Conf = conf;
             MeasuredPowerDcWatts = measuredPowerDcWatts;
-            OffsetSmu200adB = offsetSmu;
-            OffsetE8557ddB = offsetE8257d;
-            OffsetRsa3408AdB = offsetRsa;
             MeasuredOutputPowerdBm = measuredPoutdBm;
-            RsaFrequencySpan = measurementFrequencySpan;
-            RsaChannelBandwidth = measurementChannelBandwidth;
             MeasuredChannelPowerdBm = channelPowerdBm;
             DcCurrent = dcCurrent;
             }
