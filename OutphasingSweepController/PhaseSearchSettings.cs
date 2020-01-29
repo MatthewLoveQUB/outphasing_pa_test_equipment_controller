@@ -6,18 +6,25 @@ using System.Threading.Tasks;
 
 namespace OutphasingSweepController
     {
-    class PhaseSearchSettings
+    public class PhaseSearchSettings
         {
-        List<PhaseSearchSingleSetting> Settings;
+        public List<PhaseSearchSingleSetting> PeakSettings;
+        public List<PhaseSearchSingleSetting> TroughSettings;
 
-        public PhaseSearchSettings(string settingsInput)
+        public PhaseSearchSettings(string peakSettings, string troughSettings)
             {
-            this.Settings = new List<PhaseSearchSingleSetting>();
+            this.PeakSettings = this.ParseInput(peakSettings);
+            this.TroughSettings = this.ParseInput(troughSettings);
+            }
+
+        private List<PhaseSearchSingleSetting> ParseInput(string settingsInput)
+            {
+            var settings = new List<PhaseSearchSingleSetting>();
             var splitInputs = settingsInput
                 .Split(';')
                 .Where(s => s != "")
                 .ToList();
-            foreach(var input in splitInputs)
+            foreach (var input in splitInputs)
                 {
                 var splitSetting = input
                     .Split(',')
@@ -25,8 +32,9 @@ namespace OutphasingSweepController
                     .ToList();
                 var newSetting = new PhaseSearchSingleSetting(
                     splitSetting[0], splitSetting[1]);
-                this.Settings.Add(newSetting);
+                settings.Add(newSetting);
                 }
+            return settings;
             }
         }
     }

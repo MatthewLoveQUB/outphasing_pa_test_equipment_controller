@@ -32,6 +32,7 @@ namespace OutphasingSweepController
         public double MeasurementChannelBandwidth;
         public double MeasurementFrequencySpan;
         public bool PeakTroughPhaseSearch;
+        public PhaseSearchSettings PhasePeakTroughSearchSettings;
         public MeasurementSweepConfiguration(
             List<Double> frequencySettings,
             List<Double> powerSettings,
@@ -45,7 +46,8 @@ namespace OutphasingSweepController
             string Smu200aOffsetFilePath,
             string E8257dOffsetFilePath,
             string Rsa3408aOffsetsFilePath,
-            bool peakTroughPhaseSearch)
+            bool peakTroughPhaseSearch,
+            PhaseSearchSettings phasePeakTroughSearchSettings)
             {
             this.Frequencies = frequencySettings;
             this.InputPowers = powerSettings;
@@ -60,6 +62,7 @@ namespace OutphasingSweepController
             this.E8257dOffsets = new DeviceOffsets(E8257dOffsetFilePath);
             this.Rsa3408aOffsets = new DeviceOffsets(Rsa3408aOffsetsFilePath);
             this.PeakTroughPhaseSearch = peakTroughPhaseSearch;
+            this.PhasePeakTroughSearchSettings = phasePeakTroughSearchSettings;
             }
         }
     }

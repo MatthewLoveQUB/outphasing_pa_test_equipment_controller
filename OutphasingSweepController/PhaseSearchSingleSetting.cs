@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OutphasingSweepController
     {
-    class PhaseSearchSingleSetting
+    public class PhaseSearchSingleSetting
         {
         public double StepDeg;
         public double ThresholddB;

@@ -87,7 +87,7 @@ namespace OutphasingSweepController
             InitializeComponent();
             this.DataContext = this;
             PopulatePsuCheckboxList();
-            //SetUpVisaConnections();
+            SetUpVisaConnections();
             SetUpDispatcherTimer();
             UpdateEstimatedMeasurementTime();
 
@@ -199,7 +199,10 @@ namespace OutphasingSweepController
                 this.Smu200aOffsetsPath,
                 this.E8257dOffsetsPath,
                 this.Rsa3408aOffsetsPath,
-                this.PeakTroughSearch);
+                this.PeakTroughSearch,
+                new PhaseSearchSettings(
+                    this.PeakSearchSettingsTextBox.Text, 
+                    this.TroughSearchSettingsTextBox.Text));
             }
 
         private void StartSweepButton_Click(object sender, RoutedEventArgs e)
@@ -677,31 +680,37 @@ namespace OutphasingSweepController
                 return samples;
                 }
 
-            var orderedSamples = 
+            foreach (var peakSearchSetting 
+                in conf.Conf.PhasePeakTroughSearchSettings.PeakSettings)
+                {
+                var orderedSamples =
                 samples.OrderByDescending(
                     sample => sample.MeasuredChannelPowerdBm).ToList();
+                var bestSample = orderedSamples.First();
+                FindPeakOrTrough(
+                    SearchMode.Peak,
+                    samples,
+                    bestSample,
+                    conf,
+                    peakSearchSetting.ThresholddB,
+                    peakSearchSetting.StepDeg);
+                }
 
-            var bestSample = orderedSamples.First();
-            double exitThreshold = 0.2;
-            double phaseStep = 1;
-            FindPeakOrTrough(
-                SearchMode.Peak,
-                samples,
-                bestSample,
-                conf,
-                exitThreshold,
-                phaseStep);
-
-            bestSample = orderedSamples.Last();
-            exitThreshold = 0.2;
-            phaseStep = 0.1;
-            FindPeakOrTrough(
-                SearchMode.Trough,
-                samples,
-                bestSample,
-                conf,
-                exitThreshold,
-                phaseStep);
+            foreach (var troughSearchSetting
+                in conf.Conf.PhasePeakTroughSearchSettings.TroughSettings)
+                {
+                var orderedSamples =
+                samples.OrderByDescending(
+                    sample => sample.MeasuredChannelPowerdBm).ToList();
+                var bestSample = orderedSamples.Last();
+                FindPeakOrTrough(
+                    SearchMode.Trough,
+                    samples,
+                    bestSample,
+                    conf,
+                    troughSearchSetting.ThresholddB,
+                    troughSearchSetting.StepDeg);
+                }
 
             return samples;
             }
