@@ -90,6 +90,11 @@ namespace OutphasingSweepController
             //SetUpVisaConnections();
             SetUpDispatcherTimer();
             UpdateEstimatedMeasurementTime();
+
+            ResultsSavePathTextBlock.Text = ResultsSavePath;
+            Smu200aOffsetsFilePathTextBlock.Text = Smu200aOffsetsPath;
+            E8257dOffsetsFilePathTextBlock.Text = E8257dOffsetsPath;
+            Rsa3408aOffsetsFilePathTextBlock.Text = Rsa3408aOffsetsPath;
             }
 
         private void PopulatePsuCheckboxList()
