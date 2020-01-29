@@ -13,57 +13,57 @@ namespace QubVisa
 
         public TektronixRSA3408A(string deviceAddress, string saveDir = "")
             {
-            SaveDir = saveDir;
-            Device = new VisaDevice(deviceAddress);
+            this.SaveDir = saveDir;
+            this.Device = new VisaDevice(deviceAddress);
             }
 
         public TektronixRSA3408A(VisaDevice device, string saveDir = "")
             {
-            SaveDir = saveDir;
-            Device = device;
+            this.SaveDir = saveDir;
+            this.Device = device;
             }
 
         // IEEE Common Commands
         public string GetId()
             {
-            return Device.ReadString("*IDN?");
+            return this.Device.ReadString("*IDN?");
             }
 
         public void RunCalibration()
             {
-            Device.connection.RawIO.Write("*CAL?");
+            this.Device.connection.RawIO.Write("*CAL?");
             }
 
         public bool OperationComplete()
             {
             return 
                 Convert.ToBoolean(
-                    Convert.ToInt32(Device.ReadString("*OPC?")));
+                    Convert.ToInt32(this.Device.ReadString("*OPC?")));
             }
 
         public void ResetDevice()
             {
-            Device.connection.RawIO.Write("*RST");
+            this.Device.connection.RawIO.Write("*RST");
             }
 
         // Calculate Commands
         public double GetMarkerYValue(int markerNumber, int view)
             {
             var query = string.Format(":CALC{0}:MARK{1}:Y?", view, markerNumber);
-            return Convert.ToDouble(Device.ReadString(query));
+            return Convert.ToDouble(this.Device.ReadString(query));
             }
 
         public double GetMarkerXValue(int markerNumber, int view)
             {
             var query = string.Format(":CALC{0}:MARK{1}:X?", view, markerNumber);
-            return Convert.ToDouble(Device.ReadString(query));
+            return Convert.ToDouble(this.Device.ReadString(query));
             }
 
         public void SetMarkerXValue(int markerNumber, int view, double xValue)
             {
             var command = 
                 string.Format(":CALC{0}:MARK{1}:X {2}", view, markerNumber, xValue);
-            Device.connection.RawIO.Write(command);
+            this.Device.connection.RawIO.Write(command);
             }
 
         public void SetMarkerXToPositionMode(int markerNumber, int view)
@@ -72,7 +72,7 @@ namespace QubVisa
                 ":CALC{0}:MARK{1}:MODE POS",
                 view,
                 markerNumber);
-            Device.connection.RawIO.Write(msg);
+            this.Device.connection.RawIO.Write(msg);
             }
 
         public void SetMarkerState(int markerNumber, int view, bool on)
@@ -82,44 +82,44 @@ namespace QubVisa
                 view,
                 markerNumber,
                 on ? "ON" : "OFF");
-            Device.connection.RawIO.Write(msg);
+            this.Device.connection.RawIO.Write(msg);
             }
 
         // Configure Commands
         public void SetSpectrumChannelPowerMeasurementMode()
             {
-            Device.connection.RawIO.Write(":CONF:SPEC:CHP");
+            this.Device.connection.RawIO.Write(":CONF:SPEC:CHP");
             }
 
         // Fetch Commands
         public double GetSpectrumChannelPower()
             {
-            return Convert.ToDouble(Device.ReadString(":FETC:SPEC:CHP?"));
+            return Convert.ToDouble(this.Device.ReadString(":FETC:SPEC:CHP?"));
             }
 
         // Initiate Commands
         public void SetContinuousMode(bool continuousOn)
             {
             var message = string.Format(":INIT:CONT {0}", continuousOn ? "ON" : "OFF");
-            Device.connection.RawIO.Write(message);
+            this.Device.connection.RawIO.Write(message);
             }
 
         public void StartSignalAcquisition()
             {
-            Device.connection.RawIO.Write(":INIT");
+            this.Device.connection.RawIO.Write(":INIT");
             }
 
         public void RestartSignalAcquisition()
             {
-            Device.connection.RawIO.Write(":INIT:REST");
+            this.Device.connection.RawIO.Write(":INIT:REST");
             }
 
         // Memory Commands
         public void SaveTrace(string fileName)
             {
-            var filePath = string.Format("{0}//{1}", SaveDir, fileName);
+            var filePath = string.Format("{0}//{1}", this.SaveDir, fileName);
             var message = string.Format(":MMEM:STOR:TRAC {0}", filePath);
-            Device.connection.RawIO.Write(message);
+            this.Device.connection.RawIO.Write(message);
             }
 
         // Read Commands
@@ -129,63 +129,63 @@ namespace QubVisa
         // and take a sample
         public double ReadSpectrumChannelPower()
             {
-            return Convert.ToDouble(Device.ReadString(":READ:SPEC:CHP?"));
+            return Convert.ToDouble(this.Device.ReadString(":READ:SPEC:CHP?"));
             }
 
         // Sense Commands
         public string GetFrequencyBand()
             {
-            return Device.ReadString(":SENSE:FREQ:BAND?");
+            return this.Device.ReadString(":SENSE:FREQ:BAND?");
             }
 
         public void SetFrequencyCenter(double frequency)
             {
             var message = string.Format(":SENS:FREQ:CENT {0}", frequency);
-            Device.connection.RawIO.Write(message);
+            this.Device.connection.RawIO.Write(message);
             }
 
         public double GetFrequencyCenter()
             {
-            return Convert.ToDouble(Device.ReadString(":SENS:FREQ:CENT?"));
+            return Convert.ToDouble(this.Device.ReadString(":SENS:FREQ:CENT?"));
             }
 
         public double GetFrequencySpan()
             {
-            return Convert.ToDouble(Device.ReadString(":SENS:FREQ:SPAN?"));
+            return Convert.ToDouble(this.Device.ReadString(":SENS:FREQ:SPAN?"));
             }
 
         public void SetFrequencySpan(double frequencySpan)
             {
             var message = string.Format(":SENS:FREQ:SPAN {0}", frequencySpan);
-            Device.connection.RawIO.Write(message);
+            this.Device.connection.RawIO.Write(message);
             }
 
         public double GetFrequencyStart()
             {
-            return Convert.ToDouble(Device.ReadString(":SENS:FREQ:STAR?"));
+            return Convert.ToDouble(this.Device.ReadString(":SENS:FREQ:STAR?"));
             }
 
         public void SetFrequencyStart(double startFrequency)
             {
             var message = string.Format(":SENS:FREQ:STAR {0}", startFrequency);
-            Device.connection.RawIO.Write(message);
+            this.Device.connection.RawIO.Write(message);
             }
 
         public string GetFrequencyStop()
             {
-            return Device.ReadString(":SENSE:FREQ:STOP?");
+            return this.Device.ReadString(":SENSE:FREQ:STOP?");
             }
 
         public void SetFrequencyStop(double stopFrequency)
             {
             var message = string.Format(":SENSE:FREQ:STOP {0}", stopFrequency);
-            Device.connection.RawIO.Write(message);
+            this.Device.connection.RawIO.Write(message);
             }
 
         public void SetChannelBandwidth(double bandwidth)
             {
             var message = string.Format(":SENS:CHP:BAND:INT {0}", bandwidth);
-            Device.connection.RawIO.Write(message);
+            this.Device.connection.RawIO.Write(message);
             }
     }
 }

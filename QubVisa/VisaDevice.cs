@@ -13,12 +13,12 @@ namespace QubVisa
         ResourceManager rm;
         public VisaManager()
         {
-            rm = new ResourceManager();
+            this.rm = new ResourceManager();
         }
 
         public List<string> GetAvailableDevices()
         {
-            return rm.Find("?*").ToList();
+            return this.rm.Find("?*").ToList();
         }
     }
 
@@ -29,7 +29,7 @@ namespace QubVisa
         public VisaDevice(string deviceAddress)
         {
             var rm = new ResourceManager();
-            connection = (MessageBasedSession)rm.Open(deviceAddress);
+            this.connection = (MessageBasedSession)rm.Open(deviceAddress);
         }
 
         /// <summary>
@@ -39,10 +39,10 @@ namespace QubVisa
         /// <returns></returns>
         public string ReadString(string command, bool suppressError=true)
         {
-            connection.RawIO.Write(command);
+            this.connection.RawIO.Write(command);
             try
             {
-                return connection.RawIO.ReadString();
+                return this.connection.RawIO.ReadString();
             }
             catch (Ivi.Visa.IOTimeoutException e)
             {

@@ -13,8 +13,8 @@ namespace QubVisa
         public const int NumChannels = 4;
         public HP6624A(string deviceAddress, List<bool> channelStates)
             {
-            Device = new VisaDevice(deviceAddress);
-            ChannelStates = channelStates;
+            this.Device = new VisaDevice(deviceAddress);
+            this.ChannelStates = channelStates;
             }
 
         /// <summary>
@@ -30,26 +30,26 @@ namespace QubVisa
         {
             var commandMessage = 
                 string.Format("{0} {1},{2}", header, channel, data);
-            Device.connection.RawIO.Write(commandMessage);
+            this.Device.connection.RawIO.Write(commandMessage);
         }
 
         private void SendC4Command(string header, int channel, bool data)
         {
             var state = data ? "1" : "0";
             var commandMessage = $"{header} {channel},{state}";
-            Device.connection.RawIO.Write(commandMessage);
+            this.Device.connection.RawIO.Write(commandMessage);
         }
 
         private string ReadQ1Query(string header)
             {
             var message = string.Format("{0};", header);
-            return Device.ReadString(message);
+            return this.Device.ReadString(message);
             }
 
         private string ReadQ2Query(string header, int channel)
         {
             var queryMessage = string.Format("{0} {1};", header, channel);
-            return Device.ReadString(queryMessage);
+            return this.Device.ReadString(queryMessage);
         }
 
         public string GetId()
@@ -116,7 +116,7 @@ namespace QubVisa
             for (int i = 0; i < NumChannels; i++)
                 {
                 var channelNumber = i + 1;
-                bool channelState = ChannelStates[i];
+                bool channelState = this.ChannelStates[i];
                 SetChannelOutputState(channelNumber, on: channelState);
                 if (!channelState)
                     {
@@ -132,7 +132,7 @@ namespace QubVisa
             for(int i = 0; i < NumChannels; i++)
                 {
                 var channelNumber = i + 1;
-                SetChannelOutputState(channelNumber, ChannelStates[i]);
+                SetChannelOutputState(channelNumber, this.ChannelStates[i]);
                 }
             }
 
@@ -141,7 +141,7 @@ namespace QubVisa
             for(int i = 0; i < NumChannels; i++)
                 {
                 int channelNumber = i + 1;
-                var channelActive = ChannelStates[i];
+                var channelActive = this.ChannelStates[i];
                 if (channelActive)
                     {
                     SetChannelVoltage(channelNumber, voltage);
@@ -163,7 +163,7 @@ namespace QubVisa
             for (int i = 0; i < NumChannels; i++)
                 {
                 int channelNumber = i + 1;
-                bool channelActive = ChannelStates[i];
+                bool channelActive = this.ChannelStates[i];
                 if (channelActive)
                     {
                     SetChannelCurrent(channelNumber, current);
@@ -177,7 +177,7 @@ namespace QubVisa
             for (int i = 0; i < NumChannels; i++)
                 {
                 int channelNumber = i + 1;
-                bool channelActive = ChannelStates[i];
+                bool channelActive = this.ChannelStates[i];
                 if (channelActive)
                     {
                     var channelVoltage = 
@@ -199,8 +199,8 @@ namespace QubVisa
             public OutphasingDcMeasurements(
                 double powerWatts, List<double> currents)
                 {
-                PowerWatts = powerWatts;
-                Currents = currents;
+                this.PowerWatts = powerWatts;
+                this.Currents = currents;
                 }
             }
 
@@ -214,7 +214,7 @@ namespace QubVisa
             for (int i = 0; i < NumChannels; i++)
                 {
                 var channelNumber = i + 1;
-                if (ChannelStates[i])
+                if (this.ChannelStates[i])
                     {
                     var currentMeasurement =
                         GetChannelCurrentOutput(channelNumber);

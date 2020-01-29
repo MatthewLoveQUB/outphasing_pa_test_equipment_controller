@@ -29,19 +29,19 @@ namespace OutphasingSweepController
         public List<Double> Values { get
                 {
                 var values = new List<Double>();
-                if(NSteps == 1)
+                if(this.NSteps == 1)
                     {
-                    values.Add(Start);
+                    values.Add(this.Start);
                     return values;
                     }
 
-                for (var x = Start; x <= Stop; x += Step)
+                for (var x = this.Start; x <= this.Stop; x += this.Step)
                     {
                     values.Add(x);
                     }
                 // Due to floating-point errors
                 // let's explicitly set the final value to Stop
-                values[values.Count - 1] = Stop;
+                values[values.Count - 1] = this.Stop;
                 return values;
                 }
             }
@@ -59,19 +59,19 @@ namespace OutphasingSweepController
 
         private void UpdateFields()
             {
-            if (NSteps == 1)
+            if (this.NSteps == 1)
                 {
-                StopTextBox.IsReadOnly = true;
-                StopTextBox.Background = Brushes.LightGray;
+                this.StopTextBox.IsReadOnly = true;
+                this.StopTextBox.Background = Brushes.LightGray;
                 }
             else
                 {
-                StopTextBox.IsReadOnly = false;
-                StopTextBox.Background = Brushes.Transparent;
+                this.StopTextBox.IsReadOnly = false;
+                this.StopTextBox.Background = Brushes.Transparent;
                 }
 
-            Step = (Stop - Start) / ((double)NSteps - 1.0);
-            StepTextBox.Text = Step.ToString();
+            this.Step = (this.Stop - this.Start) / ((double)this.NSteps - 1.0);
+            this.StepTextBox.Text = this.Step.ToString();
             }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)

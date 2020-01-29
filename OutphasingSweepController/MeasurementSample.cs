@@ -12,14 +12,14 @@ namespace OutphasingSweepController
         public readonly MeasurementSampleConfiguration Conf;
         public double InputPowerdBm { get
                 {
-                return Conf.InputPower;
+                return this.Conf.InputPower;
                 }
             }
         public double InputPowerWatts
             {
             get
                 {
-                return PowerConversion.dBmToWatts(InputPowerdBm);
+                return PowerConversion.dBmToWatts(this.InputPowerdBm);
                 }
             }
         // Measurement values
@@ -28,37 +28,37 @@ namespace OutphasingSweepController
             {
             get
                 {
-                return PowerConversion.WattsTodBm(MeasuredPowerDcWatts);
+                return PowerConversion.WattsTodBm(this.MeasuredPowerDcWatts);
                 }
             }
         public double MeasuredOutputPowerdBm;
         public double CalibratedOutputPowerdBm { get
                 {
-                return MeasuredOutputPowerdBm + Conf.Offset.Rsa3408a;
+                return this.MeasuredOutputPowerdBm + this.Conf.Offset.Rsa3408a;
                 }
             }
         public double CalibratedOutputPowerWatts {  get
                 {
-                return PowerConversion.dBmToWatts(CalibratedOutputPowerdBm);
+                return PowerConversion.dBmToWatts(this.CalibratedOutputPowerdBm);
                 }
             }
         public double CalibratedDrainEfficiency { get
                 {
                 return 100.0 * 
-                    (CalibratedOutputPowerWatts / MeasuredPowerDcWatts);
+                    (this.CalibratedOutputPowerWatts / this.MeasuredPowerDcWatts);
                 }
             }
         public double CalibratedPowerAddedEfficiency {  get
                 {
                 return 100.0 * 
-                    ((CalibratedOutputPowerWatts - InputPowerWatts) 
-                    / MeasuredPowerDcWatts);
+                    ((this.CalibratedOutputPowerWatts - this.InputPowerWatts) 
+                    / this.MeasuredPowerDcWatts);
                 }
             }
         public double MeasuredChannelPowerdBm;
         public double CalibratedGaindB { get
                 {
-                return CalibratedOutputPowerdBm - (InputPowerdBm + 3);
+                return this.CalibratedOutputPowerdBm - (this.InputPowerdBm + 3);
                 }
             }
         public List<double> DcCurrent;
@@ -70,11 +70,11 @@ namespace OutphasingSweepController
             double channelPowerdBm,
             List<double> dcCurrent)
             {
-            Conf = conf;
-            MeasuredPowerDcWatts = measuredPowerDcWatts;
-            MeasuredOutputPowerdBm = measuredPoutdBm;
-            MeasuredChannelPowerdBm = channelPowerdBm;
-            DcCurrent = dcCurrent;
+            this.Conf = conf;
+            this.MeasuredPowerDcWatts = measuredPowerDcWatts;
+            this.MeasuredOutputPowerdBm = measuredPoutdBm;
+            this.MeasuredChannelPowerdBm = channelPowerdBm;
+            this.DcCurrent = dcCurrent;
             }
         }
     }

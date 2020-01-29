@@ -31,9 +31,9 @@ namespace list_visa_devices_dialogue
             if (deviceName != "")
                 {
                 var newPrompt = string.Format("Choose VISA address for {0}", deviceName);
-                AddressPromptTextBlock.Text = newPrompt;
+                this.AddressPromptTextBlock.Text = newPrompt;
                 }
-            AddressList = new ObservableCollection<string>();
+            this.AddressList = new ObservableCollection<string>();
             UpdateVisaAddresses();            
         }
 
@@ -52,16 +52,16 @@ namespace list_visa_devices_dialogue
         {
             var vm = new QubVisa.VisaManager();
             var addresses = vm.GetAvailableDevices();
-            AddressList.Clear();
+            this.AddressList.Clear();
             foreach (string address in addresses)
             {
-                AddressList.Add(address);
+                this.AddressList.Add(address);
             }
         }
 
         private void AddressListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            SelectedAddress = (string)AddressListBox.SelectedItem;
+            this.SelectedAddress = (string)this.AddressListBox.SelectedItem;
         }
     }
 }

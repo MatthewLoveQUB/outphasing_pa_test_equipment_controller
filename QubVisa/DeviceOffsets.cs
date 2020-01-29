@@ -12,7 +12,7 @@ namespace QubVisa
         // The offsets need to be sorted
         public DeviceOffsets(string offsetFilePath)
             {
-            Offsets = new List<AmplitudeOffset>();
+            this.Offsets = new List<AmplitudeOffset>();
             var offsetFile = System.IO.File.OpenText(offsetFilePath);
 
             string line;
@@ -22,7 +22,7 @@ namespace QubVisa
                 var frequency = Convert.ToDouble(values[0]);
                 var offset = Convert.ToDouble(values[1]);
                 var offsetValue = new AmplitudeOffset(frequency, offset);
-                Offsets.Add(offsetValue);
+                this.Offsets.Add(offsetValue);
                 }
             }
 
@@ -31,7 +31,7 @@ namespace QubVisa
             AmplitudeOffset previousOffset = null;
             AmplitudeOffset currentOffset = null;
 
-            foreach(var offset in Offsets)
+            foreach(var offset in this.Offsets)
                 {
                 previousOffset = currentOffset;
                 currentOffset = offset;

@@ -17,9 +17,9 @@ namespace OutphasingSweepController
             double offsetE8257d, 
             double offsetRsa)
             {
-            Smu200a = offsetSmu200a;
-            E8257d = offsetE8257d;
-            Rsa3408a = offsetRsa;
+            this.Smu200a = offsetSmu200a;
+            this.E8257d = offsetE8257d;
+            this.Rsa3408a = offsetRsa;
             }
         }
 
@@ -42,12 +42,12 @@ namespace OutphasingSweepController
             double offsetE8257d,
             double offsetRsa)
             {
-            Conf = conf;
-            SupplyVoltage = supplyVoltage;
-            Frequency = frequency;
-            InputPower = inputPower;
-            Phase = phase;
-            Offset = new CurrentOffset(offsetSmu200a, offsetE8257d, offsetRsa);
+            this.Conf = conf;
+            this.SupplyVoltage = supplyVoltage;
+            this.Frequency = frequency;
+            this.InputPower = inputPower;
+            this.Phase = phase;
+            this.Offset = new CurrentOffset(offsetSmu200a, offsetE8257d, offsetRsa);
             }
         }
     }

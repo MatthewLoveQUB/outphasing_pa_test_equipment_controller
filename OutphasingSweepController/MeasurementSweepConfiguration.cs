@@ -23,10 +23,10 @@ namespace OutphasingSweepController
             {
             get
                 {
-                return Frequencies.Count
-                    * InputPowers.Count
-                    * Phases.Count
-                    * Voltages.Count;
+                return this.Frequencies.Count
+                    * this.InputPowers.Count
+                    * this.Phases.Count
+                    * this.Voltages.Count;
                 }
             }
         public double MeasurementChannelBandwidth;
@@ -47,19 +47,19 @@ namespace OutphasingSweepController
             string Rsa3408aOffsetsFilePath,
             bool peakTroughPhaseSearch)
             {
-            Frequencies = frequencySettings;
-            InputPowers = powerSettings;
-            Phases = phaseSettings;
-            Temperature = temperature;
-            Corner = corner;
-            Voltages = voltages;
-            MeasurementChannelBandwidth = measurementBandwidth;
-            MeasurementFrequencySpan = measurementSpan;
-            OutputFilePath = outputFilePath;
-            Smu200aOffsets = new DeviceOffsets(Smu200aOffsetFilePath);
-            E8257dOffsets = new DeviceOffsets(E8257dOffsetFilePath);
-            Rsa3408aOffsets = new DeviceOffsets(Rsa3408aOffsetsFilePath);
-            PeakTroughPhaseSearch = peakTroughPhaseSearch;
+            this.Frequencies = frequencySettings;
+            this.InputPowers = powerSettings;
+            this.Phases = phaseSettings;
+            this.Temperature = temperature;
+            this.Corner = corner;
+            this.Voltages = voltages;
+            this.MeasurementChannelBandwidth = measurementBandwidth;
+            this.MeasurementFrequencySpan = measurementSpan;
+            this.OutputFilePath = outputFilePath;
+            this.Smu200aOffsets = new DeviceOffsets(Smu200aOffsetFilePath);
+            this.E8257dOffsets = new DeviceOffsets(E8257dOffsetFilePath);
+            this.Rsa3408aOffsets = new DeviceOffsets(Rsa3408aOffsetsFilePath);
+            this.PeakTroughPhaseSearch = peakTroughPhaseSearch;
             }
         }
     }
