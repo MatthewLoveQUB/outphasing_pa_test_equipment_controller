@@ -10,30 +10,7 @@ using QubVisa;
 
 namespace OutphasingSweepController
     {
-    public enum SearchMode
-        {
-        Peak,
-        Trough
-        }
-
-    public enum NewSampleResult
-        {
-        Better,
-        Worse
-        }
-
-    public enum PhaseSweepLoopStatus
-        {
-        Continue,
-        Stop
-        }
-
-    public enum Gradient
-        {
-        Positive,
-        Negative
-        }
-
+    
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -472,7 +449,7 @@ namespace OutphasingSweepController
                     sample => sample.MeasuredChannelPowerdBm).ToList();
                 var bestSample = orderedSamples.First();
                 FindPeakOrTrough(
-                    SearchMode.Trough,
+                    PhaseSearch.Mode.Trough,
                     samples,
                     bestSample,
                     sweepConfig,
@@ -492,7 +469,7 @@ namespace OutphasingSweepController
                     sample => sample.MeasuredChannelPowerdBm).ToList();
                 var bestSample = orderedSamples.Last();
                 FindPeakOrTrough(
-                    SearchMode.Trough,
+                    PhaseSearch.Mode.Trough,
                     samples,
                     bestSample,
                     sweepConfig,
@@ -566,7 +543,7 @@ namespace OutphasingSweepController
             }
 
         private void FindPeakOrTrough(
-            SearchMode searchMode,
+            PhaseSearch.Mode searchMode,
             List<MeasurementSample> samples,
             MeasurementSample startBestSample,
             MeasurementSweepConfiguration sweepConf,
@@ -597,12 +574,12 @@ namespace OutphasingSweepController
             newSample = bestSample;
             // Keep looping until we've moved exitThreshold dB
             // away from the best found value
-            while (EvaluateNewSample(
+            while (PhaseSearch.EvaluateNewSample(
                 bestSample,
                 newSample,
                 searchMode,
                 exitThreshold)
-                == PhaseSweepLoopStatus.Continue)
+                == PhaseSearch.LoopStatus.Continue)
                 {
                 currentPhase += phaseStep;
                 this.smu200a.SetSourceDeltaPhase(currentPhase);
@@ -617,9 +594,9 @@ namespace OutphasingSweepController
                 this.CurrentSweepProgress.CurrentPoint++;
                 this.CurrentSweepProgress.NumberOfPoints++;
                 samples.Add(newSample);
-                var newRes = 
-                    PeakTroughComparison(searchMode, bestSample, newSample);
-                if (newRes == NewSampleResult.Better)
+                var newRes = PhaseSearch.PeakTroughComparison(
+                    searchMode, bestSample, newSample);
+                if (newRes == PhaseSearch.NewSampleResult.Better)
                     {
                     bestSample = newSample;
                     }
@@ -627,7 +604,7 @@ namespace OutphasingSweepController
             }
 
         public double FindSearchDirection(
-            SearchMode searchMode,
+            PhaseSearch.Mode searchMode,
             List<MeasurementSample> samples,
             MeasurementSample bestSample,
             MeasurementSweepConfiguration sweepConf,
@@ -654,7 +631,7 @@ namespace OutphasingSweepController
                     offset);
                 this.smu200a.SetSourceDeltaPhase(phasePos);
                 var samplePos = TakeMeasurementSample(sampleConfigPos);
-                var gradientPos = this.GetGradient(bestSample, samplePos);
+                var gradientPos = PhaseSearch.GetGradient(bestSample, samplePos);
 
                 var phaseNeg = corePhase - (scalar * phaseStep);
                 var sampleConfigNeg = new MeasurementSampleConfiguration(
@@ -666,7 +643,8 @@ namespace OutphasingSweepController
                     offset);
                 this.smu200a.SetSourceDeltaPhase(phasePos);
                 var sampleNeg = TakeMeasurementSample(sampleConfigPos);
-                var gradientNeg = this.GetGradient(bestSample, sampleNeg);
+                var gradientNeg = 
+                    PhaseSearch.GetGradient(bestSample, sampleNeg);
 
                 samples.Add(samplePos);
                 samples.Add(sampleNeg);
@@ -678,58 +656,19 @@ namespace OutphasingSweepController
                     continue;
                     }
 
-                if(searchMode == SearchMode.Peak)
+                if(searchMode == PhaseSearch.Mode.Peak)
                     {
-                    return (gradientPos == Gradient.Positive) ? 1.0 : -1.0;
+                    return (gradientPos == PhaseSearch.Gradient.Positive) ? 1.0 : -1.0;
                     }
                 else
                     {
-                    return (gradientPos == Gradient.Negative) ? 1.0 : -1.0;
+                    return (gradientPos == PhaseSearch.Gradient.Negative) ? 1.0 : -1.0;
                     }
                 }
             }
 
-        private Gradient GetGradient(
-            MeasurementSample sampleRef,
-            MeasurementSample sampleNew)
-            {
-            return (sampleNew.MeasuredChannelPowerdBm
-                > sampleRef.MeasuredChannelPowerdBm)
-                ? Gradient.Positive
-                : Gradient.Negative;
-            }
-
-        private NewSampleResult PeakTroughComparison(
-            SearchMode mode,
-            MeasurementSample bestSample,
-            MeasurementSample newSample)
-            {
-            var newPower = newSample.MeasuredChannelPowerdBm;
-            var bestPower = bestSample.MeasuredChannelPowerdBm;
-            var newGreater = newPower > bestPower;
-            var peakBetter = (mode == SearchMode.Peak) && newGreater;
-            var troughBetter = (mode == SearchMode.Trough) && !newGreater;
-            var better = peakBetter || troughBetter;
-            return better ? NewSampleResult.Better : NewSampleResult.Worse;
-            }
-
-        private PhaseSweepLoopStatus EvaluateNewSample(
-            MeasurementSample bestSample,
-            MeasurementSample newSample,
-            SearchMode searchMode,
-            double threshold)
-            {
-            var newPwr = newSample.MeasuredChannelPowerdBm;
-            var bestPwr = bestSample.MeasuredChannelPowerdBm;
-            var peakContinue = (searchMode == SearchMode.Peak) 
-                && ((bestPwr - newPwr) < threshold);
-            var troughContinue = (searchMode == SearchMode.Trough)
-                && ((newPwr - bestPwr) < threshold);
-            var continueMeasure = peakContinue || troughContinue;
-            return continueMeasure ? 
-                PhaseSweepLoopStatus.Continue : PhaseSweepLoopStatus.Stop;
-            }
-
+        
+        
         private void SweepSettingsControl_LostFocus(
             object sender, RoutedEventArgs e)
             {
