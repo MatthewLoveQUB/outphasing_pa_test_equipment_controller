@@ -126,10 +126,7 @@ namespace OutphasingSweepController
             double exitThreshold,
             double phaseStep)
             {
-            var bestSample = startBestSample;
-            Sample newSample;
-            
-            Func<double, SampleConfig> makeSampleConfig = (double phase) =>
+            SampleConfig makeSampleConfig(double phase)
             {
                 return new SampleConfig(
                     measConfig,
@@ -139,7 +136,15 @@ namespace OutphasingSweepController
                     phase,
                     offset);
             };
+            bool continueSearch(Sample best, Sample current)
+                {
+                var evaluation = EvaluateNewSample(
+                    best, current, searchMode, exitThreshold);
+                return evaluation == LoopStatus.Continue;
+                }
 
+
+            var bestSample = startBestSample;
             phaseStep = FindSearchDirection(
                 searchMode,
                 samples,
@@ -155,13 +160,8 @@ namespace OutphasingSweepController
             // Loop until we've moved exitThreshold dB
             // away from the best found value
             var currentPhase = bestSample.Conf.Phase;
-            newSample = bestSample;
-            while (EvaluateNewSample(
-                bestSample,
-                newSample,
-                searchMode,
-                exitThreshold)
-                == LoopStatus.Continue)
+            var newSample = bestSample;
+            while (continueSearch(bestSample, newSample))
                 {
                 currentPhase += phaseStep;
                 var sampleConfig = makeSampleConfig(currentPhase);
@@ -189,21 +189,20 @@ namespace OutphasingSweepController
             {
             var corePhase = bestSample.Conf.Phase;
 
-            Sample makeSample(double stepScale)
+            Gradient getNewSampleGradient(double stepScale)
                 {
                 var newPhase = corePhase + (stepScale * phaseStep);
                 var newConfig = makeSampleConfig(newPhase);
-                return TakeSample(newConfig, samples);
+                var newSample = TakeSample(newConfig, samples);
+                return GetGradient(bestSample, newSample);
                 }
 
             double scalar = 0.0;
             while (true)
                 {
                 scalar += 1.0;
-                var samplePos = makeSample(scalar);
-                var sampleNeg = makeSample(scalar * -1);
-                var gradientPos = GetGradient(bestSample, samplePos);
-                var gradientNeg = GetGradient(bestSample, sampleNeg);
+                var gradientPos = getNewSampleGradient(scalar);
+                var gradientNeg = getNewSampleGradient(scalar * -1);
 
                 // If both adjacent points move in the same direction
                 // then there's no clear direction to move in
@@ -212,7 +211,7 @@ namespace OutphasingSweepController
                     continue;
                     }
 
-                if (searchMode == PhaseSearch.Mode.Peak)
+                if (searchMode == Mode.Peak)
                     {
                     return (gradientPos == Gradient.Positive) ? 1.0 : -1.0;
                     }
