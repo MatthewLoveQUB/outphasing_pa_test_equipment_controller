@@ -51,7 +51,7 @@ namespace OutphasingSweepController
             if (!sweepConfig.PeakTroughPhaseSearch) { return samples; }
 
             void DoSearch(
-                List<PhaseSearchSingleConfig> searchSettings,
+                List<PhaseSearchPointConfig> searchSettings,
                 Mode mode)
                 {
                 foreach (var searchSetting in searchSettings)

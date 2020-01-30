@@ -61,7 +61,7 @@
     <Compile Include="Sample.cs" />
     <Compile Include="Measurement.cs" />
     <Compile Include="PhaseSearchConfig.cs" />
-    <Compile Include="PhaseSearchSingleConfig.cs" />
+    <Compile Include="PhaseSearchPointConfig.cs" />
     <Compile Include="SampleConfig.cs" />
     <Compile Include="PhaseSearch.cs" />
     <Compile Include="SweepParameterInput.xaml.cs">
