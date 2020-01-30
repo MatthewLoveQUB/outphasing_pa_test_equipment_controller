@@ -534,7 +534,7 @@ namespace OutphasingSweepController
             Sample newSample;
             SampleConfig sampleConfig;
 
-            phaseStep = FindSearchDirection(
+            phaseStep = PhaseSearch.FindSearchDirection(
                 searchMode, 
                 samples, 
                 bestSample, 
@@ -578,72 +578,6 @@ namespace OutphasingSweepController
                 }
             }
 
-        public double FindSearchDirection(
-            PhaseSearch.Mode searchMode,
-            List<Sample> samples,
-            Sample bestSample,
-            MeasurementConfig sweepConf,
-            CurrentOffset offset,
-            double supplyVoltage,
-            double frequency,
-            double inputPower,
-            double phaseStep)
-            {
-            var corePhase = bestSample.Conf.Phase;
-            double scalar = 0.0;
-
-            while (true)
-                {
-                scalar += 1.0;
-
-                var phasePos = corePhase + (scalar * phaseStep);
-                var sampleConfigPos = new SampleConfig(
-                    sweepConf,
-                    supplyVoltage,
-                    frequency,
-                    inputPower,
-                    phasePos,
-                    offset);
-                this.smu200a.SetSourceDeltaPhase(phasePos);
-                var samplePos = Measurement.TakeSample(sampleConfigPos);
-                var gradientPos = PhaseSearch.GetGradient(bestSample, samplePos);
-
-                var phaseNeg = corePhase - (scalar * phaseStep);
-                var sampleConfigNeg = new SampleConfig(
-                    sweepConf,
-                    supplyVoltage,
-                    frequency,
-                    inputPower,
-                    phasePos,
-                    offset);
-                this.smu200a.SetSourceDeltaPhase(phasePos);
-                var sampleNeg = Measurement.TakeSample(sampleConfigPos);
-                var gradientNeg = 
-                    PhaseSearch.GetGradient(bestSample, sampleNeg);
-
-                samples.Add(samplePos);
-                samples.Add(sampleNeg);
-
-                // If both adjacent points move in the same direction
-                // then there's no clear direction to move in
-                if (gradientNeg == gradientPos)
-                    {
-                    continue;
-                    }
-
-                if(searchMode == PhaseSearch.Mode.Peak)
-                    {
-                    return (gradientPos == PhaseSearch.Gradient.Positive) ? 1.0 : -1.0;
-                    }
-                else
-                    {
-                    return (gradientPos == PhaseSearch.Gradient.Negative) ? 1.0 : -1.0;
-                    }
-                }
-            }
-
-        
-        
         private void SweepSettingsControl_LostFocus(
             object sender, RoutedEventArgs e)
             {

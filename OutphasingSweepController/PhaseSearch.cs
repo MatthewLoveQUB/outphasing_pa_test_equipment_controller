@@ -72,5 +72,66 @@ namespace OutphasingSweepController
             return continueMeasure ?
                 LoopStatus.Continue : LoopStatus.Stop;
             }
+
+        public static double FindSearchDirection(
+            PhaseSearch.Mode searchMode,
+            List<Sample> samples,
+            Sample bestSample,
+            MeasurementConfig measConfig,
+            CurrentOffset offset,
+            double supplyVoltage,
+            double frequency,
+            double inputPower,
+            double phaseStep)
+            {
+            SampleConfig makeSampleConfig(double phase)
+                {
+                return new SampleConfig(
+                    measConfig, 
+                    supplyVoltage,
+                    frequency,
+                    inputPower,
+                    phase,
+                    offset);
+                }
+            var corePhase = bestSample.Conf.Phase;
+            Action<double> setPhase = 
+                measConfig.Devices.Smu200a.SetSourceDeltaPhase;
+            Sample makeSample(double stepScale)
+                {
+                var newPhase = corePhase + (stepScale * phaseStep);
+                var sampleConfig = makeSampleConfig(newPhase);
+                setPhase(newPhase);
+                var newSample = Measurement.TakeSample(sampleConfig);
+                samples.Add(newSample);
+                return newSample;
+                }
+
+            double scalar = 0.0;
+            while (true)
+                {
+                scalar += 1.0;
+                var samplePos = makeSample(scalar);
+                var gradientPos = GetGradient(bestSample, samplePos);
+                var sampleNeg = makeSample(scalar * -1);
+                var gradientNeg = GetGradient(bestSample, sampleNeg);
+
+                // If both adjacent points move in the same direction
+                // then there's no clear direction to move in
+                if (gradientNeg == gradientPos)
+                    {
+                    continue;
+                    }
+
+                if (searchMode == PhaseSearch.Mode.Peak)
+                    {
+                    return (gradientPos == Gradient.Positive) ? 1.0 : -1.0;
+                    }
+                else
+                    {
+                    return (gradientPos == Gradient.Negative) ? 1.0 : -1.0;
+                    }
+                }
+            }
         }
     }
