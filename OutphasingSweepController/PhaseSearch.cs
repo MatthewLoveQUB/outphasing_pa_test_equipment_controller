@@ -32,6 +32,127 @@ namespace OutphasingSweepController
             Negative
             }
 
+        private static Sample TakeSample(
+            SampleConfig sampleConfig,
+            List<Sample> samples)
+            {
+            Action<double> setPhase =
+                sampleConfig.MeasConfig.Devices.Smu200a.SetSourceDeltaPhase;
+            setPhase(sampleConfig.Phase);
+            var newSample = Measurement.TakeSample(sampleConfig);
+            samples.Add(newSample);
+            return newSample;
+            }
+
+        public static void FindPeakOrTrough(
+            PhaseSearch.Mode searchMode,
+            List<Sample> samples,
+            Sample startBestSample,
+            MeasurementConfig measConfig,
+            CurrentOffset offset,
+            double supplyVoltage,
+            double frequency,
+            double inputPower,
+            double exitThreshold,
+            double phaseStep)
+            {
+            var bestSample = startBestSample;
+            Sample newSample;
+            
+            Func<double, SampleConfig> makeSampleConfig = (double phase) =>
+            {
+                return new SampleConfig(
+                    measConfig,
+                    supplyVoltage,
+                    frequency,
+                    inputPower,
+                    phase,
+                    offset);
+            };
+
+            phaseStep = FindSearchDirection(
+                searchMode,
+                samples,
+                bestSample,
+                measConfig,
+                offset,
+                supplyVoltage,
+                frequency,
+                inputPower,
+                phaseStep,
+                makeSampleConfig);
+
+            // Loop until we've moved exitThreshold dB
+            // away from the best found value
+            var currentPhase = bestSample.Conf.Phase;
+            newSample = bestSample;
+            while (EvaluateNewSample(
+                bestSample,
+                newSample,
+                searchMode,
+                exitThreshold)
+                == LoopStatus.Continue)
+                {
+                currentPhase += phaseStep;
+                var sampleConfig = makeSampleConfig(currentPhase);
+                newSample = TakeSample(sampleConfig, samples);
+                var newRes = PeakTroughComparison(
+                    searchMode, bestSample, newSample);
+                if (newRes == NewSampleResult.Better)
+                    {
+                    bestSample = newSample;
+                    }
+                }
+            }
+        
+        public static double FindSearchDirection(
+            PhaseSearch.Mode searchMode,
+            List<Sample> samples,
+            Sample bestSample,
+            MeasurementConfig measConfig,
+            CurrentOffset offset,
+            double supplyVoltage,
+            double frequency,
+            double inputPower,
+            double phaseStep,
+            Func<double, SampleConfig> makeSampleConfig)
+            {
+            var corePhase = bestSample.Conf.Phase;
+
+            Sample makeSample(double stepScale)
+                {
+                var newPhase = corePhase + (stepScale * phaseStep);
+                var newConfig = makeSampleConfig(newPhase);
+                return TakeSample(newConfig, samples);
+                }
+
+            double scalar = 0.0;
+            while (true)
+                {
+                scalar += 1.0;
+                var samplePos = makeSample(scalar);
+                var sampleNeg = makeSample(scalar * -1);
+                var gradientPos = GetGradient(bestSample, samplePos);
+                var gradientNeg = GetGradient(bestSample, sampleNeg);
+
+                // If both adjacent points move in the same direction
+                // then there's no clear direction to move in
+                if (gradientNeg == gradientPos)
+                    {
+                    continue;
+                    }
+
+                if (searchMode == PhaseSearch.Mode.Peak)
+                    {
+                    return (gradientPos == Gradient.Positive) ? 1.0 : -1.0;
+                    }
+                else
+                    {
+                    return (gradientPos == Gradient.Negative) ? 1.0 : -1.0;
+                    }
+                }
+            }
+
         public static Gradient GetGradient(
             Sample sampleRef,
             Sample sampleNew)
@@ -71,67 +192,6 @@ namespace OutphasingSweepController
             var continueMeasure = peakContinue || troughContinue;
             return continueMeasure ?
                 LoopStatus.Continue : LoopStatus.Stop;
-            }
-
-        public static double FindSearchDirection(
-            PhaseSearch.Mode searchMode,
-            List<Sample> samples,
-            Sample bestSample,
-            MeasurementConfig measConfig,
-            CurrentOffset offset,
-            double supplyVoltage,
-            double frequency,
-            double inputPower,
-            double phaseStep)
-            {
-            SampleConfig makeSampleConfig(double phase)
-                {
-                return new SampleConfig(
-                    measConfig, 
-                    supplyVoltage,
-                    frequency,
-                    inputPower,
-                    phase,
-                    offset);
-                }
-            var corePhase = bestSample.Conf.Phase;
-            Action<double> setPhase = 
-                measConfig.Devices.Smu200a.SetSourceDeltaPhase;
-            Sample makeSample(double stepScale)
-                {
-                var newPhase = corePhase + (stepScale * phaseStep);
-                var sampleConfig = makeSampleConfig(newPhase);
-                setPhase(newPhase);
-                var newSample = Measurement.TakeSample(sampleConfig);
-                samples.Add(newSample);
-                return newSample;
-                }
-
-            double scalar = 0.0;
-            while (true)
-                {
-                scalar += 1.0;
-                var samplePos = makeSample(scalar);
-                var gradientPos = GetGradient(bestSample, samplePos);
-                var sampleNeg = makeSample(scalar * -1);
-                var gradientNeg = GetGradient(bestSample, sampleNeg);
-
-                // If both adjacent points move in the same direction
-                // then there's no clear direction to move in
-                if (gradientNeg == gradientPos)
-                    {
-                    continue;
-                    }
-
-                if (searchMode == PhaseSearch.Mode.Peak)
-                    {
-                    return (gradientPos == Gradient.Positive) ? 1.0 : -1.0;
-                    }
-                else
-                    {
-                    return (gradientPos == Gradient.Negative) ? 1.0 : -1.0;
-                    }
-                }
             }
         }
     }

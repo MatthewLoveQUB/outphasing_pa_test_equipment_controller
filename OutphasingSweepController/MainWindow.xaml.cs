@@ -455,7 +455,7 @@ namespace OutphasingSweepController
                 samples.OrderByDescending(
                     sample => sample.MeasuredChannelPowerdBm).ToList();
                 var bestSample = orderedSamples.First();
-                FindPeakOrTrough(
+                PhaseSearch.FindPeakOrTrough(
                     PhaseSearch.Mode.Trough,
                     samples,
                     bestSample,
@@ -475,7 +475,7 @@ namespace OutphasingSweepController
                 samples.OrderByDescending(
                     sample => sample.MeasuredChannelPowerdBm).ToList();
                 var bestSample = orderedSamples.Last();
-                FindPeakOrTrough(
+                PhaseSearch.FindPeakOrTrough(
                     PhaseSearch.Mode.Trough,
                     samples,
                     bestSample,
@@ -516,68 +516,6 @@ namespace OutphasingSweepController
                 samples.Add(sample);
                 }
             }
-
-        private void FindPeakOrTrough(
-            PhaseSearch.Mode searchMode,
-            List<Sample> samples,
-            Sample startBestSample,
-            MeasurementConfig sweepConf,
-            CurrentOffset offset,
-            double supplyVoltage,
-            double frequency,
-            double inputPower,
-            double exitThreshold,
-            double phaseStep)
-            {
-            var bestSample = startBestSample;
-            double currentPhase;
-            Sample newSample;
-            SampleConfig sampleConfig;
-
-            phaseStep = PhaseSearch.FindSearchDirection(
-                searchMode, 
-                samples, 
-                bestSample, 
-                sweepConf, 
-                offset, 
-                supplyVoltage, 
-                frequency, 
-                inputPower, 
-                phaseStep);
-
-            currentPhase = bestSample.Conf.Phase;
-            newSample = bestSample;
-            // Keep looping until we've moved exitThreshold dB
-            // away from the best found value
-            while (PhaseSearch.EvaluateNewSample(
-                bestSample,
-                newSample,
-                searchMode,
-                exitThreshold)
-                == PhaseSearch.LoopStatus.Continue)
-                {
-                currentPhase += phaseStep;
-                this.smu200a.SetSourceDeltaPhase(currentPhase);
-                sampleConfig = new SampleConfig(
-                    sweepConf,
-                    supplyVoltage,
-                    frequency,
-                    inputPower,
-                    currentPhase,
-                    offset);
-                newSample = Measurement.TakeSample(sampleConfig);
-                this.CurrentSweepProgress.CurrentPoint++;
-                this.CurrentSweepProgress.NumberOfPoints++;
-                samples.Add(newSample);
-                var newRes = PhaseSearch.PeakTroughComparison(
-                    searchMode, bestSample, newSample);
-                if (newRes == PhaseSearch.NewSampleResult.Better)
-                    {
-                    bestSample = newSample;
-                    }
-                }
-            }
-
         private void SweepSettingsControl_LostFocus(
             object sender, RoutedEventArgs e)
             {

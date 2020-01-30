@@ -16,8 +16,8 @@ namespace OutphasingSweepController
             double channelPowerdBm = -1;
             double measuredPoutdBm = -1;
             HP6624A.OutphasingDcMeasurements dcResults = null;
-            var rsa3408 = conf.MeasurementConf.Devices.Rsa3408a;
-            var hp6624a = conf.MeasurementConf.Devices.Hp6624a;
+            var rsa3408 = conf.MeasConfig.Devices.Rsa3408a;
+            var hp6624a = conf.MeasConfig.Devices.Hp6624a;
 
             var readTasks = new List<Task>()
                 {
@@ -53,8 +53,8 @@ namespace OutphasingSweepController
                 $"{sample.Conf.Frequency}" // 1
                 + $", {sample.InputPowerdBm}"
                 + $", {sample.Conf.Phase}"
-                + $", {sample.Conf.MeasurementConf.Temperature}"
-                + $", {sample.Conf.MeasurementConf.Corner}" // 5
+                + $", {sample.Conf.MeasConfig.Temperature}"
+                + $", {sample.Conf.MeasConfig.Corner}" // 5
                 + $", {sample.Conf.SupplyVoltage}"
                 + $", {sample.MeasuredPowerDcWatts}"
                 + $", {sample.MeasuredOutputPowerdBm}"
@@ -65,8 +65,8 @@ namespace OutphasingSweepController
                 + $", {sample.CalibratedDrainEfficiency}"
                 + $", {sample.CalibratedPowerAddedEfficiency}"
                 + $", {sample.MeasuredChannelPowerdBm}" // 15
-                + $", {sample.Conf.MeasurementConf.MeasurementFrequencySpan}"
-                + $", {sample.Conf.MeasurementConf.MeasurementChannelBandwidth}"
+                + $", {sample.Conf.MeasConfig.MeasurementFrequencySpan}"
+                + $", {sample.Conf.MeasConfig.MeasurementChannelBandwidth}"
                 + $", {sample.CalibratedGaindB}";
 
             for (int i = 0; i < QubVisa.HP6624A.NumChannels; i++)
