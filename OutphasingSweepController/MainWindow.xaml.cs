@@ -60,7 +60,7 @@ namespace OutphasingSweepController
             InitializeComponent();
             this.DataContext = this;
             PopulatePsuCheckboxList();
-            SetUpVisaConnections();
+            //SetUpVisaConnections();
             SetUpDispatcherTimer();
             UpdateEstimatedMeasurementTime();
 
@@ -311,8 +311,6 @@ namespace OutphasingSweepController
             this.MeasurementStopWatch.Restart();
 
             // Pre-setup
-            var tasksSetPower = new Task[2];
-
             // DC supply
             this.hp6624a.SetAllChannelVoltagesToZero();
             this.hp6624a.SetChannelOutputStatesStrong();
@@ -346,7 +344,8 @@ namespace OutphasingSweepController
             // value in the sweep
             foreach (var voltage in sweepConf.Voltages)
                 {
-                this.hp6624a.SetPsuVoltageStepped(voltage, 
+                this.hp6624a.SetPsuVoltageStepped(
+                    voltage, 
                     this.RampVoltageStep, 
                     this.PsuRampUpStepTimeMilliseconds);
 
@@ -378,20 +377,17 @@ namespace OutphasingSweepController
                             this.e8257d.SetRfOutputState(on: false);
                             return;
                             }
-
-                        tasksSetPower[0] =
-                            Task.Factory.StartNew(() =>
+                        Task SetPowerLevel(
+                            Action<double, double> setPower, double offset)
                             {
-                                this.smu200a.SetPowerLevel(
-                                    inputPower, offsets.Smu200a);
-                            });
-                        tasksSetPower[1] =
-                            Task.Factory.StartNew(() =>
+                            return Task.Factory.StartNew(
+                                () => setPower(inputPower, offset));
+                            }
+                        Task.WaitAll(new Task[]
                             {
-                                this.e8257d.SetPowerLevel(
-                                    inputPower, offsets.E8257d);
+                                SetPowerLevel(this.smu200a.SetPowerLevel, offsets.Smu200a),
+                                SetPowerLevel(this.e8257d.SetPowerLevel, offsets.E8257d)
                             });
-                        Task.WaitAll(tasksSetPower);
 
                         var samples = PhaseSearch.MeasurementPhaseSweep(
                             sweepConf,
@@ -450,25 +446,31 @@ namespace OutphasingSweepController
                 }
             }
 
+        private string UserLoadOffset(string name, TextBlock tb)
+            {
+            tb.Text = GetOffsetsPath(name);
+            return tb.Text;
+            }
+
         private void LoadSmu200aOffsetsButton_Click(
             object sender, RoutedEventArgs e)
             {
-            this.Smu200aOffsetsPath = GetOffsetsPath("SMU200A");
-            this.Smu200aOffsetsFilePathTextBlock.Text = this.Smu200aOffsetsPath;
+            this.Smu200aOffsetsPath = 
+                UserLoadOffset("SMU200A", this.Smu200aOffsetsFilePathTextBlock);
             }
 
         private void LoadE8257dOffsetsButton_Click(
             object sender, RoutedEventArgs e)
             {
-            this.E8257dOffsetsPath = GetOffsetsPath("E8257D");
-            this.E8257dOffsetsFilePathTextBlock.Text = this.E8257dOffsetsPath;
+            this.E8257dOffsetsPath = UserLoadOffset(
+                "E8257D", this.E8257dOffsetsFilePathTextBlock);
             }
 
         private void LoadRsa3408adOffsetsButton_Click(
             object sender, RoutedEventArgs e)
             {
-            this.Rsa3408aOffsetsPath = GetOffsetsPath("RSA3408A");
-            this.Rsa3408aOffsetsFilePathTextBlock.Text = this.Rsa3408aOffsetsPath;
+            this.Rsa3408aOffsetsPath = UserLoadOffset(
+                "RSA3408A", this.Rsa3408aOffsetsFilePathTextBlock);
             }
 
         private string GetOffsetsPath(string deviceName)
