@@ -19,7 +19,7 @@ namespace OutphasingSweepController
             var rsa3408 = conf.MeasConfig.Devices.Rsa3408a;
             var hp6624a = conf.MeasConfig.Devices.Hp6624a;
 
-            var readTasks = new List<Task>()
+            Task.WaitAll(new Task[]
                 {
                 Task.Factory.StartNew(() =>
                 {
@@ -32,9 +32,7 @@ namespace OutphasingSweepController
                 {
                     dcResults = hp6624a.OutphasingOptimisedMeasurement(
                         conf.SupplyVoltage);
-                })
-                };
-            Task.WaitAll(readTasks.ToArray());
+                })});
 
             return new Sample(
                 conf,
