@@ -7,8 +7,9 @@ using QubVisa;
 
 namespace OutphasingSweepController
     {
-    public class MeasurementSweepConfiguration
+    public class MeasurementConfig
         {
+        public Equipment Devices;
         public List<Double> Frequencies;
         public List<Double> InputPowers;
         public List<Double> Phases;
@@ -32,8 +33,8 @@ namespace OutphasingSweepController
         public double MeasurementChannelBandwidth;
         public double MeasurementFrequencySpan;
         public bool PeakTroughPhaseSearch;
-        public PhaseSearchSettings PhasePeakTroughSearchSettings;
-        public MeasurementSweepConfiguration(
+        public PhaseSearchConfig PhasePeakTroughSearchSettings;
+        public MeasurementConfig(
             List<Double> frequencySettings,
             List<Double> powerSettings,
             List<Double> phaseSettings,
@@ -47,7 +48,8 @@ namespace OutphasingSweepController
             string E8257dOffsetFilePath,
             string Rsa3408aOffsetsFilePath,
             bool peakTroughPhaseSearch,
-            PhaseSearchSettings phasePeakTroughSearchSettings)
+            PhaseSearchConfig phasePeakTroughSearchSettings,
+            Equipment devices)
             {
             this.Frequencies = frequencySettings;
             this.InputPowers = powerSettings;
@@ -63,6 +65,7 @@ namespace OutphasingSweepController
             this.Rsa3408aOffsets = new DeviceOffsets(Rsa3408aOffsetsFilePath);
             this.PeakTroughPhaseSearch = peakTroughPhaseSearch;
             this.PhasePeakTroughSearchSettings = phasePeakTroughSearchSettings;
+            this.Devices = devices;
             }
         }
     }

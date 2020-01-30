@@ -147,7 +147,7 @@ namespace OutphasingSweepController
             this.SweepLogTextBox.Text = $"{this.SweepLogTextBox.Text}{line}\n";
             }
 
-        private MeasurementSweepConfiguration ParseMeasurementConfiguration()
+        private MeasurementConfig ParseMeasurementConfiguration()
             {
             var frequencySettings = this.FrequencySweepSettingsControl.Values;
             var powerSettings = this.PowerSweepSettingsControl.Values;
@@ -162,7 +162,13 @@ namespace OutphasingSweepController
                 voltages.Add(0.9 * this.PsuNominalVoltage);
                 }
 
-            return new MeasurementSweepConfiguration(
+            var devices = new Equipment(
+                this.hp6624a,
+                this.smu200a,
+                this.rsa3408a,
+                this.e8257d);
+
+            return new MeasurementConfig(
                 frequencySettings,
                 powerSettings,
                 phaseSettings,
@@ -176,9 +182,10 @@ namespace OutphasingSweepController
                 this.E8257dOffsetsPath,
                 this.Rsa3408aOffsetsPath,
                 this.PeakTroughSearch,
-                new PhaseSearchSettings(
+                new PhaseSearchConfig(
                     this.PeakSearchSettingsTextBox.Text,
-                    this.TroughSearchSettingsTextBox.Text));
+                    this.TroughSearchSettingsTextBox.Text),
+                devices);
             }
 
         private void ToggleGuiActive(bool on)
@@ -276,7 +283,7 @@ namespace OutphasingSweepController
             return true;
             }
 
-        private void RunSweep(MeasurementSweepConfiguration sweepConf)
+        private void RunSweep(MeasurementConfig sweepConf)
             {
             var outputFile = new StreamWriter(sweepConf.OutputFilePath);
             var headerLine =
@@ -423,14 +430,14 @@ namespace OutphasingSweepController
             this.MeasurementStopWatch.Reset();
             }
 
-        private List<MeasurementSample> MeasurementPhaseSweep(
-            MeasurementSweepConfiguration sweepConfig,
+        private List<Sample> MeasurementPhaseSweep(
+            MeasurementConfig sweepConfig,
             CurrentOffset offset,
             double supplyVoltage,
             double frequency,
             double inputPower)
             {
-            var samples = new List<MeasurementSample>();
+            var samples = new List<Sample>();
             BasicPhaseSweep(
                 samples, 
                 sweepConfig, 
@@ -485,8 +492,8 @@ namespace OutphasingSweepController
             }
 
         private void BasicPhaseSweep(
-            List<MeasurementSample> samples,
-            MeasurementSweepConfiguration sweepConf,
+            List<Sample> samples,
+            MeasurementConfig sweepConf,
             double supplyVoltage,
             double frequency,
             double inputPower,
@@ -498,7 +505,7 @@ namespace OutphasingSweepController
                 this.smu200a.SetSourceDeltaPhase(phase);
                 this.CurrentSweepProgress.CurrentPoint++;
 
-                var sampleConfig = new MeasurementSampleConfiguration(
+                var sampleConfig = new SampleConfig(
                     sweepConf,
                     supplyVoltage,
                     frequency,
@@ -510,8 +517,8 @@ namespace OutphasingSweepController
                 }
             }
 
-        private MeasurementSample TakeMeasurementSample(
-            MeasurementSampleConfiguration conf)
+        private Sample TakeMeasurementSample(
+            SampleConfig conf)
             {
             double channelPowerdBm = -1;
             double measuredPoutdBm = -1;
@@ -534,7 +541,7 @@ namespace OutphasingSweepController
                 };
             Task.WaitAll(readTasks.ToArray());
 
-            return new MeasurementSample(
+            return new Sample(
                 conf,
                 dcResults.PowerWatts,
                 measuredPoutdBm,
@@ -544,9 +551,9 @@ namespace OutphasingSweepController
 
         private void FindPeakOrTrough(
             PhaseSearch.Mode searchMode,
-            List<MeasurementSample> samples,
-            MeasurementSample startBestSample,
-            MeasurementSweepConfiguration sweepConf,
+            List<Sample> samples,
+            Sample startBestSample,
+            MeasurementConfig sweepConf,
             CurrentOffset offset,
             double supplyVoltage,
             double frequency,
@@ -556,8 +563,8 @@ namespace OutphasingSweepController
             {
             var bestSample = startBestSample;
             double currentPhase;
-            MeasurementSample newSample;
-            MeasurementSampleConfiguration sampleConfig;
+            Sample newSample;
+            SampleConfig sampleConfig;
 
             phaseStep = FindSearchDirection(
                 searchMode, 
@@ -583,7 +590,7 @@ namespace OutphasingSweepController
                 {
                 currentPhase += phaseStep;
                 this.smu200a.SetSourceDeltaPhase(currentPhase);
-                sampleConfig = new MeasurementSampleConfiguration(
+                sampleConfig = new SampleConfig(
                     sweepConf,
                     supplyVoltage,
                     frequency,
@@ -605,9 +612,9 @@ namespace OutphasingSweepController
 
         public double FindSearchDirection(
             PhaseSearch.Mode searchMode,
-            List<MeasurementSample> samples,
-            MeasurementSample bestSample,
-            MeasurementSweepConfiguration sweepConf,
+            List<Sample> samples,
+            Sample bestSample,
+            MeasurementConfig sweepConf,
             CurrentOffset offset,
             double supplyVoltage,
             double frequency,
@@ -622,7 +629,7 @@ namespace OutphasingSweepController
                 scalar += 1.0;
 
                 var phasePos = corePhase + (scalar * phaseStep);
-                var sampleConfigPos = new MeasurementSampleConfiguration(
+                var sampleConfigPos = new SampleConfig(
                     sweepConf,
                     supplyVoltage,
                     frequency,
@@ -634,7 +641,7 @@ namespace OutphasingSweepController
                 var gradientPos = PhaseSearch.GetGradient(bestSample, samplePos);
 
                 var phaseNeg = corePhase - (scalar * phaseStep);
-                var sampleConfigNeg = new MeasurementSampleConfiguration(
+                var sampleConfigNeg = new SampleConfig(
                     sweepConf,
                     supplyVoltage,
                     frequency,

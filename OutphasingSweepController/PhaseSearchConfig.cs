@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace OutphasingSweepController
     {
-    public class PhaseSearchSettings
+    public class PhaseSearchConfig
         {
         public List<PhaseSearchSingleSetting> PeakSettings;
         public List<PhaseSearchSingleSetting> TroughSettings;
 
-        public PhaseSearchSettings(string peakSettings, string troughSettings)
+        public PhaseSearchConfig(string peakSettings, string troughSettings)
             {
             this.PeakSettings = this.ParseInput(peakSettings);
             this.TroughSettings = this.ParseInput(troughSettings);

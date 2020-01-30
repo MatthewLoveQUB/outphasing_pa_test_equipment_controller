@@ -7,10 +7,12 @@ using QubVisa;
 
 namespace OutphasingSweepController
     {
-    public class MeasurementSample
+    public class Sample
         {
-        public readonly MeasurementSampleConfiguration Conf;
-        public double InputPowerdBm { get
+        public readonly SampleConfig Conf;
+        public double InputPowerdBm
+            {
+            get
                 {
                 return this.Conf.InputPower;
                 }
@@ -32,23 +34,31 @@ namespace OutphasingSweepController
                 }
             }
         public double MeasuredOutputPowerdBm;
-        public double CalibratedOutputPowerdBm { get
+        public double CalibratedOutputPowerdBm
+            {
+            get
                 {
                 return this.MeasuredOutputPowerdBm + this.Conf.Offset.Rsa3408a;
                 }
             }
-        public double CalibratedOutputPowerWatts {  get
+        public double CalibratedOutputPowerWatts
+            {
+            get
                 {
                 return PowerConversion.dBmToWatts(this.CalibratedOutputPowerdBm);
                 }
             }
-        public double CalibratedDrainEfficiency { get
+        public double CalibratedDrainEfficiency
+            {
+            get
                 {
                 return 100.0 * 
                     (this.CalibratedOutputPowerWatts / this.MeasuredPowerDcWatts);
                 }
             }
-        public double CalibratedPowerAddedEfficiency {  get
+        public double CalibratedPowerAddedEfficiency
+            {
+            get
                 {
                 return 100.0 * 
                     ((this.CalibratedOutputPowerWatts - this.InputPowerWatts) 
@@ -56,15 +66,26 @@ namespace OutphasingSweepController
                 }
             }
         public double MeasuredChannelPowerdBm;
-        public double CalibratedGaindB { get
+        public double MeasuredChannelPowerWatts
+            {
+            get
+                {
+                return PowerConversion.dBmToWatts(
+                    this.MeasuredChannelPowerdBm);
+                }
+            }
+
+        public double CalibratedGaindB
+            {
+            get
                 {
                 return this.CalibratedOutputPowerdBm - (this.InputPowerdBm + 3);
                 }
             }
         public List<double> DcCurrent;
         
-        public MeasurementSample(
-            MeasurementSampleConfiguration conf,
+        public Sample(
+            SampleConfig conf,
             double measuredPowerDcWatts,
             double measuredPoutdBm,
             double channelPowerdBm,

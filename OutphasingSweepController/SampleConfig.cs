@@ -24,17 +24,17 @@ namespace OutphasingSweepController
             }
         }
 
-    public class MeasurementSampleConfiguration
+    public class SampleConfig
         {
-        public MeasurementSweepConfiguration Conf;
+        public MeasurementConfig Conf;
         public double SupplyVoltage;
         public double Frequency;
         public double InputPower;
         public double Phase;
         public CurrentOffset Offset;
 
-        public MeasurementSampleConfiguration(
-            MeasurementSweepConfiguration conf,
+        public SampleConfig(
+            MeasurementConfig conf,
             double supplyVoltage,
             double frequency,
             double inputPower,

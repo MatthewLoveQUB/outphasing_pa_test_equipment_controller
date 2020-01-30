@@ -33,8 +33,8 @@ namespace OutphasingSweepController
             }
 
         public static Gradient GetGradient(
-            MeasurementSample sampleRef,
-            MeasurementSample sampleNew)
+            Sample sampleRef,
+            Sample sampleNew)
             {
             return (sampleNew.MeasuredChannelPowerdBm
                 > sampleRef.MeasuredChannelPowerdBm)
@@ -44,8 +44,8 @@ namespace OutphasingSweepController
 
         public static NewSampleResult PeakTroughComparison(
             Mode mode,
-            MeasurementSample bestSample,
-            MeasurementSample newSample)
+            Sample bestSample,
+            Sample newSample)
             {
             var newPower = newSample.MeasuredChannelPowerdBm;
             var bestPower = bestSample.MeasuredChannelPowerdBm;
@@ -57,8 +57,8 @@ namespace OutphasingSweepController
             }
 
         public static LoopStatus EvaluateNewSample(
-            MeasurementSample bestSample,
-            MeasurementSample newSample,
+            Sample bestSample,
+            Sample newSample,
             Mode searchMode,
             double threshold)
             {

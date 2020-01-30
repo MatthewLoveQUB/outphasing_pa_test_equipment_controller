@@ -12,7 +12,7 @@ namespace OutphasingSweepController
         {
         public static void SaveSample(
             StreamWriter outputFile,
-            MeasurementSample sample,
+            Sample sample,
             QubVisa.HP6624A hp6624a)
             {
             var outputLine =
@@ -46,5 +46,8 @@ namespace OutphasingSweepController
 
             outputFile.WriteLine(outputLine);
             }
+
+
+
         }
     }
