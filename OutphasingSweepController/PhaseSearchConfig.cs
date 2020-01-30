@@ -8,8 +8,8 @@ namespace OutphasingSweepController
     {
     public class PhaseSearchConfig
         {
-        public List<PhaseSearchSingleSetting> PeakSettings;
-        public List<PhaseSearchSingleSetting> TroughSettings;
+        public List<PhaseSearchSingleConfig> PeakSettings;
+        public List<PhaseSearchSingleConfig> TroughSettings;
 
         public PhaseSearchConfig(string peakSettings, string troughSettings)
             {
@@ -17,9 +17,9 @@ namespace OutphasingSweepController
             this.TroughSettings = this.ParseInput(troughSettings);
             }
 
-        private List<PhaseSearchSingleSetting> ParseInput(string settingsInput)
+        private List<PhaseSearchSingleConfig> ParseInput(string settingsInput)
             {
-            var settings = new List<PhaseSearchSingleSetting>();
+            var settings = new List<PhaseSearchSingleConfig>();
             var splitInputs = settingsInput
                 .Split(';')
                 .Where(s => s != "")
@@ -30,7 +30,7 @@ namespace OutphasingSweepController
                     .Split(',')
                     .Select(x => Convert.ToDouble(x))
                     .ToList();
-                var newSetting = new PhaseSearchSingleSetting(
+                var newSetting = new PhaseSearchSingleConfig(
                     splitSetting[0], splitSetting[1]);
                 settings.Add(newSetting);
                 }

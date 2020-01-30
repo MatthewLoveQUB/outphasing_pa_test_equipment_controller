@@ -419,7 +419,7 @@ namespace OutphasingSweepController
 
                         foreach (var sample in samples)
                             {
-                            OutphasingMeasurement.SaveSample(
+                            Measurement.SaveSample(
                                 outputFile, sample, this.hp6624a);
                             }
                         }
@@ -512,41 +512,9 @@ namespace OutphasingSweepController
                     inputPower,
                     phase,
                     offset);
-                var sample = TakeMeasurementSample(sampleConfig);
+                var sample = Measurement.TakeSample(sampleConfig);
                 samples.Add(sample);
                 }
-            }
-
-        private Sample TakeMeasurementSample(
-            SampleConfig conf)
-            {
-            double channelPowerdBm = -1;
-            double measuredPoutdBm = -1;
-            HP6624A.OutphasingDcMeasurements dcResults = null;
-            var readTasks = new List<Task>()
-                {
-                Task.Factory.StartNew(() =>
-                {
-                    channelPowerdBm = this.rsa3408a.ReadSpectrumChannelPower();
-                    //measuredPoutdBm 
-                    //    = rsa3408a.GetMarkerYValue(markerNumber: 1, view: 1);
-                    measuredPoutdBm = channelPowerdBm;
-                }),
-                Task.Factory.StartNew(() =>
-                {
-                    dcResults =
-                    this.hp6624a.OutphasingOptimisedMeasurement(
-                        conf.SupplyVoltage);
-                })
-                };
-            Task.WaitAll(readTasks.ToArray());
-
-            return new Sample(
-                conf,
-                dcResults.PowerWatts,
-                measuredPoutdBm,
-                channelPowerdBm,
-                dcResults.Currents);
             }
 
         private void FindPeakOrTrough(
@@ -597,7 +565,7 @@ namespace OutphasingSweepController
                     inputPower,
                     currentPhase,
                     offset);
-                newSample = TakeMeasurementSample(sampleConfig);
+                newSample = Measurement.TakeSample(sampleConfig);
                 this.CurrentSweepProgress.CurrentPoint++;
                 this.CurrentSweepProgress.NumberOfPoints++;
                 samples.Add(newSample);
@@ -637,7 +605,7 @@ namespace OutphasingSweepController
                     phasePos,
                     offset);
                 this.smu200a.SetSourceDeltaPhase(phasePos);
-                var samplePos = TakeMeasurementSample(sampleConfigPos);
+                var samplePos = Measurement.TakeSample(sampleConfigPos);
                 var gradientPos = PhaseSearch.GetGradient(bestSample, samplePos);
 
                 var phaseNeg = corePhase - (scalar * phaseStep);
@@ -649,7 +617,7 @@ namespace OutphasingSweepController
                     phasePos,
                     offset);
                 this.smu200a.SetSourceDeltaPhase(phasePos);
-                var sampleNeg = TakeMeasurementSample(sampleConfigPos);
+                var sampleNeg = Measurement.TakeSample(sampleConfigPos);
                 var gradientNeg = 
                     PhaseSearch.GetGradient(bestSample, sampleNeg);
 
