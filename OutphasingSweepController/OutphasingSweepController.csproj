@@ -58,11 +58,11 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Equipment.cs" />
-    <Compile Include="MeasurementSample.cs" />
-    <Compile Include="OutphasingMeasurement.cs" />
-    <Compile Include="PhaseSearchSettings.cs" />
-    <Compile Include="PhaseSearchSingleSetting.cs" />
-    <Compile Include="MeasurementSampleConfiguration.cs" />
+    <Compile Include="Sample.cs" />
+    <Compile Include="Measurement.cs" />
+    <Compile Include="PhaseSearchConfig.cs" />
+    <Compile Include="PhaseSearchSingleConfig.cs" />
+    <Compile Include="SampleConfig.cs" />
     <Compile Include="PhaseSearch.cs" />
     <Compile Include="SweepParameterInput.xaml.cs">
       <DependentUpon>SweepParameterInput.xaml</DependentUpon>
@@ -86,7 +86,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MeasurementSweepConfiguration.cs" />
+    <Compile Include="MeasurementConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

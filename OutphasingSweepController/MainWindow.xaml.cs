@@ -256,31 +256,19 @@ namespace OutphasingSweepController
         
         bool MeasurementVariablesCheck()
             {
-            if (this.ResultsSavePath == "")
+            bool checkPath(string path, string name)
                 {
-                this.LogQueue.Enqueue("No save path entered.");
-                return false;
+                if (path == "")
+                    {
+                    this.LogQueue.Enqueue($"No {name} file path entered.");
+                    return false;
+                    }
+                return true;
                 }
-
-            if (this.Smu200aOffsetsPath == "")
-                {
-                this.LogQueue.Enqueue("No SMU200A amplitude file chosen.");
-                return false;
-                }
-
-            if (this.E8257dOffsetsPath == "")
-                {
-                this.LogQueue.Enqueue("No E8257D amplitude file chosen.");
-                return false;
-                }
-
-            if (this.Rsa3408aOffsetsPath == "")
-                {
-                this.LogQueue.Enqueue("No RSA3408A amplitude file chosen.");
-                return false;
-                }
-
-            return true;
+            return checkPath(this.ResultsSavePath, "save")
+                && checkPath(this.Smu200aOffsetsPath, "SMU200A offset")
+                && checkPath(this.E8257dOffsetsPath, "E8257D offset")
+                && checkPath(this.Rsa3408aOffsetsPath, "RSA3408A offset");
             }
 
         private void RunSweep(MeasurementConfig sweepConf)
@@ -323,7 +311,6 @@ namespace OutphasingSweepController
             this.MeasurementStopWatch.Restart();
 
             // Pre-setup
-            var tasksSetFrequency = new Task[3];
             var tasksSetPower = new Task[2];
 
             // DC supply
@@ -369,20 +356,16 @@ namespace OutphasingSweepController
                         sweepConf.Smu200aOffsets.GetOffset(frequency),
                         sweepConf.E8257dOffsets.GetOffset(frequency),
                         sweepConf.Rsa3408aOffsets.GetOffset(frequency));
-
-                    tasksSetFrequency[0] = Task.Factory.StartNew(() =>
-                    {
-                        this.rsa3408a.SetFrequencyCenter(frequency);
-                    });
-                    tasksSetFrequency[1] = Task.Factory.StartNew(() =>
-                    {
-                        this.smu200a.SetSourceFrequency(frequency);
-                    });
-                    tasksSetFrequency[2] = Task.Factory.StartNew(() =>
-                    {
-                        this.e8257d.SetSourceFrequency(frequency);
-                    });
-                    Task.WaitAll(tasksSetFrequency);
+                    Task SetFrequency(Action<double> setFreq)
+                        {
+                        return Task.Factory.StartNew(() => setFreq(frequency));
+                        }
+                    Task.WaitAll(new Task[]
+                        {
+                            SetFrequency(this.rsa3408a.SetFrequencyCenter),
+                            SetFrequency(this.smu200a.SetSourceFrequency),
+                            SetFrequency(this.e8257d.SetSourceFrequency)
+                        });
 
                     foreach (var inputPower in sweepConf.InputPowers)
                         {
