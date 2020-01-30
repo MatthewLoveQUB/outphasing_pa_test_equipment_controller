@@ -410,7 +410,7 @@ namespace OutphasingSweepController
                             });
                         Task.WaitAll(tasksSetPower);
 
-                        var samples = MeasurementPhaseSweep(
+                        var samples = PhaseSearch.MeasurementPhaseSweep(
                             sweepConf,
                             offsets,
                             voltage,
@@ -429,93 +429,8 @@ namespace OutphasingSweepController
             this.MeasurementStopWatch.Stop();
             this.MeasurementStopWatch.Reset();
             }
-
-        private List<Sample> MeasurementPhaseSweep(
-            MeasurementConfig sweepConfig,
-            CurrentOffset offset,
-            double supplyVoltage,
-            double frequency,
-            double inputPower)
-            {
-            var samples = new List<Sample>();
-            BasicPhaseSweep(
-                samples, 
-                sweepConfig, 
-                supplyVoltage, 
-                frequency, 
-                inputPower, 
-                offset);
-
-            if (!sweepConfig.PeakTroughPhaseSearch) {return samples;}
-
-            foreach (var peakSearchSetting
-                in sweepConfig.PhasePeakTroughSearchSettings.PeakSettings)
-                {
-                var orderedSamples =
-                samples.OrderByDescending(
-                    sample => sample.MeasuredChannelPowerdBm).ToList();
-                var bestSample = orderedSamples.First();
-                PhaseSearch.FindPeakOrTrough(
-                    PhaseSearch.Mode.Trough,
-                    samples,
-                    bestSample,
-                    sweepConfig,
-                    offset,
-                    supplyVoltage,
-                    frequency,
-                    inputPower,
-                    peakSearchSetting.ThresholddB,
-                    peakSearchSetting.StepDeg);
-                }
-
-            foreach (var troughSearchSetting
-                in sweepConfig.PhasePeakTroughSearchSettings.TroughSettings)
-                {
-                var orderedSamples =
-                samples.OrderByDescending(
-                    sample => sample.MeasuredChannelPowerdBm).ToList();
-                var bestSample = orderedSamples.Last();
-                PhaseSearch.FindPeakOrTrough(
-                    PhaseSearch.Mode.Trough,
-                    samples,
-                    bestSample,
-                    sweepConfig,
-                    offset,
-                    supplyVoltage,
-                    frequency,
-                    inputPower,
-                    troughSearchSetting.ThresholddB,
-                    troughSearchSetting.StepDeg);
-                }
-
-            return samples;
-            }
-
-        private void BasicPhaseSweep(
-            List<Sample> samples,
-            MeasurementConfig sweepConf,
-            double supplyVoltage,
-            double frequency,
-            double inputPower,
-            CurrentOffset offset)
-            {
-            // Do the coarse sweep
-            foreach (var phase in sweepConf.Phases)
-                {
-                this.smu200a.SetSourceDeltaPhase(phase);
-                this.CurrentSweepProgress.CurrentPoint++;
-
-                var sampleConfig = new SampleConfig(
-                    sweepConf,
-                    supplyVoltage,
-                    frequency,
-                    inputPower,
-                    phase,
-                    offset);
-                var sample = Measurement.TakeSample(sampleConfig);
-                samples.Add(sample);
-                }
-            }
+        
+        
         private void SweepSettingsControl_LostFocus(
             object sender, RoutedEventArgs e)
             {

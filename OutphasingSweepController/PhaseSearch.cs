@@ -32,20 +32,96 @@ namespace OutphasingSweepController
             Negative
             }
 
+        public static List<Sample> MeasurementPhaseSweep(
+            MeasurementConfig sweepConfig,
+            CurrentOffset offset,
+            double supplyVoltage,
+            double frequency,
+            double inputPower)
+            {
+            var samples = new List<Sample>();
+            BasicPhaseSweep(
+                samples,
+                sweepConfig,
+                supplyVoltage,
+                frequency,
+                inputPower,
+                offset);
+
+            if (!sweepConfig.PeakTroughPhaseSearch) { return samples; }
+
+            void DoSearch(
+                List<PhaseSearchSingleConfig> searchSettings,
+                Mode mode)
+                {
+                foreach (var searchSetting in searchSettings)
+                    {
+                    var orderedSamples =
+                        samples.OrderByDescending(
+                            sample => sample.MeasuredChannelPowerdBm).ToList();
+                    var bestSample = (mode == Mode.Peak)
+                        ? orderedSamples.First()
+                        : orderedSamples.Last();
+                    FindPeakOrTrough(
+                        mode,
+                        samples,
+                        bestSample,
+                        sweepConfig,
+                        offset,
+                        supplyVoltage,
+                        frequency,
+                        inputPower,
+                        searchSetting.ThresholddB,
+                        searchSetting.StepDeg);
+                    }
+
+                }
+
+            DoSearch(sweepConfig.PhaseSearchSettings.Peak, Mode.Peak);
+            DoSearch(sweepConfig.PhaseSearchSettings.Trough, Mode.Trough);
+            return samples;
+            }
+
+        public static void BasicPhaseSweep(
+            List<Sample> samples,
+            MeasurementConfig measConf,
+            double supplyVoltage,
+            double frequency,
+            double inputPower,
+            CurrentOffset offset)
+            {
+            var smu200a = measConf.Devices.Smu200a;
+
+            // Do the coarse sweep
+            foreach (var phase in measConf.Phases)
+                {
+                smu200a.SetSourceDeltaPhase(phase);
+
+                var sampleConfig = new SampleConfig(
+                    measConf,
+                    supplyVoltage,
+                    frequency,
+                    inputPower,
+                    phase,
+                    offset);
+                var sample = Measurement.TakeSample(sampleConfig);
+                samples.Add(sample);
+                }
+            }
+
         private static Sample TakeSample(
             SampleConfig sampleConfig,
             List<Sample> samples)
             {
-            Action<double> setPhase =
-                sampleConfig.MeasConfig.Devices.Smu200a.SetSourceDeltaPhase;
-            setPhase(sampleConfig.Phase);
+            sampleConfig.MeasConfig.Devices.Smu200a.SetSourceDeltaPhase(
+                sampleConfig.Phase);
             var newSample = Measurement.TakeSample(sampleConfig);
             samples.Add(newSample);
             return newSample;
             }
 
         public static void FindPeakOrTrough(
-            PhaseSearch.Mode searchMode,
+            Mode searchMode,
             List<Sample> samples,
             Sample startBestSample,
             MeasurementConfig measConfig,

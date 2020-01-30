@@ -8,13 +8,13 @@ namespace OutphasingSweepController
     {
     public class PhaseSearchConfig
         {
-        public List<PhaseSearchSingleConfig> PeakSettings;
-        public List<PhaseSearchSingleConfig> TroughSettings;
+        public List<PhaseSearchSingleConfig> Peak;
+        public List<PhaseSearchSingleConfig> Trough;
 
         public PhaseSearchConfig(string peakSettings, string troughSettings)
             {
-            this.PeakSettings = this.ParseInput(peakSettings);
-            this.TroughSettings = this.ParseInput(troughSettings);
+            this.Peak = this.ParseInput(peakSettings);
+            this.Trough = this.ParseInput(troughSettings);
             }
 
         private List<PhaseSearchSingleConfig> ParseInput(string settingsInput)
