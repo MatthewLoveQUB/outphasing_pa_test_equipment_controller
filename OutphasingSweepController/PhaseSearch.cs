@@ -41,7 +41,7 @@ namespace OutphasingSweepController
             {
             var samples = new List<Sample>();
             BasicPhaseSweep(
-                samples,
+                samples, 
                 sweepConfig,
                 supplyVoltage,
                 frequency,
@@ -58,7 +58,7 @@ namespace OutphasingSweepController
                     {
                     var orderedSamples =
                         samples.OrderByDescending(
-                            sample => sample.MeasuredChannelPowerdBm).ToList();
+                            s => s.MeasuredChannelPowerdBm).ToList();
                     var bestSample = (mode == Mode.Peak)
                         ? orderedSamples.First()
                         : orderedSamples.Last();
@@ -90,13 +90,8 @@ namespace OutphasingSweepController
             double inputPower,
             CurrentOffset offset)
             {
-            var smu200a = measConf.Devices.Smu200a;
-
-            // Do the coarse sweep
             foreach (var phase in measConf.Phases)
                 {
-                smu200a.SetSourceDeltaPhase(phase);
-
                 var sampleConfig = new SampleConfig(
                     measConf,
                     supplyVoltage,
@@ -104,8 +99,7 @@ namespace OutphasingSweepController
                     inputPower,
                     phase,
                     offset);
-                var sample = Measurement.TakeSample(sampleConfig);
-                samples.Add(sample);
+                TakeSample(sampleConfig, samples);
                 }
             }
 
