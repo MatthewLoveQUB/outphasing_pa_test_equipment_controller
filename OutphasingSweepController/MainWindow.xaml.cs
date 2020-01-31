@@ -63,6 +63,7 @@ namespace OutphasingSweepController
         SetInputPowerDelegate SetInputPower;
         SetRfOutputStateDelegate SetRfOutputState;
         SetFrequecyDelegate SetFrequency;
+        Action<double> SetPhase;
 
         public MainWindow()
             {
@@ -104,11 +105,12 @@ namespace OutphasingSweepController
                 this.e8257d.SetRfOutputState(on);
             };
 
-            void setFrequency(double f)
+            void setFrequency(double frequency)
                 {
                 Task SetFrequency(Action<double> setDeviceFrequency)
                     {
-                    return Task.Factory.StartNew(() => setDeviceFrequency(f));
+                    return Task.Factory.StartNew(
+                        () => setDeviceFrequency(frequency));
                     }
                 Task.WaitAll(new Task[]
                     {
@@ -118,6 +120,7 @@ namespace OutphasingSweepController
                     });
                 }
             this.SetFrequency = setFrequency;
+            this.SetPhase = (x) => this.e8257d.SetSourceDeltaPhase(x);
             }
 
         private void PopulatePsuCheckboxList()
@@ -411,13 +414,10 @@ namespace OutphasingSweepController
                         this.SetInputPower(
                             inputPower, offsets.Smu200a, offsets.E8257d);
 
+                        var phaseSweepConfig = new PhaseSweepConfig(
+                            sweepConf, offsets, voltage, frequency, inputPower);
                         var samples = PhaseSearch.MeasurementPhaseSweep(
-                            new PhaseSweepConfig(
-                            sweepConf,
-                            offsets,
-                            voltage,
-                            frequency,
-                            inputPower));
+                            phaseSweepConfig);
 
                         foreach (var sample in samples)
                             {

@@ -32,13 +32,23 @@ namespace OutphasingSweepController
             Negative
             }
 
+        public enum Direction
+            {
+            Positive,
+            Negative,
+            Stop
+            }
+
         public static List<Sample> MeasurementPhaseSweep(
             PhaseSweepConfig phaseSweepConfig)
             {
             var samples = new List<Sample>();
             BasicPhaseSweep(samples, phaseSweepConfig);
 
-            if (!phaseSweepConfig.MeasurementConfig.PeakTroughPhaseSearch) { return samples; }
+            if (!phaseSweepConfig.MeasurementConfig.PeakTroughPhaseSearch)
+                {
+                return samples;
+                }
 
             void DoSearch(
                 List<PhaseSearchPointConfig> searchSettings,
@@ -52,7 +62,7 @@ namespace OutphasingSweepController
                     var bestSample = (mode == Mode.Peak)
                         ? orderedSamples.First()
                         : orderedSamples.Last();
-                    FindPeakOrTrough(
+                    FindPeakOrTrough1(
                         mode,
                         samples,
                         bestSample,
@@ -88,14 +98,18 @@ namespace OutphasingSweepController
             SampleConfig sampleConfig,
             List<Sample> samples)
             {
-            sampleConfig.PhaseSweepConfig.MeasurementConfig.Devices.E8257d.SetSourceDeltaPhase(
-                sampleConfig.Phase);
+            sampleConfig
+                .PhaseSweepConfig
+                .MeasurementConfig
+                .Devices
+                .E8257d
+                .SetSourceDeltaPhase(sampleConfig.Phase);
             var newSample = Measurement.TakeSample(sampleConfig);
             samples.Add(newSample);
             return newSample;
             }
 
-        public static void FindPeakOrTrough(
+        public static void FindPeakOrTrough1(
             Mode searchMode,
             List<Sample> samples,
             Sample startBestSample,
@@ -223,6 +237,143 @@ namespace OutphasingSweepController
             var continueMeasure = peakContinue || troughContinue;
             return continueMeasure ?
                 LoopStatus.Continue : LoopStatus.Stop;
+            }
+
+        // Version 2
+        private class SamplePair
+            {
+            public Sample Sample1;
+            public Sample Sample2;
+            public double Gradient;
+            public SamplePair(Sample s1, Sample s2)
+                {
+                this.Sample1 = s1;
+                this.Sample2 = s2;
+                this.Gradient = 
+                    s2.MeasuredChannelPowerdBm / s1.MeasuredChannelPowerdBm;
+                }
+            }
+
+        private static Direction GetDirection(SamplePair pair)
+            {
+            var sign = Math.Sign(pair.Gradient);
+            switch (sign)
+                {
+                case 1:
+                    return Direction.Negative;
+                case -1:
+                    return Direction.Positive;
+                default:
+                    // Unlikely to happen
+                    return Direction.Stop;
+                }
+            }
+
+        // Do coarse sweep
+        // Find a pair with the highest gradient whose adjacent pairs
+        // have the same graient
+        // Sweep in the direction of the gradient to find the null
+        // until it inverts.
+        // When it does, sweep around the lowest point
+        // Take the lowest point and shift the phase by 180 degrees
+        // Sweep around that point and we should find a max value
+        public static void FindPeakAndTrough(
+            List<Sample> samples,
+            PhaseSweepConfig phaseSweepConfig)
+            {
+            var samplePairs = new List<SamplePair>();
+            for(int i = 0; i < samples.Count; i++)
+                {
+                if (i+1 == samples.Count)
+                    {
+                    break;
+                    }
+                samplePairs.Add(
+                    new SamplePair(samples[i], samples[i + 1]));
+                }
+
+            var validPairs = new List<SamplePair>();
+            Func<SamplePair, int> getSign = x => Math.Sign(x.Gradient);
+            for (int i = 1; i < samplePairs.Count-1; i++)
+                {
+                var pairs = 
+                    (samplePairs[i - 1], samplePairs[i], samplePairs[i + 1]);
+                var sameGradientSign =
+                    (getSign(pairs.Item1) == getSign(pairs.Item2))
+                     && (getSign(pairs.Item2) == getSign(pairs.Item3));
+                if (sameGradientSign) 
+                    {
+                    validPairs.Add(pairs.Item2);
+                    }
+                }
+            var sortedPairs = 
+                validPairs.OrderByDescending(p => p.Gradient).ToList();
+            var bestPair = sortedPairs.First();
+            var startingGradientSign = getSign(bestPair);
+            var direction = GetDirection(bestPair);
+
+            if (direction == Direction.Stop)
+                {
+                return;
+                }
+            var directionPos = (direction == Direction.Positive);
+            var stepSign = directionPos ? 1.0 : -1.0;
+            var coarseStep = stepSign * 1.0;
+            double currentPhase;
+            Sample newSample;
+            if (directionPos)
+                {
+                newSample = bestPair.Sample2;
+                currentPhase = newSample.Conf.Phase;
+                }
+            else
+                {
+                newSample = bestPair.Sample1;
+                currentPhase = newSample.Conf.Phase;
+                }
+
+            // Sweep until the gradient inverts
+            while (true)
+                {
+                var oldSample = newSample;
+                currentPhase += coarseStep;
+                var sampleConfig = new SampleConfig(
+                    phaseSweepConfig, currentPhase);
+                newSample = TakeSample(sampleConfig, samples);
+                var currentPair = new SamplePair(oldSample, newSample);
+                if(getSign(currentPair) != startingGradientSign)
+                    {
+                    break;
+                    }
+                }
+
+            // Sweep around the best point
+            var lowestPowerSample = samples.OrderByDescending(
+                s => s.MeasuredChannelPowerdBm).ToList().Last();
+            const double fineStep = 0.1;
+            var startingPhase = lowestPowerSample.Conf.Phase - 5.0;
+            var numSamples = 10.0 / fineStep;
+            for (int i = 0; i < numSamples; i++)
+                {
+                currentPhase = ((double)i * fineStep) + startingPhase;
+                var sampleConfig = new SampleConfig(
+                    phaseSweepConfig, currentPhase);
+                newSample = TakeSample(sampleConfig, samples);
+                }
+
+            // Take the new lowest and sweep 180 away to get the highest power
+            lowestPowerSample = samples.OrderByDescending(
+                s => s.MeasuredChannelPowerdBm).ToList().Last();
+            const double powStep = 1;
+            var highPowerPhaseStart = 
+                lowestPowerSample.Conf.Phase + 180.0 - (5*powStep);
+            for (int i = 0; i < 10; i++)
+                {
+                currentPhase = ((double)i * powStep) + highPowerPhaseStart;
+                var sampleConfig = new SampleConfig(
+                    phaseSweepConfig, currentPhase);
+                newSample = TakeSample(sampleConfig, samples);
+                }
             }
         }
     }
