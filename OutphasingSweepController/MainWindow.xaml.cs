@@ -55,6 +55,15 @@ namespace OutphasingSweepController
         public System.Diagnostics.Stopwatch MeasurementStopWatch =
             new System.Diagnostics.Stopwatch();
 
+        // Interface methods
+        private delegate void SetInputPowerDelegate(
+            double inputPower, double offset1, double offset2);
+        private delegate void SetRfOutputStateDelegate(bool on);
+        private delegate void SetFrequecyDelegate(double frequency);
+        SetInputPowerDelegate SetInputPower;
+        SetRfOutputStateDelegate SetRfOutputState;
+        SetFrequecyDelegate SetFrequency;
+
         public MainWindow()
             {
             InitializeComponent();
@@ -72,6 +81,43 @@ namespace OutphasingSweepController
                 this.E8257dOffsetsPath;
             this.Rsa3408aOffsetsFilePathTextBlock.Text = 
                 this.Rsa3408aOffsetsPath;
+
+            void setPow(double inputPower, double offset1, double offset2)
+                {
+                Task SetPowerLevel(
+                    Action<double, double> setPower, double offset)
+                    {
+                    return Task.Factory.StartNew(
+                        () => setPower(inputPower, offset));
+                    }
+                Task.WaitAll(new Task[]
+                    {
+                        SetPowerLevel(this.smu200a.SetPowerLevel, offset1),
+                        SetPowerLevel(this.e8257d.SetPowerLevel, offset2)
+                    });
+                }
+            this.SetInputPower = setPow;
+
+            this.SetRfOutputState = on =>
+            {
+                this.smu200a.SetRfOutputState(on);
+                this.e8257d.SetRfOutputState(on);
+            };
+
+            void setFrequency(double f)
+                {
+                Task SetFrequency(Action<double> setDeviceFrequency)
+                    {
+                    return Task.Factory.StartNew(() => setDeviceFrequency(f));
+                    }
+                Task.WaitAll(new Task[]
+                    {
+                            SetFrequency(this.rsa3408a.SetFrequencyCenter),
+                            SetFrequency(this.smu200a.SetSourceFrequency),
+                            SetFrequency(this.e8257d.SetSourceFrequency)
+                    });
+                }
+            this.SetFrequency = setFrequency;
             }
 
         private void PopulatePsuCheckboxList()
@@ -319,7 +365,6 @@ namespace OutphasingSweepController
             // Spectrum Analyser
             this.rsa3408a.SetSpectrumChannelPowerMeasurementMode();
             this.rsa3408a.SetContinuousMode(continuousOn: false);
-
             this.rsa3408a.SetFrequencyCenter(sweepConf.Frequencies[0]);
             this.rsa3408a.SetFrequencySpan(sweepConf.MeasurementFrequencySpan);
             this.rsa3408a.SetChannelBandwidth(sweepConf.MeasurementChannelBandwidth);
@@ -333,12 +378,9 @@ namespace OutphasingSweepController
             // Set the power sources to an extremely low
             // power before starting the sweep
             // in case they default to some massive value
-            this.smu200a.SetRfOutputState(on: false);
-            this.e8257d.SetRfOutputState(on: false);
-            this.smu200a.SetPowerLevel(-60);
-            this.e8257d.SetPowerLevel(-60);
-            this.smu200a.SetRfOutputState(on: true);
-            this.e8257d.SetRfOutputState(on: true);
+            this.SetRfOutputState(on: false);
+            this.SetInputPower(-60, offset1: 0, offset2: 0);
+            this.SetRfOutputState(on: true);
 
             // All of the sweeps are <= as we want to include the stop
             // value in the sweep
@@ -355,17 +397,7 @@ namespace OutphasingSweepController
                         sweepConf.Smu200aOffsets.GetOffset(frequency),
                         sweepConf.E8257dOffsets.GetOffset(frequency),
                         sweepConf.Rsa3408aOffsets.GetOffset(frequency));
-                    Task SetFrequency(Action<double> setFreq)
-                        {
-                        return Task.Factory.StartNew(() => setFreq(frequency));
-                        }
-                    Task.WaitAll(new Task[]
-                        {
-                            SetFrequency(this.rsa3408a.SetFrequencyCenter),
-                            SetFrequency(this.smu200a.SetSourceFrequency),
-                            SetFrequency(this.e8257d.SetSourceFrequency)
-                        });
-
+                    this.SetFrequency(frequency);
                     foreach (var inputPower in sweepConf.InputPowers)
                         {
                         outputFile.Flush();
@@ -373,21 +405,11 @@ namespace OutphasingSweepController
                             {
                             outputFile.Flush();
                             outputFile.Close();
-                            this.smu200a.SetRfOutputState(on: false);
-                            this.e8257d.SetRfOutputState(on: false);
+                            this.SetRfOutputState(on: false);
                             return;
                             }
-                        Task SetPowerLevel(
-                            Action<double, double> setPower, double offset)
-                            {
-                            return Task.Factory.StartNew(
-                                () => setPower(inputPower, offset));
-                            }
-                        Task.WaitAll(new Task[]
-                            {
-                                SetPowerLevel(this.smu200a.SetPowerLevel, offsets.Smu200a),
-                                SetPowerLevel(this.e8257d.SetPowerLevel, offsets.E8257d)
-                            });
+                        this.SetInputPower(
+                            inputPower, offsets.Smu200a, offsets.E8257d);
 
                         var samples = PhaseSearch.MeasurementPhaseSweep(
                             new PhaseSweepConfig(
