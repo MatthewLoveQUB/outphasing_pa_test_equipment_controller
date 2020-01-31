@@ -25,12 +25,16 @@ namespace QubVisa
     public class VisaDevice
     {
         public MessageBasedSession connection;
+        public Action<string> Write;
 
         public VisaDevice(string deviceAddress)
         {
             var rm = new ResourceManager();
             this.connection = (MessageBasedSession)rm.Open(deviceAddress);
+            this.Write = this.connection.RawIO.Write;
         }
+
+        
 
         /// <summary>
         /// Send a querying command and read the reply.
