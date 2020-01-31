@@ -296,7 +296,7 @@
                 Click="LoadSmu200aOffsetsButton_Click"
                 Content="Load SMU200A offsets" />
             <TextBlock
-                x:Name="Smu200aOffsetsFilePathTextBlock"
+                x:Name="Smr20OffsetsFilePathTextBlock"
                 Grid.Row="11"
                 Grid.Column="2"
                 Grid.ColumnSpan="3"

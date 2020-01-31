@@ -88,7 +88,7 @@ namespace OutphasingSweepController
             SampleConfig sampleConfig,
             List<Sample> samples)
             {
-            sampleConfig.PhaseSweepConfig.MeasurementConfig.Devices.Smu200a.SetSourceDeltaPhase(
+            sampleConfig.PhaseSweepConfig.MeasurementConfig.Devices.E8257d.SetSourceDeltaPhase(
                 sampleConfig.Phase);
             var newSample = Measurement.TakeSample(sampleConfig);
             samples.Add(newSample);

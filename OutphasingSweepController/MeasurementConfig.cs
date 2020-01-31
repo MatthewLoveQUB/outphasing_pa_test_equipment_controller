@@ -17,7 +17,7 @@ namespace OutphasingSweepController
         public string Corner;
         public List<Double> Voltages;
         public string OutputFilePath;
-        public DeviceOffsets Smu200aOffsets;
+        public DeviceOffsets Smr20Offsets;
         public DeviceOffsets E8257dOffsets;
         public DeviceOffsets Rsa3408aOffsets;
         public int MeasurementPoints
@@ -44,7 +44,7 @@ namespace OutphasingSweepController
             double measurementBandwidth,
             double measurementSpan,
             string outputFilePath,
-            string Smu200aOffsetFilePath,
+            string Smr20OffsetFilePath,
             string E8257dOffsetFilePath,
             string Rsa3408aOffsetsFilePath,
             bool peakTroughPhaseSearch,
@@ -60,7 +60,7 @@ namespace OutphasingSweepController
             this.MeasurementChannelBandwidth = measurementBandwidth;
             this.MeasurementFrequencySpan = measurementSpan;
             this.OutputFilePath = outputFilePath;
-            this.Smu200aOffsets = new DeviceOffsets(Smu200aOffsetFilePath);
+            this.Smr20Offsets = new DeviceOffsets(Smr20OffsetFilePath);
             this.E8257dOffsets = new DeviceOffsets(E8257dOffsetFilePath);
             this.Rsa3408aOffsets = new DeviceOffsets(Rsa3408aOffsetsFilePath);
             this.PeakTroughPhaseSearch = peakTroughPhaseSearch;

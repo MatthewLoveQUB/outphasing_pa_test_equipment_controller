@@ -39,14 +39,14 @@ namespace OutphasingSweepController
         // File IO
         public string ResultsSavePath { get; set; } =
             "C:\\Users\\matth\\Downloads\\x.csv";
-        public string Smu200aOffsetsPath { get; set; } =
+        public string Smr20OffsetsPath { get; set; } =
             "C:\\Users\\matth\\Downloads\\Cable_5_offset_file.cor";
         public string E8257dOffsetsPath { get; set; } =
             "C:\\Users\\matth\\Downloads\\Cable_2_offset_file.cor";
         public string Rsa3408aOffsetsPath { get; set; } =
             "C:\\Users\\matth\\Downloads\\Cable_7_offset_file.cor";
         // Signal Generators
-        RS_SMU200A smu200a;
+        RS_SMR20 smr20;
         KeysightE8257D e8257d;
         // Measurement
         public bool PeakTroughSearch { get; set; } = true;
@@ -75,8 +75,8 @@ namespace OutphasingSweepController
 
             this.ResultsSavePathTextBlock.Text = 
                 this.ResultsSavePath;
-            this.Smu200aOffsetsFilePathTextBlock.Text = 
-                this.Smu200aOffsetsPath;
+            this.Smr20OffsetsFilePathTextBlock.Text = 
+                this.Smr20OffsetsPath;
             this.E8257dOffsetsFilePathTextBlock.Text = 
                 this.E8257dOffsetsPath;
             this.Rsa3408aOffsetsFilePathTextBlock.Text = 
@@ -92,7 +92,7 @@ namespace OutphasingSweepController
                     }
                 Task.WaitAll(new Task[]
                     {
-                        SetPowerLevel(this.smu200a.SetPowerLevel, offset1),
+                        SetPowerLevel(this.smr20.SetPowerLevel, offset1),
                         SetPowerLevel(this.e8257d.SetPowerLevel, offset2)
                     });
                 }
@@ -100,7 +100,7 @@ namespace OutphasingSweepController
 
             this.SetRfOutputState = on =>
             {
-                this.smu200a.SetRfOutputState(on);
+                this.smr20.SetRfOutputState(on);
                 this.e8257d.SetRfOutputState(on);
             };
 
@@ -113,7 +113,7 @@ namespace OutphasingSweepController
                 Task.WaitAll(new Task[]
                     {
                             SetFrequency(this.rsa3408a.SetFrequencyCenter),
-                            SetFrequency(this.smu200a.SetSourceFrequency),
+                            SetFrequency(this.smr20.SetSourceFrequency),
                             SetFrequency(this.e8257d.SetSourceFrequency)
                     });
                 }
@@ -173,10 +173,10 @@ namespace OutphasingSweepController
 
             this.hp6624a = new HP6624A(hpAddress, psuChannelStates);
             this.rsa3408a = new TektronixRSA3408A(rsaAddress);
-            this.smu200a = new RS_SMU200A(smaAddress);
+            this.smr20 = new RS_SMR20(smaAddress);
             this.e8257d = new KeysightE8257D(e82Address);
             this.rsa3408a.ResetDevice();
-            this.smu200a.ResetDevice();
+            this.smr20.ResetDevice();
             this.e8257d.ResetDevice();
             }
 
@@ -210,7 +210,7 @@ namespace OutphasingSweepController
 
             var devices = new Equipment(
                 this.hp6624a,
-                this.smu200a,
+                this.smr20,
                 this.rsa3408a,
                 this.e8257d);
 
@@ -224,7 +224,7 @@ namespace OutphasingSweepController
                 this.Rsa3408ChannelBandwidth,
                 this.Rsa3408FrequencySpan,
                 this.ResultsSavePath,
-                this.Smu200aOffsetsPath,
+                this.Smr20OffsetsPath,
                 this.E8257dOffsetsPath,
                 this.Rsa3408aOffsetsPath,
                 this.PeakTroughSearch,
@@ -312,7 +312,7 @@ namespace OutphasingSweepController
                 return true;
                 }
             return checkPath(this.ResultsSavePath, "save")
-                && checkPath(this.Smu200aOffsetsPath, "SMU200A offset")
+                && checkPath(this.Smr20OffsetsPath, "SMU200A offset")
                 && checkPath(this.E8257dOffsetsPath, "E8257D offset")
                 && checkPath(this.Rsa3408aOffsetsPath, "RSA3408A offset");
             }
@@ -394,7 +394,7 @@ namespace OutphasingSweepController
                 foreach (var frequency in sweepConf.Frequencies)
                     {
                     var offsets = new CurrentOffset(
-                        sweepConf.Smu200aOffsets.GetOffset(frequency),
+                        sweepConf.Smr20Offsets.GetOffset(frequency),
                         sweepConf.E8257dOffsets.GetOffset(frequency),
                         sweepConf.Rsa3408aOffsets.GetOffset(frequency));
                     this.SetFrequency(frequency);
@@ -478,8 +478,8 @@ namespace OutphasingSweepController
         private void LoadSmu200aOffsetsButton_Click(
             object sender, RoutedEventArgs e)
             {
-            this.Smu200aOffsetsPath = 
-                UserLoadOffset("SMU200A", this.Smu200aOffsetsFilePathTextBlock);
+            this.Smr20OffsetsPath = 
+                UserLoadOffset("SMR20", this.Smr20OffsetsFilePathTextBlock);
             }
 
         private void LoadE8257dOffsetsButton_Click(

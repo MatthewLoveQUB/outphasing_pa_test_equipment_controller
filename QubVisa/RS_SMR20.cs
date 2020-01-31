@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace QubVisa
     {
-    class RS_SMR20
+    public class RS_SMR20
         {
         public VisaDevice Device;
         public RS_SMR20(string deviceAddress)
@@ -14,8 +14,20 @@ namespace QubVisa
             this.Device = new VisaDevice(deviceAddress);
             }
 
+        // IEEE Common Commands
+        public string GetId()
+            {
+            return this.Device.ReadString("*IDN?");
+            }
+
+        public void ResetDevice()
+            {
+            this.Device.Write("*RST");
+            }
+
+
         // OUTP Commands
-        void SetRfOutputState(bool on)
+        public void SetRfOutputState(bool on)
             {
             var state = on ? "ON" : "OFF";
             this.Device.Write($":OUTP:PON {state}");
@@ -27,7 +39,7 @@ namespace QubVisa
             this.Device.Write("FREQ:MODE CW");
             }
 
-        public void SetCwFreq(double freq)
+        public void SetSourceFrequency(double freq)
             {
             this.Device.Write($":SOUR:FREQ:CW {freq}");
             }

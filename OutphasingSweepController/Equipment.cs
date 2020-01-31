@@ -10,13 +10,13 @@ namespace OutphasingSweepController
     public class Equipment
         {
         public HP6624A Hp6624a;
-        public RS_SMU200A Smu200a;
+        public RS_SMR20 Smu200a;
         public TektronixRSA3408A Rsa3408a;
         public KeysightE8257D E8257d;
 
         public Equipment(
             HP6624A hp6624a, 
-            RS_SMU200A smu200a, 
+            RS_SMR20 smu200a, 
             TektronixRSA3408A rsa3408a, 
             KeysightE8257D e8257d)
             {

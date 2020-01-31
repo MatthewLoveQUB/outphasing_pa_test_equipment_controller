@@ -84,5 +84,9 @@ namespace QubVisa
             var command = string.Format(":FREQ:FIX {0}", frequency);
             this.Device.connection.RawIO.Write(command);
             }
+
+        public void SetSourceDeltaPhase(double phase) =>
+            this.Device.Write($"PHAS {phase}DEG");
+
         }
 }
