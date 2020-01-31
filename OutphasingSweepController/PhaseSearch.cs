@@ -74,15 +74,14 @@ namespace OutphasingSweepController
                         phaseSweepConfig,
                         searchSetting);
                     }
-
                 }
-
-            DoSearch(
-                phaseSweepConfig.MeasurementConfig.PhaseSearchSettings.Peak, 
-                Mode.Peak);
-            DoSearch(
-                phaseSweepConfig.MeasurementConfig.PhaseSearchSettings.Trough, 
-                Mode.Trough);
+            FindPeakAndTrough(samples, phaseSweepConfig);
+            //DoSearch(
+            //    phaseSweepConfig.MeasurementConfig.PhaseSearchSettings.Peak, 
+            //    Mode.Peak);
+            //DoSearch(
+            //    phaseSweepConfig.MeasurementConfig.PhaseSearchSettings.Trough, 
+            //    Mode.Trough);
             return samples.OrderByDescending(s => s.Conf.Phase).ToList();
             }
 
@@ -286,8 +285,11 @@ namespace OutphasingSweepController
                 {
                 this.Sample1 = s1;
                 this.Sample2 = s2;
-                this.Gradient = 
-                    s2.MeasuredChannelPowerdBm / s1.MeasuredChannelPowerdBm;
+                var pow2 = s2.MeasuredChannelPowerdBm;
+                var pow1 = s1.MeasuredChannelPowerdBm;
+                var phase2 = s2.Conf.Phase;
+                var phase1 = s1.Conf.Phase;
+                this.Gradient = (pow2 - pow1) / (phase2 - phase1);
                 }
             }
 
@@ -321,12 +323,8 @@ namespace OutphasingSweepController
             var samplePairs = new List<SamplePair>();
             for(int i = 0; i < samples.Count; i++)
                 {
-                if (i+1 == samples.Count)
-                    {
-                    break;
-                    }
-                samplePairs.Add(
-                    new SamplePair(samples[i], samples[i + 1]));
+                if (i+1 == samples.Count) { break; }
+                samplePairs.Add(new SamplePair(samples[i], samples[i + 1]));
                 }
 
             var validPairs = new List<SamplePair>();
@@ -344,7 +342,7 @@ namespace OutphasingSweepController
                     }
                 }
             var sortedPairs = 
-                validPairs.OrderByDescending(p => p.Gradient).ToList();
+                validPairs.OrderByDescending(p => Math.Abs(p.Gradient)).ToList();
             var bestPair = sortedPairs.First();
             var startingGradientSign = getSign(bestPair);
             var direction = GetDirection(bestPair);
@@ -377,8 +375,10 @@ namespace OutphasingSweepController
                 var sampleConfig = new SampleConfig(
                     phaseSweepConfig, currentPhase);
                 newSample = TakeSample(sampleConfig, samples);
-                var currentPair = new SamplePair(oldSample, newSample);
-                if(getSign(currentPair) != startingGradientSign)
+                var currentPair = directionPos
+                    ? new SamplePair(oldSample, newSample)
+                    : new SamplePair(newSample, oldSample);
+                if (getSign(currentPair) != startingGradientSign)
                     {
                     break;
                     }
@@ -388,8 +388,8 @@ namespace OutphasingSweepController
             var lowestPowerSample = samples.OrderByDescending(
                 s => s.MeasuredChannelPowerdBm).ToList().Last();
             const double fineStep = 0.1;
-            var startingPhase = lowestPowerSample.Conf.Phase - 5.0;
-            var numSamples = 10.0 / fineStep;
+            var startingPhase = lowestPowerSample.Conf.Phase - 2.0;
+            var numSamples = 4 / fineStep;
             for (int i = 0; i < numSamples; i++)
                 {
                 currentPhase = ((double)i * fineStep) + startingPhase;
