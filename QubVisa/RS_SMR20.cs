@@ -30,7 +30,7 @@ namespace QubVisa
         public void SetRfOutputState(bool on)
             {
             var state = on ? "ON" : "OFF";
-            this.Device.Write($":OUTP:PON {state}");
+            this.Device.Write($":OUTP:STAT {state}");
             }
 
         // Source commands
@@ -46,7 +46,7 @@ namespace QubVisa
 
         public void SetPowerContinuousWaveMode()
             {
-            this.Device.connection.RawIO.Write(":SOUR:POW:MODE CW");
+            this.Device.Write(":SOUR:POW:MODE CW");
             }
 
         public void SetPowerLevel(double power, double offset = 0)

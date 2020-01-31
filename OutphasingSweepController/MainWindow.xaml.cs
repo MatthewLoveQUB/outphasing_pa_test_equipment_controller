@@ -49,6 +49,7 @@ namespace OutphasingSweepController
         RS_SMR20 smr20;
         KeysightE8257D e8257d;
         // Measurement
+        StreamWriter outFile;
         public bool PeakTroughSearch { get; set; } = true;
         SweepProgress CurrentSweepProgress = new SweepProgress(false, 0, 0);
         public double EstimatedTimePerSample { get; set; } = 0.32;
@@ -70,7 +71,7 @@ namespace OutphasingSweepController
             InitializeComponent();
             this.DataContext = this;
             PopulatePsuCheckboxList();
-            //SetUpVisaConnections();
+            SetUpVisaConnections();
             SetUpDispatcherTimer();
             UpdateEstimatedMeasurementTime();
 
@@ -156,27 +157,27 @@ namespace OutphasingSweepController
                 };
             string hpAddress;
             string rsaAddress;
-            string smaAddress;
+            string smrAddress;
             string e82Address;
             // Hard-coded addresses for me to save time
             if (true)
                 {
-                hpAddress = "GPIB0::14::INSTR";
+                hpAddress = "GPIB1::14::INSTR";
                 rsaAddress = "GPIB1::1::INSTR";
-                smaAddress = "TCPIP0::192.168.1.101::inst0::INSTR";
+                smrAddress = "GPIB0::28::INSTR";
                 e82Address = "TCPIP0::192.168.1.3::inst1::INSTR";
                 }
             else
                 {
                 hpAddress = this.GetVisaAddress("HP6624A");
                 rsaAddress = this.GetVisaAddress("Tektronix RSA3408");
-                smaAddress = this.GetVisaAddress("R&S SMU200A");
+                smrAddress = this.GetVisaAddress("R&S SMU200A");
                 e82Address = this.GetVisaAddress("Keysight E8257D");
                 }
 
             this.hp6624a = new HP6624A(hpAddress, psuChannelStates);
             this.rsa3408a = new TektronixRSA3408A(rsaAddress);
-            this.smr20 = new RS_SMR20(smaAddress);
+            this.smr20 = new RS_SMR20(smrAddress);
             this.e8257d = new KeysightE8257D(e82Address);
             this.rsa3408a.ResetDevice();
             this.smr20.ResetDevice();
@@ -331,14 +332,16 @@ namespace OutphasingSweepController
                 + ", Corner" // 5
                 + ", Supply Voltage (V)"
                 + ", Measured DC Power (W)"
+                + ", Measured Channel Power (dBm)"
+                + ", Measured Channel Power (W)"
                 + ", Measured Output Power (dBm)"
                 + ", Calibrated Output Power (dBm)"
-                + ", SMU200A Input Power Offset (dB)" // 10
+                + ", SMU200A Input Power Offset (dB)"
                 + ", E8257D Input Power Offset (dB)"
                 + ", RSA3408A Measurement Offset (dB)"
                 + ", Calibrated Drain Efficiency (%)"
                 + ", Calibrated Power Added Efficiency (%)"
-                + ", Measured Channel Power (dBm)" // 15
+                + ", Measured Channel Power (dBm)"
                 + ", Measurement Frequency Span (Hz)"
                 + ", Channel Measurement Bandwidth (Hz)"
                 + ", Calibrated Gain (dB)";
@@ -513,6 +516,15 @@ namespace OutphasingSweepController
             {
             this.ToggleGuiActive(on: true);
             this.CurrentSweepProgress.Running = false;
+            }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+            {
+            if(this.outFile != null)
+                {
+                this.outFile.Flush();
+                this.outFile.Close();
+                }
             }
         }
     }

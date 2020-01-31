@@ -52,17 +52,19 @@ namespace OutphasingSweepController
                 + $", {sample.InputPowerdBm}"
                 + $", {sample.Conf.Phase}"
                 + $", {sample.Conf.PhaseSweepConfig.MeasurementConfig.Temperature}"
-                + $", {sample.Conf.PhaseSweepConfig.MeasurementConfig.Corner}" // 5
+                + $", {sample.Conf.PhaseSweepConfig.MeasurementConfig.Corner}"
                 + $", {sample.Conf.PhaseSweepConfig.SupplyVoltage}"
                 + $", {sample.MeasuredPowerDcWatts}"
+                + $", {sample.MeasuredChannelPowerdBm}"
+                + $", {sample.MeasuredChannelPowerWatts}"
                 + $", {sample.MeasuredOutputPowerdBm}"
                 + $", {sample.CalibratedOutputPowerdBm}"
-                + $", {sample.Conf.PhaseSweepConfig.Offset.Smu200a}" // 10
+                + $", {sample.Conf.PhaseSweepConfig.Offset.Smu200a}"
                 + $", {sample.Conf.PhaseSweepConfig.Offset.E8257d}"
                 + $", {sample.Conf.PhaseSweepConfig.Offset.Rsa3408a}"
                 + $", {sample.CalibratedDrainEfficiency}"
                 + $", {sample.CalibratedPowerAddedEfficiency}"
-                + $", {sample.MeasuredChannelPowerdBm}" // 15
+                + $", {sample.MeasuredChannelPowerdBm}"
                 + $", {sample.Conf.PhaseSweepConfig.MeasurementConfig.MeasurementFrequencySpan}"
                 + $", {sample.Conf.PhaseSweepConfig.MeasurementConfig.MeasurementChannelBandwidth}"
                 + $", {sample.CalibratedGaindB}";

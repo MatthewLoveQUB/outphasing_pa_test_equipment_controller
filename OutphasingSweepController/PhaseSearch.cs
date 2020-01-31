@@ -36,7 +36,17 @@ namespace OutphasingSweepController
             {
             Positive,
             Negative,
-            Stop
+            CentreSweep
+            }
+
+        public static Sample GetBestSample(List<Sample> samples, Mode mode)
+            {
+            var orderedSamples =
+                        samples.OrderByDescending(
+                            s => s.MeasuredChannelPowerdBm).ToList();
+            return (mode == Mode.Peak)
+                ? orderedSamples.First()
+                : orderedSamples.Last();
             }
 
         public static List<Sample> MeasurementPhaseSweep(
@@ -56,12 +66,7 @@ namespace OutphasingSweepController
                 {
                 foreach (var searchSetting in searchSettings)
                     {
-                    var orderedSamples =
-                        samples.OrderByDescending(
-                            s => s.MeasuredChannelPowerdBm).ToList();
-                    var bestSample = (mode == Mode.Peak)
-                        ? orderedSamples.First()
-                        : orderedSamples.Last();
+                    var bestSample = GetBestSample(samples, mode);
                     FindPeakOrTrough1(
                         mode,
                         samples,
@@ -78,7 +83,7 @@ namespace OutphasingSweepController
             DoSearch(
                 phaseSweepConfig.MeasurementConfig.PhaseSearchSettings.Trough, 
                 Mode.Trough);
-            return samples;
+            return samples.OrderByDescending(s => s.Conf.Phase).ToList();
             }
 
         public static void BasicPhaseSweep(
@@ -127,15 +132,33 @@ namespace OutphasingSweepController
                 return evaluation == LoopStatus.Continue;
                 }
 
-
+            var numSamples = 0;
             var bestSample = startBestSample;
-            var phaseStep = FindSearchDirection(
+            var searchDirection = FindSearchDirection(
                 searchMode,
                 samples,
                 bestSample,
                 phaseSweepConfig,
                 searchPtConfig,
                 makeSampleConfig);
+            var phaseStep = 1.0;
+            if (searchDirection == Direction.Positive)
+                {
+                phaseStep *= -1;
+                }
+            if (searchDirection == Direction.CentreSweep)
+                {
+                var numSteps = 10;
+                var corePhase = GetBestSample(samples, searchMode).Conf.Phase;
+                var step = searchPtConfig.StepDeg;
+                var startPhase = corePhase - (numSteps * step);
+                for (int i = 0; i < numSteps; i++)
+                    {
+                    var newConfig = makeSampleConfig(
+                        corePhase + (i * step));
+                    TakeSample(newConfig, samples);
+                    }
+                }
 
             // Loop until we've moved exitThreshold dB
             // away from the best found value
@@ -143,6 +166,11 @@ namespace OutphasingSweepController
             var newSample = bestSample;
             while (continueSearch(bestSample, newSample))
                 {
+                numSamples++;
+                if(numSamples > 300)
+                    {
+                    break;
+                    }
                 currentPhase += phaseStep;
                 var sampleConfig = makeSampleConfig(currentPhase);
                 newSample = TakeSample(sampleConfig, samples);
@@ -155,7 +183,7 @@ namespace OutphasingSweepController
                 }
             }
         
-        public static double FindSearchDirection(
+        public static Direction FindSearchDirection(
             Mode searchMode,
             List<Sample> samples,
             Sample bestSample,
@@ -173,9 +201,11 @@ namespace OutphasingSweepController
                 return GetGradient(bestSample, newSample);
                 }
 
+            int iterations = 0;
             double scalar = 0.0;
             while (true)
                 {
+                iterations++;
                 scalar += 1.0;
                 var gradientPos = getNewSampleGradient(scalar);
                 var gradientNeg = getNewSampleGradient(scalar * -1);
@@ -184,16 +214,23 @@ namespace OutphasingSweepController
                 // then there's no clear direction to move in
                 if (gradientNeg == gradientPos)
                     {
+                    if(iterations > 5)
+                        {
+                        return Direction.CentreSweep;
+                        }
                     continue;
                     }
-
                 if (searchMode == Mode.Peak)
                     {
-                    return (gradientPos == Gradient.Positive) ? 1.0 : -1.0;
+                    return (gradientPos == Gradient.Positive) 
+                        ? Direction.Positive 
+                        : Direction.Negative;
                     }
                 else
                     {
-                    return (gradientPos == Gradient.Negative) ? 1.0 : -1.0;
+                    return (gradientPos == Gradient.Negative)
+                        ? Direction.Positive
+                        : Direction.Negative;
                     }
                 }
             }
@@ -265,7 +302,7 @@ namespace OutphasingSweepController
                     return Direction.Positive;
                 default:
                     // Unlikely to happen
-                    return Direction.Stop;
+                    return Direction.CentreSweep;
                 }
             }
 
@@ -312,7 +349,7 @@ namespace OutphasingSweepController
             var startingGradientSign = getSign(bestPair);
             var direction = GetDirection(bestPair);
 
-            if (direction == Direction.Stop)
+            if (direction == Direction.CentreSweep)
                 {
                 return;
                 }
