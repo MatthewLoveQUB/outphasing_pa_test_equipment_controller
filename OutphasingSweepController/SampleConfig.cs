@@ -26,27 +26,13 @@ namespace OutphasingSweepController
 
     public class SampleConfig
         {
-        public MeasurementConfig MeasConfig;
-        public double SupplyVoltage;
-        public double Frequency;
-        public double InputPower;
+        public PhaseSweepConfig PhaseSweepConfig;
         public double Phase;
-        public CurrentOffset Offset;
 
-        public SampleConfig(
-            MeasurementConfig conf,
-            double supplyVoltage,
-            double frequency,
-            double inputPower,
-            double phase,
-            CurrentOffset offset)
+        public SampleConfig(PhaseSweepConfig phaseSweepConfig, double phase)
             {
-            this.MeasConfig = conf;
-            this.SupplyVoltage = supplyVoltage;
-            this.Frequency = frequency;
-            this.InputPower = inputPower;
+            this.PhaseSweepConfig = phaseSweepConfig;
             this.Phase = phase;
-            this.Offset = offset;
             }
         }
     }

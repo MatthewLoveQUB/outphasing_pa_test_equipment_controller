@@ -16,8 +16,8 @@ namespace OutphasingSweepController
             double channelPowerdBm = -1;
             double measuredPoutdBm = -1;
             HP6624A.OutphasingDcMeasurements dcResults = null;
-            var rsa3408 = conf.MeasConfig.Devices.Rsa3408a;
-            var hp6624a = conf.MeasConfig.Devices.Hp6624a;
+            var rsa3408 = conf.PhaseSweepConfig.MeasurementConfig.Devices.Rsa3408a;
+            var hp6624a = conf.PhaseSweepConfig.MeasurementConfig.Devices.Hp6624a;
 
             Task.WaitAll(new Task[]
                 {
@@ -31,7 +31,7 @@ namespace OutphasingSweepController
                 Task.Factory.StartNew(() =>
                 {
                     dcResults = hp6624a.OutphasingOptimisedMeasurement(
-                        conf.SupplyVoltage);
+                        conf.PhaseSweepConfig.SupplyVoltage);
                 })});
 
             return new Sample(
@@ -48,23 +48,23 @@ namespace OutphasingSweepController
             QubVisa.HP6624A hp6624a)
             {
             var outputLine =
-                $"{sample.Conf.Frequency}" // 1
+                $"{sample.Conf.PhaseSweepConfig.Frequency}" // 1
                 + $", {sample.InputPowerdBm}"
                 + $", {sample.Conf.Phase}"
-                + $", {sample.Conf.MeasConfig.Temperature}"
-                + $", {sample.Conf.MeasConfig.Corner}" // 5
-                + $", {sample.Conf.SupplyVoltage}"
+                + $", {sample.Conf.PhaseSweepConfig.MeasurementConfig.Temperature}"
+                + $", {sample.Conf.PhaseSweepConfig.MeasurementConfig.Corner}" // 5
+                + $", {sample.Conf.PhaseSweepConfig.SupplyVoltage}"
                 + $", {sample.MeasuredPowerDcWatts}"
                 + $", {sample.MeasuredOutputPowerdBm}"
                 + $", {sample.CalibratedOutputPowerdBm}"
-                + $", {sample.Conf.Offset.Smu200a}" // 10
-                + $", {sample.Conf.Offset.E8257d}"
-                + $", {sample.Conf.Offset.Rsa3408a}"
+                + $", {sample.Conf.PhaseSweepConfig.Offset.Smu200a}" // 10
+                + $", {sample.Conf.PhaseSweepConfig.Offset.E8257d}"
+                + $", {sample.Conf.PhaseSweepConfig.Offset.Rsa3408a}"
                 + $", {sample.CalibratedDrainEfficiency}"
                 + $", {sample.CalibratedPowerAddedEfficiency}"
                 + $", {sample.MeasuredChannelPowerdBm}" // 15
-                + $", {sample.Conf.MeasConfig.MeasurementFrequencySpan}"
-                + $", {sample.Conf.MeasConfig.MeasurementChannelBandwidth}"
+                + $", {sample.Conf.PhaseSweepConfig.MeasurementConfig.MeasurementFrequencySpan}"
+                + $", {sample.Conf.PhaseSweepConfig.MeasurementConfig.MeasurementChannelBandwidth}"
                 + $", {sample.CalibratedGaindB}";
 
             for (int i = 0; i < QubVisa.HP6624A.NumChannels; i++)

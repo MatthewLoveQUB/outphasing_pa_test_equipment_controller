@@ -58,6 +58,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Equipment.cs" />
+    <Compile Include="PhaseSweepConfig.cs" />
     <Compile Include="Sample.cs" />
     <Compile Include="Measurement.cs" />
     <Compile Include="PhaseSearchConfig.cs" />

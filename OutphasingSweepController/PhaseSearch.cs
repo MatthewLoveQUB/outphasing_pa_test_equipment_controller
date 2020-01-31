@@ -33,22 +33,12 @@ namespace OutphasingSweepController
             }
 
         public static List<Sample> MeasurementPhaseSweep(
-            MeasurementConfig sweepConfig,
-            CurrentOffset offset,
-            double supplyVoltage,
-            double frequency,
-            double inputPower)
+            PhaseSweepConfig phaseSweepConfig)
             {
             var samples = new List<Sample>();
-            BasicPhaseSweep(
-                samples, 
-                sweepConfig,
-                supplyVoltage,
-                frequency,
-                inputPower,
-                offset);
+            BasicPhaseSweep(samples, phaseSweepConfig);
 
-            if (!sweepConfig.PeakTroughPhaseSearch) { return samples; }
+            if (!phaseSweepConfig.MeasurementConfig.PeakTroughPhaseSearch) { return samples; }
 
             void DoSearch(
                 List<PhaseSearchPointConfig> searchSettings,
@@ -66,39 +56,30 @@ namespace OutphasingSweepController
                         mode,
                         samples,
                         bestSample,
-                        sweepConfig,
-                        offset,
-                        supplyVoltage,
-                        frequency,
-                        inputPower,
-                        searchSetting.ThresholddB,
-                        searchSetting.StepDeg);
+                        phaseSweepConfig,
+                        searchSetting);
                     }
 
                 }
 
-            DoSearch(sweepConfig.PhaseSearchSettings.Peak, Mode.Peak);
-            DoSearch(sweepConfig.PhaseSearchSettings.Trough, Mode.Trough);
+            DoSearch(
+                phaseSweepConfig.MeasurementConfig.PhaseSearchSettings.Peak, 
+                Mode.Peak);
+            DoSearch(
+                phaseSweepConfig.MeasurementConfig.PhaseSearchSettings.Trough, 
+                Mode.Trough);
             return samples;
             }
 
         public static void BasicPhaseSweep(
             List<Sample> samples,
-            MeasurementConfig measConf,
-            double supplyVoltage,
-            double frequency,
-            double inputPower,
-            CurrentOffset offset)
+            PhaseSweepConfig phaseSweepConfig)
             {
-            foreach (var phase in measConf.Phases)
+            foreach (var phase in phaseSweepConfig.MeasurementConfig.Phases)
                 {
                 var sampleConfig = new SampleConfig(
-                    measConf,
-                    supplyVoltage,
-                    frequency,
-                    inputPower,
-                    phase,
-                    offset);
+                    phaseSweepConfig,
+                    phase);
                 TakeSample(sampleConfig, samples);
                 }
             }
@@ -107,7 +88,7 @@ namespace OutphasingSweepController
             SampleConfig sampleConfig,
             List<Sample> samples)
             {
-            sampleConfig.MeasConfig.Devices.Smu200a.SetSourceDeltaPhase(
+            sampleConfig.PhaseSweepConfig.MeasurementConfig.Devices.Smu200a.SetSourceDeltaPhase(
                 sampleConfig.Phase);
             var newSample = Measurement.TakeSample(sampleConfig);
             samples.Add(newSample);
@@ -118,43 +99,28 @@ namespace OutphasingSweepController
             Mode searchMode,
             List<Sample> samples,
             Sample startBestSample,
-            MeasurementConfig measConfig,
-            CurrentOffset offset,
-            double supplyVoltage,
-            double frequency,
-            double inputPower,
-            double exitThreshold,
-            double phaseStep)
+            PhaseSweepConfig phaseSweepConfig,
+            PhaseSearchPointConfig searchPtConfig)
             {
             SampleConfig makeSampleConfig(double phase)
             {
-                return new SampleConfig(
-                    measConfig,
-                    supplyVoltage,
-                    frequency,
-                    inputPower,
-                    phase,
-                    offset);
+                return new SampleConfig(phaseSweepConfig, phase);
             };
             bool continueSearch(Sample best, Sample current)
                 {
                 var evaluation = EvaluateNewSample(
-                    best, current, searchMode, exitThreshold);
+                    best, current, searchMode, searchPtConfig);
                 return evaluation == LoopStatus.Continue;
                 }
 
 
             var bestSample = startBestSample;
-            phaseStep = FindSearchDirection(
+            var phaseStep = FindSearchDirection(
                 searchMode,
                 samples,
                 bestSample,
-                measConfig,
-                offset,
-                supplyVoltage,
-                frequency,
-                inputPower,
-                phaseStep,
+                phaseSweepConfig,
+                searchPtConfig,
                 makeSampleConfig);
 
             // Loop until we've moved exitThreshold dB
@@ -176,22 +142,18 @@ namespace OutphasingSweepController
             }
         
         public static double FindSearchDirection(
-            PhaseSearch.Mode searchMode,
+            Mode searchMode,
             List<Sample> samples,
             Sample bestSample,
-            MeasurementConfig measConfig,
-            CurrentOffset offset,
-            double supplyVoltage,
-            double frequency,
-            double inputPower,
-            double phaseStep,
+            PhaseSweepConfig phaseSweepConfig,
+            PhaseSearchPointConfig phasePtConfig,
             Func<double, SampleConfig> makeSampleConfig)
             {
             var corePhase = bestSample.Conf.Phase;
 
             Gradient getNewSampleGradient(double stepScale)
                 {
-                var newPhase = corePhase + (stepScale * phaseStep);
+                var newPhase = corePhase + (stepScale * phasePtConfig.StepDeg);
                 var newConfig = makeSampleConfig(newPhase);
                 var newSample = TakeSample(newConfig, samples);
                 return GetGradient(bestSample, newSample);
@@ -250,14 +212,14 @@ namespace OutphasingSweepController
             Sample bestSample,
             Sample newSample,
             Mode searchMode,
-            double threshold)
+            PhaseSearchPointConfig searchPointConfig)
             {
             var newPwr = newSample.MeasuredChannelPowerdBm;
             var bestPwr = bestSample.MeasuredChannelPowerdBm;
             var peakContinue = (searchMode == Mode.Peak)
-                && ((bestPwr - newPwr) < threshold);
+                && ((bestPwr - newPwr) < searchPointConfig.ThresholddB);
             var troughContinue = (searchMode == Mode.Trough)
-                && ((newPwr - bestPwr) < threshold);
+                && ((newPwr - bestPwr) < searchPointConfig.ThresholddB);
             var continueMeasure = peakContinue || troughContinue;
             return continueMeasure ?
                 LoopStatus.Continue : LoopStatus.Stop;

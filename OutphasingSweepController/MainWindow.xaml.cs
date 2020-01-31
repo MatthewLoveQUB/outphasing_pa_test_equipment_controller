@@ -390,11 +390,12 @@ namespace OutphasingSweepController
                             });
 
                         var samples = PhaseSearch.MeasurementPhaseSweep(
+                            new PhaseSweepConfig(
                             sweepConf,
                             offsets,
                             voltage,
                             frequency,
-                            inputPower);
+                            inputPower));
 
                         foreach (var sample in samples)
                             {
