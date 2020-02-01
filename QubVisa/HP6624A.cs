@@ -192,19 +192,6 @@ namespace QubVisa
             return power;
             }
 
-        public class OutphasingDcMeasurements
-            {
-            public double PowerWatts;
-            public List<double> Currents;
-
-            public OutphasingDcMeasurements(
-                double powerWatts, List<double> currents)
-                {
-                this.PowerWatts = powerWatts;
-                this.Currents = currents;
-                }
-            }
-
         // Ramp the voltage slowly
         // Assumes that all channels are at the same voltage
         public void SetPsuVoltageStepped(
@@ -256,24 +243,16 @@ namespace QubVisa
         public OutphasingDcMeasurements 
             OutphasingOptimisedMeasurement(double voltage)
             {
-            var power = 0.0;
             var currents = new List<double>();
             for (int i = 0; i < NumChannels; i++)
                 {
                 var channelNumber = i + 1;
                 if (this.ChannelStates[i])
                     {
-                    var currentMeasurement =
-                        GetChannelCurrentOutput(channelNumber);
-                    currents.Add(currentMeasurement);
-                    power += voltage * currentMeasurement;
-                    }
-                else
-                    {
-                    currents.Add(0);
+                    currents.Add(GetChannelCurrentOutput(channelNumber));
                     }
                 }
-            return new OutphasingDcMeasurements(power, currents);
+            return new OutphasingDcMeasurements(voltage, currents);
             }
     }
 }

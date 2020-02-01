@@ -9,7 +9,6 @@ namespace OutphasingSweepController
     {
     public class MeasurementConfig
         {
-        public Equipment Devices;
         public List<Double> Frequencies;
         public List<Double> InputPowers;
         public List<Double> Phases;
@@ -51,7 +50,6 @@ namespace OutphasingSweepController
             string spectrumAnalyzerOffsetsFilePath,
             bool peakTroughPhaseSearch,
             PhaseSearchConfig phasePeakTroughSearchSettings,
-            Equipment devices,
             DeviceCommands commands)
             {
             this.Frequencies = frequencySettings;
@@ -68,7 +66,6 @@ namespace OutphasingSweepController
             this.SpectrumAnalyzerOffsets = new DeviceOffsets(spectrumAnalyzerOffsetsFilePath);
             this.PeakTroughPhaseSearch = peakTroughPhaseSearch;
             this.PhaseSearchSettings = phasePeakTroughSearchSettings;
-            this.Devices = devices;
             this.Commands = commands;
             }
         }

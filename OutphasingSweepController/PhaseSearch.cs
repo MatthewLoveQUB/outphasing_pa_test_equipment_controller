@@ -104,9 +104,9 @@ namespace OutphasingSweepController
             {
             sampleConfig
                 .MeasurementConfig
-                .Devices
-                .E8257d
-                .SetSourceDeltaPhase(sampleConfig.Phase);
+                .Commands
+                .SetPhase(sampleConfig.Phase);
+
             var newSample = Measurement.TakeSample(sampleConfig);
             samples.Add(newSample);
             return newSample;

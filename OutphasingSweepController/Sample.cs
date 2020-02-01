@@ -82,7 +82,7 @@ namespace OutphasingSweepController
                 return this.CalibratedOutputPowerdBm - (this.InputPowerdBm + 3);
                 }
             }
-        public List<double> DcCurrent;
+        public List<double> DcCurrents;
         
         public Sample(
             SampleConfig conf,
@@ -95,7 +95,7 @@ namespace OutphasingSweepController
             this.MeasuredPowerDcWatts = measuredPowerDcWatts;
             this.MeasuredOutputPowerdBm = measuredPoutdBm;
             this.MeasuredChannelPowerdBm = channelPowerdBm;
-            this.DcCurrent = dcCurrent;
+            this.DcCurrents = dcCurrent;
             }
         }
     }

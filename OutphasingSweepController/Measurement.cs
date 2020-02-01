@@ -15,23 +15,25 @@ namespace OutphasingSweepController
             {
             double channelPowerdBm = -1;
             double measuredPoutdBm = -1;
-            HP6624A.OutphasingDcMeasurements dcResults = null;
-            var rsa3408 = conf.PhaseSweepConfig.MeasurementConfig.Devices.Rsa3408a;
-            var hp6624a = conf.PhaseSweepConfig.MeasurementConfig.Devices.Hp6624a;
+            OutphasingDcMeasurements dcResults = null;
 
             Task.WaitAll(new Task[]
                 {
                 Task.Factory.StartNew(() =>
                 {
-                    channelPowerdBm = rsa3408.ReadSpectrumChannelPower();
+                    channelPowerdBm = 
+                        conf.MeasurementConfig.Commands.GetSpectrumPower();
                     //measuredPoutdBm 
                     //    = rsa3408a.GetMarkerYValue(markerNumber: 1, view: 1);
                     measuredPoutdBm = channelPowerdBm;
                 }),
                 Task.Factory.StartNew(() =>
                 {
-                    dcResults = hp6624a.OutphasingOptimisedMeasurement(
-                        conf.PhaseSweepConfig.SupplyVoltage);
+                    dcResults =
+                    conf
+                    .MeasurementConfig
+                    .Commands
+                    .OutphasingOptimisedMeasurement(conf.SupplyVoltage);
                 })});
 
             return new Sample(
@@ -42,40 +44,33 @@ namespace OutphasingSweepController
                 dcResults.Currents);
             }
 
-        public static void SaveSample(
-            StreamWriter outputFile,
-            Sample sample,
-            QubVisa.HP6624A hp6624a)
+        public static void SaveSample(StreamWriter outputFile, Sample sample)
             {
             var outputLine =
-                $"{sample.Conf.PhaseSweepConfig.Frequency}" // 1
+                $"{sample.Conf.Frequency}" // 1
                 + $", {sample.InputPowerdBm}"
                 + $", {sample.Conf.Phase}"
-                + $", {sample.Conf.PhaseSweepConfig.MeasurementConfig.Temperature}"
-                + $", {sample.Conf.PhaseSweepConfig.MeasurementConfig.Corner}"
-                + $", {sample.Conf.PhaseSweepConfig.SupplyVoltage}"
+                + $", {sample.Conf.MeasurementConfig.Temperature}"
+                + $", {sample.Conf.MeasurementConfig.Corner}"
+                + $", {sample.Conf.SupplyVoltage}"
                 + $", {sample.MeasuredPowerDcWatts}"
                 + $", {sample.MeasuredChannelPowerdBm}"
                 + $", {sample.MeasuredChannelPowerWatts}"
                 + $", {sample.MeasuredOutputPowerdBm}"
                 + $", {sample.CalibratedOutputPowerdBm}"
-                + $", {sample.Conf.PhaseSweepConfig.Offset.Smu200a}"
-                + $", {sample.Conf.PhaseSweepConfig.Offset.E8257d}"
-                + $", {sample.Conf.PhaseSweepConfig.Offset.Rsa3408a}"
+                + $", {sample.Conf.Offset.Smu200a}"
+                + $", {sample.Conf.Offset.E8257d}"
+                + $", {sample.Conf.Offset.Rsa3408a}"
                 + $", {sample.CalibratedDrainEfficiency}"
                 + $", {sample.CalibratedPowerAddedEfficiency}"
                 + $", {sample.MeasuredChannelPowerdBm}"
-                + $", {sample.Conf.PhaseSweepConfig.MeasurementConfig.MeasurementFrequencySpan}"
-                + $", {sample.Conf.PhaseSweepConfig.MeasurementConfig.MeasurementChannelBandwidth}"
+                + $", {sample.Conf.MeasurementConfig.MeasurementFrequencySpan}"
+                + $", {sample.Conf.MeasurementConfig.MeasurementChannelBandwidth}"
                 + $", {sample.CalibratedGaindB}";
 
-            for (int i = 0; i < QubVisa.HP6624A.NumChannels; i++)
+            foreach (var current in sample.DcCurrents)
                 {
-                var channelNumber = i + 1;
-                if (hp6624a.ChannelStates[i])
-                    {
-                    outputLine += $", {sample.DcCurrent[i]}";
-                    }
+                    outputLine += $", {current}";
                 }
 
             outputFile.WriteLine(outputLine);

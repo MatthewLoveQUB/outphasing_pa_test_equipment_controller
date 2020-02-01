@@ -20,7 +20,6 @@ namespace OutphasingSweepController
         public string ChipCorner { get; set; } = "TT";
         public double ChipTemperature { get; set; } = 25.0;
         // PSU
-        HP6624A hp6624a;
         public double PsuNominalVoltage { get; set; } = 2.2;
         public double PsuCurrentLimit { get; set; } = 0.3;
         public int PsuRampUpStepTimeMilliseconds { get; set; } = 100;
@@ -29,7 +28,6 @@ namespace OutphasingSweepController
         public bool PsuMinus10Percent { get; set; } = true;
 
         // Spectrum Analyser
-        TektronixRSA3408A rsa3408a;
         public double Rsa3408ChannelBandwidth { get; set; } = 25e3;
         public double Rsa3408FrequencySpan { get; set; } = 1e6;
         // UI
@@ -46,8 +44,6 @@ namespace OutphasingSweepController
         public string Rsa3408aOffsetsPath { get; set; } =
             "C:\\Users\\matth\\Downloads\\Cable_7_offset_file.cor";
         // Signal Generators
-        RS_SMR20 smr20;
-        KeysightE8257D e8257d;
         // Measurement
         StreamWriter outFile;
         public bool PeakTroughSearch { get; set; } = true;
@@ -64,7 +60,6 @@ namespace OutphasingSweepController
             InitializeComponent();
             this.DataContext = this;
             PopulatePsuCheckboxList();
-            //SetUpVisaConnections();
             SetUpDispatcherTimer();
             UpdateEstimatedMeasurementTime();
 
@@ -77,47 +72,8 @@ namespace OutphasingSweepController
             this.Rsa3408aOffsetsFilePathTextBlock.Text = 
                 this.Rsa3408aOffsetsPath;
 
-            void setPow(double inputPower, double offset1, double offset2)
-                {
-                Task SetPowerLevel(
-                    Action<double, double> setPower, double offset)
-                    {
-                    return Task.Factory.StartNew(
-                        () => setPower(inputPower, offset));
-                    }
-                Task.WaitAll(new Task[]
-                    {
-                        SetPowerLevel(this.smr20.SetPowerLevel, offset1),
-                        SetPowerLevel(this.e8257d.SetPowerLevel, offset2)
-                    });
-                }
-
-            void setRfOutputState (bool on)
-            {
-                this.smr20.SetRfOutputState(on);
-                this.e8257d.SetRfOutputState(on);
-            }
-
-            void setFrequency(double frequency)
-                {
-                Task SetFrequency(Action<double> setDeviceFrequency)
-                    {
-                    return Task.Factory.StartNew(
-                        () => setDeviceFrequency(frequency));
-                    }
-                Task.WaitAll(new Task[]
-                    {
-                            SetFrequency(this.rsa3408a.SetFrequencyCenter),
-                            SetFrequency(this.smr20.SetSourceFrequency),
-                            SetFrequency(this.e8257d.SetSourceFrequency)
-                    });
-                }
-
-            this.Commands = new DeviceCommands(
-                setPow,
-                setRfOutputState,
-                setFrequency,
-                (x) => this.e8257d.SetSourceDeltaPhase(x));
+            this.Commands = this.SetUpVisaDevices();
+            this.Commands.ResetDevices();
             }
 
         private void PopulatePsuCheckboxList()
@@ -142,7 +98,7 @@ namespace OutphasingSweepController
             this.dispatcherTimer.Start();
             }
 
-        private void SetUpVisaConnections()
+        private Equipment SetUpVisaConnections()
             {
             var psuChannelStates = new List<bool>()
                 {
@@ -151,33 +107,134 @@ namespace OutphasingSweepController
                 this.PsuChannel3Enable.IsChecked == true,
                 this.PsuChannel4Enable.IsChecked == true
                 };
-            string hpAddress;
-            string rsaAddress;
-            string smrAddress;
-            string e82Address;
+            string psuAddress;
+            string spectrumAnalyzerAddress;
+            string signalGen1Address;
+            string signalGen2Address;
             // Hard-coded addresses for me to save time
             if (true)
                 {
-                hpAddress = "GPIB1::14::INSTR";
-                rsaAddress = "GPIB1::1::INSTR";
-                smrAddress = "GPIB0::28::INSTR";
-                e82Address = "TCPIP0::192.168.1.3::inst1::INSTR";
+                // HP6624A
+                psuAddress = "GPIB1::14::INSTR";
+                // Tek RSA3408A
+                spectrumAnalyzerAddress = "GPIB1::1::INSTR";
+                //  R&S SMR20
+                signalGen1Address = "GPIB0::28::INSTR";
+                // Keysight E8257D
+                signalGen2Address = "TCPIP0::192.168.1.3::inst1::INSTR";
                 }
             else
                 {
-                hpAddress = this.GetVisaAddress("HP6624A");
-                rsaAddress = this.GetVisaAddress("Tektronix RSA3408");
-                smrAddress = this.GetVisaAddress("R&S SMU200A");
-                e82Address = this.GetVisaAddress("Keysight E8257D");
+                psuAddress = this.GetVisaAddress("PSU");
+                spectrumAnalyzerAddress = 
+                    this.GetVisaAddress("Spectrum Analyzer");
+                signalGen1Address = this.GetVisaAddress("Signal Generator 1");
+                signalGen2Address = this.GetVisaAddress("Signal Generator 2");
                 }
 
-            this.hp6624a = new HP6624A(hpAddress, psuChannelStates);
-            this.rsa3408a = new TektronixRSA3408A(rsaAddress);
-            this.smr20 = new RS_SMR20(smrAddress);
-            this.e8257d = new KeysightE8257D(e82Address);
-            this.rsa3408a.ResetDevice();
-            this.smr20.ResetDevice();
-            this.e8257d.ResetDevice();
+            var hp6624a = new HP6624A(psuAddress, psuChannelStates);
+            var rsa3408a = new TektronixRSA3408A(spectrumAnalyzerAddress);
+            var smr20 = new RS_SMR20(signalGen1Address);
+            var e8257d = new KeysightE8257D(signalGen2Address);
+
+            return new Equipment(hp6624a, rsa3408a, smr20, e8257d);
+            }
+
+        // This is the dirty method that is edited when
+        // the equipment used in the program is changed
+        private DeviceCommands SetUpVisaDevices()
+            {
+            var devices = SetUpVisaConnections();
+
+            void setPow(double inputPower, double offset1, double offset2)
+                {
+                Task SetPowerLevel(
+                    Action<double, double> setPower, double offset)
+                    {
+                    return Task.Factory.StartNew(
+                        () => setPower(inputPower, offset));
+                    }
+                Task.WaitAll(new Task[]
+                    {
+                        SetPowerLevel(devices.Smr20.SetPowerLevel, offset1),
+                        SetPowerLevel(devices.E8257d.SetPowerLevel, offset2)
+                    });
+                }
+
+            void setRfOutputState(bool on)
+                {
+                devices.Smr20.SetRfOutputState(on);
+                devices.E8257d.SetRfOutputState(on);
+                }
+
+            void setFrequency(double frequency)
+                {
+                Task SetFrequency(Action<double> setDeviceFrequency)
+                    {
+                    return Task.Factory.StartNew(
+                        () => setDeviceFrequency(frequency));
+                    }
+                Task.WaitAll(new Task[]
+                    {
+                            SetFrequency(devices.Rsa3408a.SetFrequencyCenter),
+                            SetFrequency(devices.Smr20.SetSourceFrequency),
+                            SetFrequency(devices.E8257d.SetSourceFrequency)
+                    });
+                }
+
+            List<bool> getChannelStates()
+                {
+                return devices.Hp6624a.ChannelStates;
+                }
+
+            void resetDevices()
+                {
+                devices.Rsa3408a.ResetDevice();
+                devices.Smr20.ResetDevice();
+                devices.E8257d.ResetDevice();
+                }
+
+            void preMeasurementSetup(MeasurementConfig sweepConf)
+                {
+                // DC supply
+                var psu = devices.Hp6624a;
+                psu.SetAllChannelVoltagesToZero();
+                psu.SetChannelOutputStatesStrong();
+                psu.SetActiveChannelsCurrent(this.PsuCurrentLimit);
+
+                // Spectrum Analyser
+                var rsa = devices.Rsa3408a;
+                rsa.SetSpectrumChannelPowerMeasurementMode();
+                rsa.SetContinuousMode(continuousOn: false);
+                rsa.SetFrequencyCenter(sweepConf.Frequencies[0]);
+                rsa.SetFrequencySpan(sweepConf.MeasurementFrequencySpan);
+                rsa.SetChannelBandwidth(sweepConf.MeasurementChannelBandwidth);
+                rsa.StartSignalAcquisition();
+
+                //rsa3408a.SetMarkerState(markerNumber: 1, view: 1, on: true);
+                //rsa3408a.SetMarkerXToPositionMode(1,1);
+                // When the frequency changes, the marker should automatially
+                // track to the new centre frequency
+                //rsa3408a.SetMarkerXValue(markerNumber: 1, view: 1, xValue: conf.Frequencies[0]);
+                // Set the power sources to an extremely low
+                // power before starting the sweep
+                // in case they default to some massive value
+                sweepConf.Commands.SetRfOutputState(on: false);
+                sweepConf.Commands.SetInputPower(-60, offset1: 0, offset2: 0);
+                sweepConf.Commands.SetRfOutputState(on: true);
+                }
+
+            return new DeviceCommands(
+                setPow,
+                setRfOutputState,
+                setFrequency,
+                devices.E8257d.SetSourceDeltaPhase,
+                getChannelStates,
+                resetDevices,
+                preMeasurementSetup,
+                devices.Hp6624a.SetPsuVoltageStepped,
+                devices.Hp6624a.OutphasingOptimisedMeasurement,
+                devices.Rsa3408a.ReadSpectrumChannelPower);
             }
 
         private string GetVisaAddress(string deviceName)
@@ -208,12 +265,6 @@ namespace OutphasingSweepController
                 voltages.Add(0.9 * this.PsuNominalVoltage);
                 }
 
-            var devices = new Equipment(
-                this.hp6624a,
-                this.smr20,
-                this.rsa3408a,
-                this.e8257d);
-
             return new MeasurementConfig(
                 frequencySettings,
                 powerSettings,
@@ -231,7 +282,6 @@ namespace OutphasingSweepController
                 new PhaseSearchConfig(
                     this.PeakSearchSettingsTextBox.Text,
                     this.TroughSearchSettingsTextBox.Text),
-                devices,
                 this.Commands);
             }
 
@@ -333,9 +383,9 @@ namespace OutphasingSweepController
                 + ", Measured Channel Power (W)"
                 + ", Measured Output Power (dBm)"
                 + ", Calibrated Output Power (dBm)"
-                + ", SMU200A Input Power Offset (dB)"
-                + ", E8257D Input Power Offset (dB)"
-                + ", RSA3408A Measurement Offset (dB)"
+                + ", Signal Generator 1 Input Power Offset (dB)"
+                + ", Signal Generator 2 Input Power Offset (dB)"
+                + ", Spectrum Analyzer Measurement Offset (dB)"
                 + ", Calibrated Drain Efficiency (%)"
                 + ", Calibrated Power Added Efficiency (%)"
                 + ", Measured Channel Power (dBm)"
@@ -343,13 +393,12 @@ namespace OutphasingSweepController
                 + ", Channel Measurement Bandwidth (Hz)"
                 + ", Calibrated Gain (dB)";
 
-            for (int i = 0; i < HP6624A.NumChannels; i++)
+            var numActiveChannels = 
+                sweepConf.Commands.GetPsuChannelStates().Count(c => c);
+            for (int i = 0; i < numActiveChannels; i++)
                 {
-                if (this.hp6624a.ChannelStates[i])
-                    {
-                    int channel = i + 1;
-                    headerLine += $", DC Current Channel {channel} (A)";
-                    }
+                int channel = i + 1;
+                headerLine += $", DC Current Channel {channel} (A)";
                 }
 
             outputFile.WriteLine(headerLine);
@@ -360,36 +409,13 @@ namespace OutphasingSweepController
             this.MeasurementStopWatch.Restart();
 
             // Pre-setup
-            // DC supply
-            this.hp6624a.SetAllChannelVoltagesToZero();
-            this.hp6624a.SetChannelOutputStatesStrong();
-            this.hp6624a.SetActiveChannelsCurrent(this.PsuCurrentLimit);
-
-            // Spectrum Analyser
-            this.rsa3408a.SetSpectrumChannelPowerMeasurementMode();
-            this.rsa3408a.SetContinuousMode(continuousOn: false);
-            this.rsa3408a.SetFrequencyCenter(sweepConf.Frequencies[0]);
-            this.rsa3408a.SetFrequencySpan(sweepConf.MeasurementFrequencySpan);
-            this.rsa3408a.SetChannelBandwidth(sweepConf.MeasurementChannelBandwidth);
-            this.rsa3408a.StartSignalAcquisition();
-
-            //rsa3408a.SetMarkerState(markerNumber: 1, view: 1, on: true);
-            //rsa3408a.SetMarkerXToPositionMode(1,1);
-            // When the frequency changes, the marker should automatially
-            // track to the new centre frequency
-            //rsa3408a.SetMarkerXValue(markerNumber: 1, view: 1, xValue: conf.Frequencies[0]);
-            // Set the power sources to an extremely low
-            // power before starting the sweep
-            // in case they default to some massive value
-            sweepConf.Commands.SetRfOutputState(on: false);
-            sweepConf.Commands.SetInputPower(-60, offset1: 0, offset2: 0);
-            sweepConf.Commands.SetRfOutputState(on: true);
+            sweepConf.Commands.PreMeasurementSetup(sweepConf);
 
             // All of the sweeps are <= as we want to include the stop
             // value in the sweep
             foreach (var voltage in sweepConf.Voltages)
                 {
-                this.hp6624a.SetPsuVoltageStepped(
+                sweepConf.Commands.SetDcVoltageStepped(
                     voltage, 
                     this.RampVoltageStep, 
                     this.PsuRampUpStepTimeMilliseconds);
@@ -421,8 +447,7 @@ namespace OutphasingSweepController
 
                         foreach (var sample in samples)
                             {
-                            Measurement.SaveSample(
-                                outputFile, sample, this.hp6624a);
+                            Measurement.SaveSample(outputFile, sample);
                             }
                         }
                     }
