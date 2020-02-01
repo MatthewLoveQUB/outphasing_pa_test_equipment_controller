@@ -69,9 +69,6 @@ namespace OutphasingSweepController
         public System.Diagnostics.Stopwatch MeasurementStopWatch =
             new System.Diagnostics.Stopwatch();
 
-        // Interface methods
-        DeviceCommands Commands;
-
         public MainWindow()
             {
             InitializeComponent();
@@ -88,10 +85,6 @@ namespace OutphasingSweepController
                 this.E8257dOffsetsPath;
             this.SpectrumAnalzyerOffsetsFilePathTextBlock.Text = 
                 this.SpectrumAnalzyerOffsetsPath;
-
-            this.Commands = VisaSetup.SetUpVisaDevices(
-                this.PsuChannelStates, this.PsuCurrentLimit);
-            this.Commands.ResetDevices();
             }
 
         private void PopulatePsuCheckboxList()
@@ -136,6 +129,9 @@ namespace OutphasingSweepController
                 voltages.Add(0.9 * this.PsuNominalVoltage);
                 }
 
+            var commands = VisaSetup.SetUpVisaDevices(
+                this.PsuChannelStates, this.PsuCurrentLimit);
+            
             return new MeasurementConfig(
                 frequencySettings,
                 powerSettings,
@@ -153,7 +149,7 @@ namespace OutphasingSweepController
                 new PhaseSearchConfig(
                     this.PeakSearchSettingsTextBox.Text,
                     this.TroughSearchSettingsTextBox.Text),
-                this.Commands);
+                commands);
             }
 
         private void ToggleGuiActive(bool on)
@@ -241,6 +237,8 @@ namespace OutphasingSweepController
 
         private void RunSweep(MeasurementConfig sweepConf)
             {
+            sweepConf.Commands.ResetDevices();
+
             var outputFile = new StreamWriter(sweepConf.OutputFilePath);
             var headerLine =
                 "Frequency (Hz)" // 1
