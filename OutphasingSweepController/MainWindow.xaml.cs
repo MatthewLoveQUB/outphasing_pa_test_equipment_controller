@@ -65,11 +65,11 @@ namespace OutphasingSweepController
 
             this.ResultsSavePathTextBlock.Text = 
                 this.ResultsSavePath;
-            this.Smr20OffsetsFilePathTextBlock.Text = 
+            this.SignalGenerator1OffsetsFilePathTextBlock.Text = 
                 this.Smr20OffsetsPath;
-            this.E8257dOffsetsFilePathTextBlock.Text = 
+            this.SignalGenerator2OffsetsFilePathTextBlock.Text = 
                 this.E8257dOffsetsPath;
-            this.Rsa3408aOffsetsFilePathTextBlock.Text = 
+            this.SpectrumAnalzyerOffsetsFilePathTextBlock.Text = 
                 this.SpectrumAnalzyerOffsetsPath;
 
             this.Commands = this.SetUpVisaDevices();
@@ -98,7 +98,9 @@ namespace OutphasingSweepController
             this.dispatcherTimer.Start();
             }
 
-        private Equipment SetUpVisaConnections()
+        // This is the dirty method that is edited when
+        // the equipment used in the program is changed
+        private DeviceCommands SetUpVisaDevices()
             {
             var psuChannelStates = new List<bool>()
                 {
@@ -107,44 +109,8 @@ namespace OutphasingSweepController
                 this.PsuChannel3Enable.IsChecked == true,
                 this.PsuChannel4Enable.IsChecked == true
                 };
-            string psuAddress;
-            string spectrumAnalyzerAddress;
-            string signalGen1Address;
-            string signalGen2Address;
-            // Hard-coded addresses for me to save time
-            if (true)
-                {
-                // HP6624A
-                psuAddress = "GPIB1::14::INSTR";
-                // Tek RSA3408A
-                spectrumAnalyzerAddress = "GPIB1::1::INSTR";
-                //  R&S SMR20
-                signalGen1Address = "GPIB0::28::INSTR";
-                // Keysight E8257D
-                signalGen2Address = "TCPIP0::192.168.1.3::inst1::INSTR";
-                }
-            else
-                {
-                psuAddress = this.GetVisaAddress("PSU");
-                spectrumAnalyzerAddress = 
-                    this.GetVisaAddress("Spectrum Analyzer");
-                signalGen1Address = this.GetVisaAddress("Signal Generator 1");
-                signalGen2Address = this.GetVisaAddress("Signal Generator 2");
-                }
 
-            var hp6624a = new HP6624A(psuAddress, psuChannelStates);
-            var rsa3408a = new TektronixRSA3408A(spectrumAnalyzerAddress);
-            var smr20 = new RS_SMR20(signalGen1Address);
-            var e8257d = new KeysightE8257D(signalGen2Address);
-
-            return new Equipment(hp6624a, rsa3408a, smr20, e8257d);
-            }
-
-        // This is the dirty method that is edited when
-        // the equipment used in the program is changed
-        private DeviceCommands SetUpVisaDevices()
-            {
-            var devices = SetUpVisaConnections();
+            var devices = VisaSetup.SetUpConnections(psuChannelStates);
 
             void setPow(double inputPower, double offset1, double offset2)
                 {
@@ -235,14 +201,6 @@ namespace OutphasingSweepController
                 devices.Hp6624a.SetPsuVoltageStepped,
                 devices.Hp6624a.OutphasingOptimisedMeasurement,
                 devices.Rsa3408a.ReadSpectrumChannelPower);
-            }
-
-        private string GetVisaAddress(string deviceName)
-            {
-            var visaWindow =
-                new list_visa_devices_dialogue.MainWindow(deviceName);
-            visaWindow.ShowDialog();
-            return visaWindow.SelectedAddress;
             }
 
         private void AddNewLogLine(string line)
