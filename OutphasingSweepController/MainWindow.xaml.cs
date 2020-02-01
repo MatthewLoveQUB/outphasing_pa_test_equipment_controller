@@ -26,6 +26,23 @@ namespace OutphasingSweepController
         public double RampVoltageStep { get; set; } = 0.1;
         public bool PsuPlus10Percent { get; set; } = true;
         public bool PsuMinus10Percent { get; set; } = true;
+        public bool PsuChannel1On { get; set; } = false;
+        public bool PsuChannel2On { get; set; } = false;
+        public bool PsuChannel3On { get; set; } = false;
+        public bool PsuChannel4On { get; set; } = false;
+        public List<bool> PsuChannelStates
+            {
+            get
+                {
+                return new List<bool> {
+                    this.PsuChannel1On,
+                    this.PsuChannel2On,
+                    this.PsuChannel3On,
+                    this.PsuChannel4On
+                    };
+                }
+            }
+
 
         // Spectrum Analyser
         public double Rsa3408ChannelBandwidth { get; set; } = 25e3;
@@ -72,7 +89,8 @@ namespace OutphasingSweepController
             this.SpectrumAnalzyerOffsetsFilePathTextBlock.Text = 
                 this.SpectrumAnalzyerOffsetsPath;
 
-            this.Commands = this.SetUpVisaDevices();
+            this.Commands = VisaSetup.SetUpVisaDevices(
+                this.PsuChannelStates, this.PsuCurrentLimit);
             this.Commands.ResetDevices();
             }
 
@@ -96,111 +114,6 @@ namespace OutphasingSweepController
                 new EventHandler(dispatcherTimer_Tick);
             this.dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 2);
             this.dispatcherTimer.Start();
-            }
-
-        // This is the dirty method that is edited when
-        // the equipment used in the program is changed
-        private DeviceCommands SetUpVisaDevices()
-            {
-            var psuChannelStates = new List<bool>()
-                {
-                this.PsuChannel1Enable.IsChecked == true,
-                this.PsuChannel2Enable.IsChecked == true,
-                this.PsuChannel3Enable.IsChecked == true,
-                this.PsuChannel4Enable.IsChecked == true
-                };
-
-            var devices = VisaSetup.SetUpConnections(psuChannelStates);
-
-            void setPow(double inputPower, double offset1, double offset2)
-                {
-                Task SetPowerLevel(
-                    Action<double, double> setPower, double offset)
-                    {
-                    return Task.Factory.StartNew(
-                        () => setPower(inputPower, offset));
-                    }
-                Task.WaitAll(new Task[]
-                    {
-                        SetPowerLevel(devices.Smr20.SetPowerLevel, offset1),
-                        SetPowerLevel(devices.E8257d.SetPowerLevel, offset2)
-                    });
-                }
-
-            void setRfOutputState(bool on)
-                {
-                devices.Smr20.SetRfOutputState(on);
-                devices.E8257d.SetRfOutputState(on);
-                }
-
-            void setFrequency(double frequency)
-                {
-                Task SetFrequency(Action<double> setDeviceFrequency)
-                    {
-                    return Task.Factory.StartNew(
-                        () => setDeviceFrequency(frequency));
-                    }
-                Task.WaitAll(new Task[]
-                    {
-                            SetFrequency(devices.Rsa3408a.SetFrequencyCenter),
-                            SetFrequency(devices.Smr20.SetSourceFrequency),
-                            SetFrequency(devices.E8257d.SetSourceFrequency)
-                    });
-                }
-
-            List<bool> getChannelStates()
-                {
-                return devices.Hp6624a.ChannelStates;
-                }
-
-            void resetDevices()
-                {
-                devices.Rsa3408a.ResetDevice();
-                devices.Smr20.ResetDevice();
-                devices.E8257d.ResetDevice();
-                }
-
-            void preMeasurementSetup(MeasurementConfig sweepConf)
-                {
-                // DC supply
-                var psu = devices.Hp6624a;
-                psu.SetAllChannelVoltagesToZero();
-                psu.SetChannelOutputStatesStrong();
-                psu.SetActiveChannelsCurrent(this.PsuCurrentLimit);
-
-                // Spectrum Analyser
-                var rsa = devices.Rsa3408a;
-                rsa.SetSpectrumChannelPowerMeasurementMode();
-                rsa.SetContinuousMode(continuousOn: false);
-                rsa.SetFrequencyCenter(sweepConf.Frequencies[0]);
-                rsa.SetFrequencySpan(sweepConf.MeasurementFrequencySpan);
-                rsa.SetChannelBandwidth(sweepConf.MeasurementChannelBandwidth);
-                rsa.StartSignalAcquisition();
-
-                //rsa3408a.SetMarkerState(markerNumber: 1, view: 1, on: true);
-                //rsa3408a.SetMarkerXToPositionMode(1,1);
-                // When the frequency changes, the marker should automatially
-                // track to the new centre frequency
-                //rsa3408a.SetMarkerXValue(markerNumber: 1, view: 1, xValue: conf.Frequencies[0]);
-                // Set the power sources to an extremely low
-                // power before starting the sweep
-                // in case they default to some massive value
-                sweepConf.Commands.SetRfOutputState(on: false);
-                sweepConf.Commands.SetInputPower(-60, offset1: 0, offset2: 0);
-                sweepConf.Commands.SetRfOutputState(on: true);
-                }
-
-            return new DeviceCommands(
-                setPow,
-                setRfOutputState,
-                setFrequency,
-                devices.E8257d.SetSourceDeltaPhase,
-                getChannelStates,
-                resetDevices,
-                preMeasurementSetup,
-                devices.Hp6624a.SetPsuVoltageStepped,
-                devices.Hp6624a.OutphasingOptimisedMeasurement,
-                devices.Rsa3408a.ReadSpectrumChannelPower);
             }
 
         private void AddNewLogLine(string line)
@@ -474,7 +387,7 @@ namespace OutphasingSweepController
                 this.SignalGenerator2OffsetsFilePathTextBlock);
             }
 
-        private void LoadSpectrumAnalzyeradOffsetsButton_Click(
+        private void LoadSpectrumAnalzyerOffsetsButton_Click(
             object sender, RoutedEventArgs e)
             {
             this.SpectrumAnalzyerOffsetsPath = UserLoadOffset(
