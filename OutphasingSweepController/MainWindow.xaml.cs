@@ -57,14 +57,7 @@ namespace OutphasingSweepController
             new System.Diagnostics.Stopwatch();
 
         // Interface methods
-        private delegate void SetInputPowerDelegate(
-            double inputPower, double offset1, double offset2);
-        private delegate void SetRfOutputStateDelegate(bool on);
-        private delegate void SetFrequecyDelegate(double frequency);
-        SetInputPowerDelegate SetInputPower;
-        SetRfOutputStateDelegate SetRfOutputState;
-        SetFrequecyDelegate SetFrequency;
-        Action<double> SetPhase;
+        DeviceCommands Commands;
 
         public MainWindow()
             {
@@ -98,13 +91,12 @@ namespace OutphasingSweepController
                         SetPowerLevel(this.e8257d.SetPowerLevel, offset2)
                     });
                 }
-            this.SetInputPower = setPow;
 
-            this.SetRfOutputState = on =>
+            void setRfOutputState (bool on)
             {
                 this.smr20.SetRfOutputState(on);
                 this.e8257d.SetRfOutputState(on);
-            };
+            }
 
             void setFrequency(double frequency)
                 {
@@ -120,8 +112,12 @@ namespace OutphasingSweepController
                             SetFrequency(this.e8257d.SetSourceFrequency)
                     });
                 }
-            this.SetFrequency = setFrequency;
-            this.SetPhase = (x) => this.e8257d.SetSourceDeltaPhase(x);
+
+            this.Commands = new DeviceCommands(
+                setPow,
+                setRfOutputState,
+                setFrequency,
+                (x) => this.e8257d.SetSourceDeltaPhase(x));
             }
 
         private void PopulatePsuCheckboxList()
@@ -235,7 +231,8 @@ namespace OutphasingSweepController
                 new PhaseSearchConfig(
                     this.PeakSearchSettingsTextBox.Text,
                     this.TroughSearchSettingsTextBox.Text),
-                devices);
+                devices,
+                this.Commands);
             }
 
         private void ToggleGuiActive(bool on)
@@ -384,9 +381,9 @@ namespace OutphasingSweepController
             // Set the power sources to an extremely low
             // power before starting the sweep
             // in case they default to some massive value
-            this.SetRfOutputState(on: false);
-            this.SetInputPower(-60, offset1: 0, offset2: 0);
-            this.SetRfOutputState(on: true);
+            sweepConf.Commands.SetRfOutputState(on: false);
+            sweepConf.Commands.SetInputPower(-60, offset1: 0, offset2: 0);
+            sweepConf.Commands.SetRfOutputState(on: true);
 
             // All of the sweeps are <= as we want to include the stop
             // value in the sweep
@@ -400,10 +397,10 @@ namespace OutphasingSweepController
                 foreach (var frequency in sweepConf.Frequencies)
                     {
                     var offsets = new CurrentOffset(
-                        sweepConf.Smr20Offsets.GetOffset(frequency),
-                        sweepConf.E8257dOffsets.GetOffset(frequency),
-                        sweepConf.Rsa3408aOffsets.GetOffset(frequency));
-                    this.SetFrequency(frequency);
+                        sweepConf.GetOffsets1.GetOffset(frequency),
+                        sweepConf.GenOffsets2.GetOffset(frequency),
+                        sweepConf.SpectrumAnalyzerOffsets.GetOffset(frequency));
+                    sweepConf.Commands.SetFrequency(frequency);
                     foreach (var inputPower in sweepConf.InputPowers)
                         {
                         outputFile.Flush();
@@ -411,10 +408,10 @@ namespace OutphasingSweepController
                             {
                             outputFile.Flush();
                             outputFile.Close();
-                            this.SetRfOutputState(on: false);
+                            sweepConf.Commands.SetRfOutputState(on: false);
                             return;
                             }
-                        this.SetInputPower(
+                        sweepConf.Commands.SetInputPower(
                             inputPower, offsets.Smu200a, offsets.E8257d);
 
                         var phaseSweepConfig = new PhaseSweepConfig(

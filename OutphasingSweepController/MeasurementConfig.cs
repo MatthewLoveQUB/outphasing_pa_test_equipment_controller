@@ -17,9 +17,9 @@ namespace OutphasingSweepController
         public string Corner;
         public List<Double> Voltages;
         public string OutputFilePath;
-        public DeviceOffsets Smr20Offsets;
-        public DeviceOffsets E8257dOffsets;
-        public DeviceOffsets Rsa3408aOffsets;
+        public DeviceOffsets GetOffsets1;
+        public DeviceOffsets GenOffsets2;
+        public DeviceOffsets SpectrumAnalyzerOffsets;
         public int MeasurementPoints
             {
             get
@@ -34,6 +34,8 @@ namespace OutphasingSweepController
         public double MeasurementFrequencySpan;
         public bool PeakTroughPhaseSearch;
         public PhaseSearchConfig PhaseSearchSettings;
+        public DeviceCommands Commands;
+
         public MeasurementConfig(
             List<Double> frequencySettings,
             List<Double> powerSettings,
@@ -44,12 +46,13 @@ namespace OutphasingSweepController
             double measurementBandwidth,
             double measurementSpan,
             string outputFilePath,
-            string Smr20OffsetFilePath,
-            string E8257dOffsetFilePath,
-            string Rsa3408aOffsetsFilePath,
+            string genOffsetsFilePath1,
+            string genOffsetsFilePath2,
+            string spectrumAnalyzerOffsetsFilePath,
             bool peakTroughPhaseSearch,
             PhaseSearchConfig phasePeakTroughSearchSettings,
-            Equipment devices)
+            Equipment devices,
+            DeviceCommands commands)
             {
             this.Frequencies = frequencySettings;
             this.InputPowers = powerSettings;
@@ -60,12 +63,13 @@ namespace OutphasingSweepController
             this.MeasurementChannelBandwidth = measurementBandwidth;
             this.MeasurementFrequencySpan = measurementSpan;
             this.OutputFilePath = outputFilePath;
-            this.Smr20Offsets = new DeviceOffsets(Smr20OffsetFilePath);
-            this.E8257dOffsets = new DeviceOffsets(E8257dOffsetFilePath);
-            this.Rsa3408aOffsets = new DeviceOffsets(Rsa3408aOffsetsFilePath);
+            this.GetOffsets1 = new DeviceOffsets(genOffsetsFilePath1);
+            this.GenOffsets2 = new DeviceOffsets(genOffsetsFilePath2);
+            this.SpectrumAnalyzerOffsets = new DeviceOffsets(spectrumAnalyzerOffsetsFilePath);
             this.PeakTroughPhaseSearch = peakTroughPhaseSearch;
             this.PhaseSearchSettings = phasePeakTroughSearchSettings;
             this.Devices = devices;
+            this.Commands = commands;
             }
         }
     }
