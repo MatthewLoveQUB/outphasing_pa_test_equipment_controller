@@ -54,9 +54,9 @@ namespace OutphasingSweepController
         // File IO
         public string ResultsSavePath { get; set; } =
             "C:\\Users\\matth\\Downloads\\x.csv";
-        public string Smr20OffsetsPath { get; set; } =
+        public string SignalGenerator1OffsetsPath { get; set; } =
             "C:\\Users\\matth\\Downloads\\Cable_5_offset_file.cor";
-        public string E8257dOffsetsPath { get; set; } =
+        public string SignalGenerator2OffsetsPath { get; set; } =
             "C:\\Users\\matth\\Downloads\\Cable_2_offset_file.cor";
         public string SpectrumAnalzyerOffsetsPath { get; set; } =
             "C:\\Users\\matth\\Downloads\\Cable_7_offset_file.cor";
@@ -79,9 +79,9 @@ namespace OutphasingSweepController
             this.ResultsSavePathTextBlock.Text = 
                 this.ResultsSavePath;
             this.SignalGenerator1OffsetsFilePathTextBlock.Text = 
-                this.Smr20OffsetsPath;
+                this.SignalGenerator1OffsetsPath;
             this.SignalGenerator2OffsetsFilePathTextBlock.Text = 
-                this.E8257dOffsetsPath;
+                this.SignalGenerator2OffsetsPath;
             this.SpectrumAnalzyerOffsetsFilePathTextBlock.Text = 
                 this.SpectrumAnalzyerOffsetsPath;
             }
@@ -129,8 +129,8 @@ namespace OutphasingSweepController
                 this.Rsa3408ChannelBandwidth,
                 this.Rsa3408FrequencySpan,
                 this.ResultsSavePath,
-                this.Smr20OffsetsPath,
-                this.E8257dOffsetsPath,
+                this.SignalGenerator1OffsetsPath,
+                this.SignalGenerator2OffsetsPath,
                 this.SpectrumAnalzyerOffsetsPath,
                 this.PeakTroughSearch,
                 new PhaseSearchConfig(
@@ -217,9 +217,9 @@ namespace OutphasingSweepController
                 return true;
                 }
             return checkPath(this.ResultsSavePath, "save")
-                && checkPath(this.Smr20OffsetsPath, "SMU200A offset")
-                && checkPath(this.E8257dOffsetsPath, "E8257D offset")
-                && checkPath(this.SpectrumAnalzyerOffsetsPath, "RSA3408A offset");
+                && checkPath(this.SignalGenerator1OffsetsPath, "Generator 1 offset")
+                && checkPath(this.SignalGenerator2OffsetsPath, "Generator 2 offset")
+                && checkPath(this.SpectrumAnalzyerOffsetsPath, "Spectrum Analzyer offset");
             }
 
         private void RunSweep(MeasurementConfig sweepConf)
@@ -359,7 +359,7 @@ namespace OutphasingSweepController
         private void LoadSignalGenerator1OffsetsButton_Click(
             object sender, RoutedEventArgs e)
             {
-            this.Smr20OffsetsPath = 
+            this.SignalGenerator1OffsetsPath = 
                 UserLoadOffset("Signal Generator 1", 
                 this.SignalGenerator1OffsetsFilePathTextBlock);
             }
@@ -367,7 +367,7 @@ namespace OutphasingSweepController
         private void LoadSignalGenerator2OffsetsButton_Click(
             object sender, RoutedEventArgs e)
             {
-            this.E8257dOffsetsPath = UserLoadOffset(
+            this.SignalGenerator2OffsetsPath = UserLoadOffset(
                 "Signal Generator 2", 
                 this.SignalGenerator2OffsetsFilePathTextBlock);
             }
