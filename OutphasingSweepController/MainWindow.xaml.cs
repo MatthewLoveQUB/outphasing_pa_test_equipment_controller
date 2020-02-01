@@ -41,7 +41,7 @@ namespace OutphasingSweepController
             "C:\\Users\\matth\\Downloads\\Cable_5_offset_file.cor";
         public string E8257dOffsetsPath { get; set; } =
             "C:\\Users\\matth\\Downloads\\Cable_2_offset_file.cor";
-        public string Rsa3408aOffsetsPath { get; set; } =
+        public string SpectrumAnalzyerOffsetsPath { get; set; } =
             "C:\\Users\\matth\\Downloads\\Cable_7_offset_file.cor";
         // Signal Generators
         // Measurement
@@ -70,7 +70,7 @@ namespace OutphasingSweepController
             this.E8257dOffsetsFilePathTextBlock.Text = 
                 this.E8257dOffsetsPath;
             this.Rsa3408aOffsetsFilePathTextBlock.Text = 
-                this.Rsa3408aOffsetsPath;
+                this.SpectrumAnalzyerOffsetsPath;
 
             this.Commands = this.SetUpVisaDevices();
             this.Commands.ResetDevices();
@@ -277,7 +277,7 @@ namespace OutphasingSweepController
                 this.ResultsSavePath,
                 this.Smr20OffsetsPath,
                 this.E8257dOffsetsPath,
-                this.Rsa3408aOffsetsPath,
+                this.SpectrumAnalzyerOffsetsPath,
                 this.PeakTroughSearch,
                 new PhaseSearchConfig(
                     this.PeakSearchSettingsTextBox.Text,
@@ -365,7 +365,7 @@ namespace OutphasingSweepController
             return checkPath(this.ResultsSavePath, "save")
                 && checkPath(this.Smr20OffsetsPath, "SMU200A offset")
                 && checkPath(this.E8257dOffsetsPath, "E8257D offset")
-                && checkPath(this.Rsa3408aOffsetsPath, "RSA3408A offset");
+                && checkPath(this.SpectrumAnalzyerOffsetsPath, "RSA3408A offset");
             }
 
         private void RunSweep(MeasurementConfig sweepConf)
@@ -500,25 +500,28 @@ namespace OutphasingSweepController
             return tb.Text;
             }
 
-        private void LoadSmu200aOffsetsButton_Click(
+        private void LoadSignalGenerator1OffsetsButton_Click(
             object sender, RoutedEventArgs e)
             {
             this.Smr20OffsetsPath = 
-                UserLoadOffset("SMR20", this.Smr20OffsetsFilePathTextBlock);
+                UserLoadOffset("Signal Generator 1", 
+                this.SignalGenerator1OffsetsFilePathTextBlock);
             }
 
-        private void LoadE8257dOffsetsButton_Click(
+        private void LoadSignalGenerator2OffsetsButton_Click(
             object sender, RoutedEventArgs e)
             {
             this.E8257dOffsetsPath = UserLoadOffset(
-                "E8257D", this.E8257dOffsetsFilePathTextBlock);
+                "Signal Generator 2", 
+                this.SignalGenerator2OffsetsFilePathTextBlock);
             }
 
-        private void LoadRsa3408adOffsetsButton_Click(
+        private void LoadSpectrumAnalzyeradOffsetsButton_Click(
             object sender, RoutedEventArgs e)
             {
-            this.Rsa3408aOffsetsPath = UserLoadOffset(
-                "RSA3408A", this.Rsa3408aOffsetsFilePathTextBlock);
+            this.SpectrumAnalzyerOffsetsPath = UserLoadOffset(
+                "Spectrum Analyzer", 
+                this.SpectrumAnalzyerOffsetsFilePathTextBlock);
             }
 
         private string GetOffsetsPath(string deviceName)

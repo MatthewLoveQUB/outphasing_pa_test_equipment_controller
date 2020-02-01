@@ -46,6 +46,7 @@
     <Compile Include="DeviceOffsets.cs" />
     <Compile Include="HP6624A.cs" />
     <Compile Include="KeysightE8257D.cs" />
+    <Compile Include="OutphasingDcMeasurements.cs" />
     <Compile Include="PowerConversion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RS_SMR20.cs" />

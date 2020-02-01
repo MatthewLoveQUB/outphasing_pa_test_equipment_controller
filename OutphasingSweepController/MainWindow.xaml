@@ -8,8 +8,8 @@
     Title="Outphasing Sweep Controller"
     Width="900"
     Height="550"
-    mc:Ignorable="d"
-    Closing="Window_Closing">
+    Closing="Window_Closing"
+    mc:Ignorable="d">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -288,49 +288,45 @@
                 Grid.ColumnSpan="3"
                 VerticalAlignment="Center"
                 TextAlignment="Left" />
-            <!--  Load SMU200A Amplitude offsets  -->
             <Button
-                x:Name="LoadSmu200aOffsetsButton"
+                x:Name="LoadSignalGenerator1OffsetsButton"
                 Grid.Row="11"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
-                Click="LoadSmu200aOffsetsButton_Click"
-                Content="Load SMU200A offsets" />
+                Click="LoadSignalGenerator1OffsetsButton_Click"
+                Content="Load Signal Generator #1 offsets" />
             <TextBlock
-                x:Name="Smr20OffsetsFilePathTextBlock"
+                x:Name="SignalGenerator1OffsetsFilePathTextBlock"
                 Grid.Row="11"
                 Grid.Column="2"
                 Grid.ColumnSpan="3"
                 VerticalAlignment="Center" />
-            <!--  Load E8257D Amplitude offsets  -->
             <Button
-                x:Name="LoadE8257dOffsetsButton"
+                x:Name="LoadSignalGenerator2OffsetsButton"
                 Grid.Row="12"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
-                Click="LoadE8257dOffsetsButton_Click"
-                Content="Load E8257D offsets" />
+                Click="LoadSignalGenerator2OffsetsButton_Click"
+                Content="Load Signal Generator #2 offsets" />
             <TextBlock
-                x:Name="E8257dOffsetsFilePathTextBlock"
+                x:Name="SignalGenerator2OffsetsFilePathTextBlock"
                 Grid.Row="12"
                 Grid.Column="2"
                 Grid.ColumnSpan="3"
                 VerticalAlignment="Center" />
-            <!--  Spectrum Analyser Offsets  -->
             <Button
-                x:Name="LoadRsa3408adOffsetsButton"
+                x:Name="LoadSpectrumAnalzyerOffsetsButton"
                 Grid.Row="13"
                 Grid.Column="0"
                 Grid.ColumnSpan="2"
-                Click="LoadRsa3408adOffsetsButton_Click"
-                Content="Load RSA3408A offsets" />
+                Click="LoadSpectrumAnalzyerOffsetsButton_Click"
+                Content="Load Spectrum Analzyer offsets" />
             <TextBlock
-                x:Name="Rsa3408aOffsetsFilePathTextBlock"
+                x:Name="SpectrumAnalzyerOffsetsFilePathTextBlock"
                 Grid.Row="13"
                 Grid.Column="2"
                 Grid.ColumnSpan="3"
                 VerticalAlignment="Center" />
-            <!--  Spectrum Analyzer Bandwidth  -->
             <TextBlock
                 Grid.Row="14"
                 Grid.Column="0"
