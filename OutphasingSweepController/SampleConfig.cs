@@ -24,14 +24,13 @@ namespace OutphasingSweepController
             }
         }
 
-    public class SampleConfig
+    public class SampleConfig : PhaseSweepConfig
         {
-        public PhaseSweepConfig PhaseSweepConfig;
         public double Phase;
 
-        public SampleConfig(PhaseSweepConfig phaseSweepConfig, double phase)
+        public SampleConfig(PhaseSweepConfig phaseSweepConfig, double phase) 
+            : base(phaseSweepConfig)
             {
-            this.PhaseSweepConfig = phaseSweepConfig;
             this.Phase = phase;
             }
         }

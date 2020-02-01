@@ -71,7 +71,7 @@ namespace OutphasingSweepController
             InitializeComponent();
             this.DataContext = this;
             PopulatePsuCheckboxList();
-            SetUpVisaConnections();
+            //SetUpVisaConnections();
             SetUpDispatcherTimer();
             UpdateEstimatedMeasurementTime();
 

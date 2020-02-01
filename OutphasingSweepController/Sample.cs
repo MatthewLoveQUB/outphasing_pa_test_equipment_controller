@@ -14,7 +14,7 @@ namespace OutphasingSweepController
             {
             get
                 {
-                return this.Conf.PhaseSweepConfig.InputPower;
+                return this.Conf.InputPower;
                 }
             }
         public double InputPowerWatts
@@ -38,7 +38,7 @@ namespace OutphasingSweepController
             {
             get
                 {
-                return this.MeasuredOutputPowerdBm + this.Conf.PhaseSweepConfig.Offset.Rsa3408a;
+                return this.MeasuredOutputPowerdBm + this.Conf.Offset.Rsa3408a;
                 }
             }
         public double CalibratedOutputPowerWatts

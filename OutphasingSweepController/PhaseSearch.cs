@@ -103,7 +103,6 @@ namespace OutphasingSweepController
             List<Sample> samples)
             {
             sampleConfig
-                .PhaseSweepConfig
                 .MeasurementConfig
                 .Devices
                 .E8257d

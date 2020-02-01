@@ -27,5 +27,13 @@ namespace OutphasingSweepController
             this.Frequency = frequency;
             this.InputPower = inputPower;
             }
+
+        public PhaseSweepConfig(PhaseSweepConfig other)
+            {
+            this.MeasurementConfig = other.MeasurementConfig;
+            this.Offset = other.Offset;
+            this.Frequency = other.Frequency;
+            this.InputPower = other.InputPower;
+            }
         }
     }
