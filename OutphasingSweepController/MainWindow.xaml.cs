@@ -73,7 +73,6 @@ namespace OutphasingSweepController
             {
             InitializeComponent();
             this.DataContext = this;
-            PopulatePsuCheckboxList();
             SetUpDispatcherTimer();
             UpdateEstimatedMeasurementTime();
 
@@ -85,18 +84,6 @@ namespace OutphasingSweepController
                 this.E8257dOffsetsPath;
             this.SpectrumAnalzyerOffsetsFilePathTextBlock.Text = 
                 this.SpectrumAnalzyerOffsetsPath;
-            }
-
-        private void PopulatePsuCheckboxList()
-            {
-            this.PsuChannelEnableCheckboxes =
-                new List<CheckBox>()
-                    {
-                    this.PsuChannel1Enable,
-                    this.PsuChannel2Enable,
-                    this.PsuChannel3Enable,
-                    this.PsuChannel4Enable
-                    };
             }
 
         private void SetUpDispatcherTimer()
