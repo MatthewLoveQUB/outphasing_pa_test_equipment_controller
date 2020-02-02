@@ -23,11 +23,13 @@
             x:Name="StartTextBox"
             Grid.Column="1"
             Margin="1"
+            VerticalContentAlignment="Center"
             Text="{Binding Start, StringFormat=g3, Mode=TwoWay}" />
         <TextBox
             x:Name="StepTextBox"
             Grid.Column="2"
             Margin="1"
+            VerticalContentAlignment="Center"
             Background="LightGray"
             IsReadOnly="True"
             Text="{Binding Step, StringFormat=g3, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
@@ -35,11 +37,13 @@
             x:Name="StopTextBox"
             Grid.Column="3"
             Margin="1"
+            VerticalContentAlignment="Center"
             Text="{Binding Stop, StringFormat=g3, Mode=TwoWay}" />
         <TextBox
             x:Name="NStepsTextBox"
             Grid.Column="4"
             Margin="1"
+            VerticalContentAlignment="Center"
             Text="{Binding NSteps, StringFormat=g, Mode=TwoWay}" />
     </Grid>
 </UserControl>

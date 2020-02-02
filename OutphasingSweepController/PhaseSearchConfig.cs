@@ -6,15 +6,28 @@ using System.Threading.Tasks;
 
 namespace OutphasingSweepController
     {
-    public class PhaseSearchConfig
+    public class LowerValueConfig
         {
         public List<PhaseSearchPointConfig> Peak;
         public List<PhaseSearchPointConfig> Trough;
+        public int DirectionSearchIterationLimit;
+        public int SearchIterationLimit;
+        public int PhaseSearchNumCenterSamples;
 
-        public PhaseSearchConfig(string peakSettings, string troughSettings)
+        public LowerValueConfig(
+                string peakSettings,
+                string troughSettings,
+                int directionSearchIterationLimit,
+                int searchIterationLimit,
+                int phaseSearchNumCenterSamples)
             {
             this.Peak = this.ParseInput(peakSettings);
             this.Trough = this.ParseInput(troughSettings);
+            this.DirectionSearchIterationLimit = 
+                directionSearchIterationLimit;
+            this.SearchIterationLimit = searchIterationLimit;
+            this.PhaseSearchNumCenterSamples =
+                phaseSearchNumCenterSamples;
             }
 
         private List<PhaseSearchPointConfig> ParseInput(string settingsInput)
@@ -37,4 +50,27 @@ namespace OutphasingSweepController
             return settings;
             }
         }
+    
+    public class PhaseSearchConfig
+        {
+        public PhaseSearch.SearchType PhaseSearchType;
+        public LowerValueConfig LowerValue;
+
+        public PhaseSearchConfig(
+                PhaseSearch.SearchType phaseSearchType,
+                string peakSettings,
+                string troughSettings,
+                int directionSearchIterationLimit,
+                int searchIterationLimit,
+                int phaseSearchNumCenterSamples)
+            {
+            this.PhaseSearchType = phaseSearchType;
+            this.LowerValue = new LowerValueConfig(
+                peakSettings,
+                troughSettings,
+                directionSearchIterationLimit,
+                searchIterationLimit,
+                phaseSearchNumCenterSamples);
+            }
+        }     
     }

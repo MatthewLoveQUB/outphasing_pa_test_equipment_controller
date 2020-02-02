@@ -36,7 +36,8 @@ namespace OutphasingSweepController
         public enum Gradient
             {
             Positive,
-            Negative
+            Negative,
+            None
             }
 
         public enum Direction
@@ -62,8 +63,10 @@ namespace OutphasingSweepController
             var samples = new List<Sample>();
             BasicPhaseSweep(samples, phaseSweepConfig);
 
-            var searchType = 
-                phaseSweepConfig.MeasurementConfig.PhaseSearchType;
+            var searchType = phaseSweepConfig
+                                .MeasurementConfig
+                                .PhaseSearchSettings
+                                .PhaseSearchType;
 
             if (searchType == SearchType.None)
                 {
@@ -76,8 +79,8 @@ namespace OutphasingSweepController
             if (searchType == SearchType.LowestValue)
                 {
                 void DoSearch(
-                List<PhaseSearchPointConfig> searchSettings,
-                Mode mode)
+                        List<PhaseSearchPointConfig> searchSettings,
+                        Mode mode)
                     {
                     foreach (var searchSetting in searchSettings)
                         {
@@ -92,10 +95,18 @@ namespace OutphasingSweepController
                     }
 
                 DoSearch(
-                    phaseSweepConfig.MeasurementConfig.PhaseSearchSettings.Peak,
+                    phaseSweepConfig
+                        .MeasurementConfig
+                        .PhaseSearchSettings
+                        .LowerValue
+                        .Peak,
                     Mode.Peak);
                 DoSearch(
-                    phaseSweepConfig.MeasurementConfig.PhaseSearchSettings.Trough,
+                    phaseSweepConfig
+                        .MeasurementConfig
+                        .PhaseSearchSettings
+                        .LowerValue
+                        .Trough,
                     Mode.Trough);
                 }
 
@@ -136,18 +147,12 @@ namespace OutphasingSweepController
             PhaseSweepConfig phaseSweepConfig,
             PhaseSearchPointConfig searchPtConfig)
             {
+
             SampleConfig makeSampleConfig(double phase)
             {
                 return new SampleConfig(phaseSweepConfig, phase);
             };
-            bool continueSearch(Sample best, Sample current)
-                {
-                var evaluation = EvaluateNewSample(
-                    best, current, searchMode, searchPtConfig);
-                return evaluation == LoopStatus.Continue;
-                }
 
-            var numSamples = 0;
             var bestSample = startBestSample;
             var searchDirection = FindSearchDirection(
                 searchMode,
@@ -156,42 +161,68 @@ namespace OutphasingSweepController
                 phaseSweepConfig,
                 searchPtConfig,
                 makeSampleConfig);
-            var phaseStep = 1.0;
-            if (searchDirection == Direction.Positive)
-                {
-                phaseStep *= -1;
-                }
+
+            // If no definite direction is found then
+            // assume we're very close to the peak or trough
             if (searchDirection == Direction.CentreSweep)
                 {
-                var numSteps = 10;
-                var corePhase = GetBestSample(samples, searchMode).Conf.Phase;
-                var step = searchPtConfig.StepDeg;
-                var startPhase = corePhase - (numSteps * step);
+                double numSteps = phaseSweepConfig
+                    .MeasurementConfig
+                    .PhaseSearchSettings
+                    .LowerValue
+                    .PhaseSearchNumCenterSamples;
+                var centerPhase = 
+                    GetBestSample(samples, searchMode).Conf.Phase;
+                var centreSweepPhaseStep = searchPtConfig.StepDeg;
+                var startPhase = 
+                    centerPhase - (numSteps/2.0 * centreSweepPhaseStep);
                 for (int i = 0; i < numSteps; i++)
                     {
-                    var newConfig = makeSampleConfig(
-                        corePhase + (i * step));
+                    var curPhase = startPhase + (i * centreSweepPhaseStep);
+                    var newConfig = makeSampleConfig(curPhase);
                     TakeSample(newConfig, samples);
                     }
+                return;
                 }
+
+            // If the direction is negative then invert the phase step
+            var phaseStep = searchPtConfig.StepDeg;
+            if (searchDirection == Direction.Negative)
+                {
+                phaseStep *= -1;
+                }            
 
             // Loop until we've moved exitThreshold dB
             // away from the best found value
             var currentPhase = bestSample.Conf.Phase;
             var newSample = bestSample;
+            var searchSampleLimit = phaseSweepConfig
+                                        .MeasurementConfig
+                                        .PhaseSearchSettings
+                                        .LowerValue
+                                        .DirectionSearchIterationLimit;
+
+            bool continueSearch(Sample best, Sample current)
+                {
+                var evaluation = EvaluateNewSample(
+                    best, current, searchMode, searchPtConfig);
+                return evaluation == LoopStatus.Continue;
+                }
+
+            var numSamples = 0;
             while (continueSearch(bestSample, newSample))
                 {
                 numSamples++;
-                if(numSamples > 300)
+                if(numSamples > searchSampleLimit)
                     {
                     break;
                     }
                 currentPhase += phaseStep;
                 var sampleConfig = makeSampleConfig(currentPhase);
                 newSample = TakeSample(sampleConfig, samples);
-                var newRes = PeakTroughComparison(
+                var newResult = PeakTroughComparison(
                     searchMode, bestSample, newSample);
-                if (newRes == NewSampleResult.Better)
+                if (newResult == NewSampleResult.Better)
                     {
                     bestSample = newSample;
                     }
@@ -208,28 +239,39 @@ namespace OutphasingSweepController
             {
             var corePhase = bestSample.Conf.Phase;
 
-            Gradient getNewSampleGradient(double stepScale)
+            Gradient getNewSampleGradient(double phaseStepScalar)
                 {
-                var newPhase = corePhase + (stepScale * phasePtConfig.StepDeg);
+                var phaseStep = phaseStepScalar * phasePtConfig.StepDeg;
+                var newPhase = corePhase + phaseStep;
                 var newConfig = makeSampleConfig(newPhase);
                 var newSample = TakeSample(newConfig, samples);
                 return GetGradient(bestSample, newSample);
                 }
 
+            // Find two points adjacent to the best position
+            // If we're on a line they should have the same gradient
+            // which should tell us where to search to find the 
+            // minima or maxima
+            // Due to measurement noise, the search is done multiple times
+            // If it never finds a definite gradient then assume we're
+            // close to the minima/maxima
+            var searchIterationLimit = phaseSweepConfig
+                                                .MeasurementConfig
+                                                .PhaseSearchSettings
+                                                .LowerValue
+                                                .DirectionSearchIterationLimit;
             int iterations = 0;
             double scalar = 0.0;
             while (true)
                 {
                 iterations++;
                 scalar += 1.0;
-                var gradientPos = getNewSampleGradient(scalar);
-                var gradientNeg = getNewSampleGradient(scalar * -1);
-
-                // If both adjacent points move in the same direction
-                // then there's no clear direction to move in
-                if (gradientNeg == gradientPos)
+                var gradientRightSample = getNewSampleGradient(scalar);
+                var gradientLeftSample = getNewSampleGradient(scalar * -1);
+                
+                if (gradientLeftSample == gradientRightSample)
                     {
-                    if(iterations > 5)
+                    if(iterations > searchIterationLimit)
                         {
                         return Direction.CentreSweep;
                         }
@@ -237,13 +279,13 @@ namespace OutphasingSweepController
                     }
                 if (searchMode == Mode.Peak)
                     {
-                    return (gradientPos == Gradient.Positive) 
+                    return (gradientRightSample == Gradient.Positive) 
                         ? Direction.Positive 
                         : Direction.Negative;
                     }
                 else
                     {
-                    return (gradientPos == Gradient.Negative)
+                    return (gradientRightSample == Gradient.Negative)
                         ? Direction.Positive
                         : Direction.Negative;
                     }
@@ -254,10 +296,7 @@ namespace OutphasingSweepController
             Sample sampleRef,
             Sample sampleNew)
             {
-            return (sampleNew.MeasuredChannelPowerdBm
-                > sampleRef.MeasuredChannelPowerdBm)
-                ? Gradient.Positive
-                : Gradient.Negative;
+            return new SamplePair(sampleRef, sampleNew).GradientDirection; 
             }
 
         public static NewSampleResult PeakTroughComparison(
@@ -292,11 +331,29 @@ namespace OutphasingSweepController
             }
 
         // Version 2
-        private class SamplePair
+        public class SamplePair
             {
             public Sample Sample1;
             public Sample Sample2;
-            public double Gradient;
+            public double PowerGradient;
+            public Gradient GradientDirection
+                {
+                get
+                    {
+                    var gradientSign = Math.Sign(this.PowerGradient);
+                    if (gradientSign == 1)
+                        {
+                        return Gradient.Positive;
+                        }
+                    if (gradientSign == -1)
+                        {
+                        return Gradient.Negative;
+                        }
+                    return Gradient.None;
+                    }
+                }
+
+
             public SamplePair(Sample s1, Sample s2)
                 {
                 this.Sample1 = s1;
@@ -305,13 +362,13 @@ namespace OutphasingSweepController
                 var pow1 = s1.MeasuredChannelPowerdBm;
                 var phase2 = s2.Conf.Phase;
                 var phase1 = s1.Conf.Phase;
-                this.Gradient = (pow2 - pow1) / (phase2 - phase1);
+                this.PowerGradient = (pow2 - pow1) / (phase2 - phase1);
                 }
             }
 
         private static Direction GetDirection(SamplePair pair)
             {
-            var sign = Math.Sign(pair.Gradient);
+            var sign = Math.Sign(pair.PowerGradient);
             switch (sign)
                 {
                 case 1:
@@ -344,7 +401,7 @@ namespace OutphasingSweepController
                 }
 
             var validPairs = new List<SamplePair>();
-            Func<SamplePair, int> getSign = x => Math.Sign(x.Gradient);
+            Func<SamplePair, int> getSign = x => Math.Sign(x.PowerGradient);
             for (int i = 1; i < samplePairs.Count-1; i++)
                 {
                 var pairs = 
@@ -358,7 +415,7 @@ namespace OutphasingSweepController
                     }
                 }
             var sortedPairs = 
-                validPairs.OrderByDescending(p => Math.Abs(p.Gradient)).ToList();
+                validPairs.OrderByDescending(p => Math.Abs(p.PowerGradient)).ToList();
             var bestPair = sortedPairs.First();
             var startingGradientSign = getSign(bestPair);
             var direction = GetDirection(bestPair);

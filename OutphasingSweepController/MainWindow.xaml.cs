@@ -49,7 +49,6 @@ namespace OutphasingSweepController
         public double Rsa3408FrequencySpan { get; set; } = 1e6;
         // UI
         public Queue<String> LogQueue = new Queue<string>();
-        List<CheckBox> PsuChannelEnableCheckboxes;
         System.Windows.Threading.DispatcherTimer dispatcherTimer;
         // File IO
         public string ResultsSavePath { get; set; } =
@@ -67,6 +66,8 @@ namespace OutphasingSweepController
         public double EstimatedTimePerSample { get; set; } = 0.32;
         public System.Diagnostics.Stopwatch MeasurementStopWatch =
             new System.Diagnostics.Stopwatch();
+
+        // Phase Search Settings
         public PhaseSearch.SearchType PhaseSearchType
             {
             get
@@ -87,6 +88,10 @@ namespace OutphasingSweepController
                     }
                 }
             }
+        // Lowest Value
+        public int DirectionSearchIterationLimit { get; set; } = 5;
+        public int PhaseSearchIterationLimit { get; set; } = 500;
+        public int PhaseSearchNumCenterSamples { get; set; } = 10;
 
         public MainWindow()
             {
@@ -151,10 +156,12 @@ namespace OutphasingSweepController
                 this.SignalGenerator1OffsetsPath,
                 this.SignalGenerator2OffsetsPath,
                 this.SpectrumAnalzyerOffsetsPath,
-                this.PhaseSearchType,
                 new PhaseSearchConfig(
+                    this.PhaseSearchType,
                     this.PeakSearchSettingsTextBox.Text,
-                    this.TroughSearchSettingsTextBox.Text),
+                    this.TroughSearchSettingsTextBox.Text,
+                    this.DirectionSearchIterationLimit,
+                    this.PhaseSearchIterationLimit),
                 commands);
             }
 
