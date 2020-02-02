@@ -394,50 +394,51 @@ namespace OutphasingSweepController
             List<Sample> samples,
             PhaseSweepConfig phaseSweepConfig)
             {
+
+            // Put the samples into pairs
             var samplePairs = new List<SamplePair>();
             for(int i = 0; i < (samples.Count-1); i++)
                 {
                 samplePairs.Add(new SamplePair(samples[i], samples[i + 1]));
                 }
 
+            // Find the pairs of adjacent points that share the same gradient
+            // as the adjacent points
+            // e.g. for pair (x1,x2), also check (x0,x1) and (x2,x3)
             var validPairs = new List<SamplePair>();
             for (int i = 1; i < (samplePairs.Count - 1); i++)
                 {
-                var pairs = 
-                    (samplePairs[i - 1], samplePairs[i], samplePairs[i + 1]);
+                var curPair = samplePairs[i];
+                var prevPair = samplePairs[i - 1];
+                var nextPair = samplePairs[i + 1];
+
                 var sameGradientSign =
-                    (pairs.Item1.GradientDirection == pairs.Item2.GradientDirection)
-                     && (pairs.Item2.GradientDirection == pairs.Item3.GradientDirection);
+                    (curPair.GradientDirection == prevPair.GradientDirection)
+                     && (curPair.GradientDirection 
+                        == nextPair.GradientDirection);
                 if (sameGradientSign) 
                     {
-                    validPairs.Add(pairs.Item2);
+                    validPairs.Add(curPair);
                     }
                 }
+
+            // Find the pair with the steepest gradient
+            // This should correspond to the pair closest to the power null
             var sortedPairs = 
-                validPairs.OrderByDescending(p => Math.Abs(p.PowerGradient)).ToList();
+                validPairs
+                    .OrderByDescending(p => Math.Abs(p.PowerGradient))
+                    .ToList();
             var bestPair = sortedPairs.First();
             var startingGradientSign = bestPair.GradientDirection;
             var direction = GetDirection(bestPair);
 
-            if (direction == Direction.CentreSweep)
-                {
-                return;
-                }
+            var coarseStepCore = 1.0;
             var directionPos = (direction == Direction.Positive);
-            var stepSign = directionPos ? 1.0 : -1.0;
-            var coarseStep = stepSign * 1.0;
-            double currentPhase;
-            Sample newSample;
-            if (directionPos)
-                {
-                newSample = bestPair.Sample2;
-                currentPhase = newSample.Conf.Phase;
-                }
-            else
-                {
-                newSample = bestPair.Sample1;
-                currentPhase = newSample.Conf.Phase;
-                }
+            var coarseStep = directionPos ? coarseStepCore : -coarseStepCore;
+
+            Sample newSample =
+                directionPos ? bestPair.Sample2 : bestPair.Sample1;
+            double currentPhase = newSample.Conf.Phase;
 
             // Sweep until the gradient inverts
             while (true)
@@ -457,28 +458,38 @@ namespace OutphasingSweepController
                 }
 
             // Sweep around the best point
-            var lowestPowerSample = samples.OrderByDescending(
-                s => s.MeasuredChannelPowerdBm).ToList().Last();
-            const double fineStep = 0.1;
-            var startingPhase = lowestPowerSample.Conf.Phase - 2.0;
-            var numSamples = 4 / fineStep;
+            var lowestPowerSample = 
+                samples
+                    .OrderByDescending(s => s.MeasuredChannelPowerdBm)
+                    .ToList()
+                    .Last();
+            double fineStep = 0.1;
+            int numSamples = 20;
+            var startDelta = fineStep * (numSamples / 2);
+            var startingPhase = lowestPowerSample.Conf.Phase - startDelta;
             for (int i = 0; i < numSamples; i++)
                 {
-                currentPhase = ((double)i * fineStep) + startingPhase;
+                currentPhase = startingPhase + ((double)i * fineStep);
                 var sampleConfig = new SampleConfig(
                     phaseSweepConfig, currentPhase);
                 newSample = TakeSample(sampleConfig, samples);
                 }
 
             // Take the new lowest and sweep 180 away to get the highest power
-            lowestPowerSample = samples.OrderByDescending(
-                s => s.MeasuredChannelPowerdBm).ToList().Last();
-            const double powStep = 1;
-            var highPowerPhaseStart = 
-                lowestPowerSample.Conf.Phase + 180.0 - (5*powStep);
-            for (int i = 0; i < 10; i++)
+            lowestPowerSample = 
+                samples
+                    .OrderByDescending(s => s.MeasuredChannelPowerdBm)
+                    .ToList()
+                    .Last();
+            double maximaSweepStep = 1;
+            int maximaNumSteps = 10;
+            var maximaStartDelta = (maximaNumSteps / 2) * maximaSweepStep;
+            var maximaPhaseStart = 
+                lowestPowerSample.Conf.Phase + 180.0 - maximaStartDelta;
+            for (int i = 0; i < maximaNumSteps; i++)
                 {
-                currentPhase = ((double)i * powStep) + highPowerPhaseStart;
+                currentPhase = 
+                    maximaPhaseStart + ((double)i * maximaSweepStep);
                 var sampleConfig = new SampleConfig(
                     phaseSweepConfig, currentPhase);
                 newSample = TakeSample(sampleConfig, samples);
