@@ -395,6 +395,12 @@ namespace OutphasingSweepController
             PhaseSweepConfig phaseSweepConfig)
             {
 
+            var config = 
+                phaseSweepConfig
+                    .MeasurementConfig
+                    .PhaseSearchSettings
+                    .GradientSearch;
+
             // Put the samples into pairs
             var samplePairs = new List<SamplePair>();
             for(int i = 0; i < (samples.Count-1); i++)
@@ -432,7 +438,7 @@ namespace OutphasingSweepController
             var startingGradientSign = bestPair.GradientDirection;
             var direction = GetDirection(bestPair);
 
-            var coarseStepCore = 1.0;
+            var coarseStepCore = config.MinimaCoarseStep;
             var directionPos = (direction == Direction.Positive);
             var coarseStep = directionPos ? coarseStepCore : -coarseStepCore;
 
@@ -463,8 +469,8 @@ namespace OutphasingSweepController
                     .OrderByDescending(s => s.MeasuredChannelPowerdBm)
                     .ToList()
                     .Last();
-            double fineStep = 0.1;
-            int numSamples = 20;
+            double fineStep = config.MinimaFineStep;
+            int numSamples = config.MinimaNumFineSteps;
             var startDelta = fineStep * (numSamples / 2);
             var startingPhase = lowestPowerSample.Conf.Phase - startDelta;
             for (int i = 0; i < numSamples; i++)
@@ -481,8 +487,8 @@ namespace OutphasingSweepController
                     .OrderByDescending(s => s.MeasuredChannelPowerdBm)
                     .ToList()
                     .Last();
-            double maximaSweepStep = 1;
-            int maximaNumSteps = 10;
+            double maximaSweepStep = config.MaximaCoarseStep;
+            int maximaNumSteps = config.MaximaNumCoarseSteps;
             var maximaStartDelta = (maximaNumSteps / 2) * maximaSweepStep;
             var maximaPhaseStart = 
                 lowestPowerSample.Conf.Phase + 180.0 - maximaStartDelta;

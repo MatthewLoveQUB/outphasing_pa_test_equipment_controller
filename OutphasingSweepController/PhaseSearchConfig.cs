@@ -51,10 +51,34 @@ namespace OutphasingSweepController
             }
         }
     
+    public class GradientSearchConfig
+        {
+        public double MinimaCoarseStep { get; set; } = 1;
+        public double MinimaFineStep { get; set; } = 0.1;
+        public int MinimaNumFineSteps { get; set; } = 10;
+        public double MaximaCoarseStep { get; set; } = 2;
+        public int MaximaNumCoarseSteps { get; set; } = 10;
+        
+        public GradientSearchConfig(
+                double minimaCoarseStep,
+                double minimaFineStep,
+                int minimaNumFineSteps,
+                double maximaCoarseStep,
+                int maximaNumCoarseSteps)
+            {
+            this.MinimaCoarseStep = minimaCoarseStep;
+            this.MinimaFineStep = minimaFineStep;
+            this.MinimaNumFineSteps = minimaNumFineSteps;
+            this.MaximaCoarseStep = maximaCoarseStep;
+            this.MaximaNumCoarseSteps = maximaNumCoarseSteps;
+            }
+        }
+
     public class PhaseSearchConfig
         {
         public PhaseSearch.SearchType PhaseSearchType;
         public LowerValueConfig LowerValue;
+        public GradientSearchConfig GradientSearch;
 
         public PhaseSearchConfig(
                 PhaseSearch.SearchType phaseSearchType,
@@ -62,7 +86,12 @@ namespace OutphasingSweepController
                 string troughSettings,
                 int directionSearchIterationLimit,
                 int searchIterationLimit,
-                int phaseSearchNumCenterSamples)
+                int phaseSearchNumCenterSamples,
+                double minimaCoarseStep,
+                double minimaFineStep,
+                int minimaNumFineSteps,
+                double maximaCoarseStep,
+                int maximaNumCoarseSteps)
             {
             this.PhaseSearchType = phaseSearchType;
             this.LowerValue = new LowerValueConfig(
@@ -71,6 +100,12 @@ namespace OutphasingSweepController
                 directionSearchIterationLimit,
                 searchIterationLimit,
                 phaseSearchNumCenterSamples);
+            this.GradientSearch = new GradientSearchConfig(
+                minimaCoarseStep,
+                minimaFineStep,
+                minimaNumFineSteps,
+                maximaCoarseStep,
+                maximaNumCoarseSteps);
             }
         }     
     }

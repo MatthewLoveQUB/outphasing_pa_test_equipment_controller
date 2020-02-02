@@ -92,6 +92,12 @@ namespace OutphasingSweepController
         public int DirectionSearchIterationLimit { get; set; } = 5;
         public int PhaseSearchIterationLimit { get; set; } = 500;
         public int PhaseSearchNumCenterSamples { get; set; } = 10;
+        // Gradeitn search
+        public double GradientSearchMinimaCoarseStep { get; set; } = 1;
+        public double GradientSearchMinimaFineStep { get; set; } = 0.1;
+        public int GradientSearchMinimaNumFineSteps { get; set; } = 10;
+        public double GradientSearchMaximaCoarseStep { get; set; } = 2;
+        public int GradientSearchMaximaNumCoarseSteps { get; set; } = 10;
 
         public MainWindow()
             {
@@ -161,7 +167,13 @@ namespace OutphasingSweepController
                     this.PeakSearchSettingsTextBox.Text,
                     this.TroughSearchSettingsTextBox.Text,
                     this.DirectionSearchIterationLimit,
-                    this.PhaseSearchIterationLimit),
+                    this.PhaseSearchIterationLimit,
+                    this.PhaseSearchNumCenterSamples,
+                    this.GradientSearchMinimaCoarseStep,
+                    this.GradientSearchMinimaFineStep,
+                    this.GradientSearchMinimaNumFineSteps,
+                    this.GradientSearchMaximaCoarseStep,
+                    this.GradientSearchMaximaNumCoarseSteps),
                 commands);
             }
 

@@ -30,7 +30,7 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
-                <RowDefinition Height="3*" />
+                <RowDefinition Height="4*" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
@@ -82,6 +82,7 @@
                 SweepDescriptionText="Phase (degrees)" />
             <Grid Grid.Row="3" Grid.ColumnSpan="5">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="*" />
@@ -156,6 +157,7 @@
                         Text="Direction Search Max Iter" />
                     <TextBox
                         Grid.Column="2"
+                        VerticalAlignment="Center"
                         HorizontalContentAlignment="Stretch"
                         Text="{Binding DirectionSearchIterationLimit, Mode=TwoWay}" />
                     <TextBlock
@@ -165,6 +167,7 @@
                         Text="Search Iteration Limit" />
                     <TextBox
                         Grid.Column="4"
+                        VerticalAlignment="Center"
                         VerticalContentAlignment="Center"
                         Text="{Binding PhaseSearchIterationLimit, Mode=TwoWay}" />
                     <TextBlock
@@ -175,8 +178,91 @@
                         Text="Centre Sweep #samples" />
                     <TextBox
                         Grid.Column="6"
+                        VerticalAlignment="Center"
                         VerticalContentAlignment="Center"
                         Text="{Binding PhaseSearchNumCenterSamples, Mode=TwoWay}" />
+                </Grid>
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        Grid.Column="0"
+                        Padding="10"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="Gradient Search (Minima)" />
+                    <TextBlock
+                        Grid.Column="1"
+                        Padding="10"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="Coarse Step (deg)" />
+                    <TextBox
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        Text="{Binding GradientSearchMinimaCoarseStep, Mode=TwoWay}" />
+                    <TextBlock
+                        Grid.Column="3"
+                        Padding="10"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="Fine Step (deg)" />
+                    <TextBox
+                        Grid.Column="4"
+                        VerticalAlignment="Center"
+                        Text="{Binding GradientSearchMinimaFineStep, Mode=TwoWay}" />
+                    <TextBlock
+                        Grid.Column="5"
+                        Padding="10"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="# Fine Steps" />
+                    <TextBox
+                        Grid.Column="6"
+                        VerticalAlignment="Center"
+                        Text="{Binding GradientSearchMinimaNumFineSteps, Mode=TwoWay}" />
+                </Grid>
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        Grid.Column="0"
+                        Padding="10"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="Gradient Search (Maxima)" />
+                    <TextBlock
+                        Grid.Column="1"
+                        Padding="10"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="Coarse Step (deg)" />
+                    <TextBox
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        Text="{Binding GradientSearchMaximaCoarseStep, Mode=TwoWay}" />
+                    <TextBlock
+                        Grid.Column="3"
+                        Padding="10"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Text="# Coarse Steps" />
+                    <TextBox
+                        Grid.Column="4"
+                        VerticalAlignment="Center"
+                        Text="{Binding GradientSearchMaximaNumCoarseSteps, Mode=TwoWay}" />
                 </Grid>
             </Grid>
             <TextBlock
