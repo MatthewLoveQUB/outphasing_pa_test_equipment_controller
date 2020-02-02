@@ -368,13 +368,14 @@ namespace OutphasingSweepController
 
         private static Direction GetDirection(SamplePair pair)
             {
-            var sign = Math.Sign(pair.PowerGradient);
+            var sign = pair.GradientDirection;
             switch (sign)
                 {
-                case 1:
+                case Gradient.Positive:
                     return Direction.Negative;
-                case -1:
+                case Gradient.Negative:
                     return Direction.Positive;
+                case Gradient.None:
                 default:
                     // Unlikely to happen
                     return Direction.CentreSweep;
@@ -383,7 +384,7 @@ namespace OutphasingSweepController
 
         // Do coarse sweep
         // Find a pair with the highest gradient whose adjacent pairs
-        // have the same graient
+        // have the same gradient
         // Sweep in the direction of the gradient to find the null
         // until it inverts.
         // When it does, sweep around the lowest point
@@ -394,21 +395,19 @@ namespace OutphasingSweepController
             PhaseSweepConfig phaseSweepConfig)
             {
             var samplePairs = new List<SamplePair>();
-            for(int i = 0; i < samples.Count; i++)
+            for(int i = 0; i < (samples.Count-1); i++)
                 {
-                if (i+1 == samples.Count) { break; }
                 samplePairs.Add(new SamplePair(samples[i], samples[i + 1]));
                 }
 
             var validPairs = new List<SamplePair>();
-            Func<SamplePair, int> getSign = x => Math.Sign(x.PowerGradient);
-            for (int i = 1; i < samplePairs.Count-1; i++)
+            for (int i = 1; i < (samplePairs.Count - 1); i++)
                 {
                 var pairs = 
                     (samplePairs[i - 1], samplePairs[i], samplePairs[i + 1]);
                 var sameGradientSign =
-                    (getSign(pairs.Item1) == getSign(pairs.Item2))
-                     && (getSign(pairs.Item2) == getSign(pairs.Item3));
+                    (pairs.Item1.GradientDirection == pairs.Item2.GradientDirection)
+                     && (pairs.Item2.GradientDirection == pairs.Item3.GradientDirection);
                 if (sameGradientSign) 
                     {
                     validPairs.Add(pairs.Item2);
@@ -417,7 +416,7 @@ namespace OutphasingSweepController
             var sortedPairs = 
                 validPairs.OrderByDescending(p => Math.Abs(p.PowerGradient)).ToList();
             var bestPair = sortedPairs.First();
-            var startingGradientSign = getSign(bestPair);
+            var startingGradientSign = bestPair.GradientDirection;
             var direction = GetDirection(bestPair);
 
             if (direction == Direction.CentreSweep)
@@ -451,7 +450,7 @@ namespace OutphasingSweepController
                 var currentPair = directionPos
                     ? new SamplePair(oldSample, newSample)
                     : new SamplePair(newSample, oldSample);
-                if (getSign(currentPair) != startingGradientSign)
+                if (currentPair.GradientDirection != startingGradientSign)
                     {
                     break;
                     }
