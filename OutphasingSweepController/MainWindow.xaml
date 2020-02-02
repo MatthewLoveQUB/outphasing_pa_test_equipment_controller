@@ -82,36 +82,53 @@
                 SweepDescriptionText="Phase (degrees)" />
             <Grid Grid.Row="3" Grid.ColumnSpan="5">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="0.8*" />
-                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <CheckBox
+                <!--<CheckBox
                     Grid.Column="0"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Content="+/- Search"
-                    IsChecked="{Binding PeakTroughSearch}" />
+                    IsChecked="{Binding PeakTroughSearch}" />-->
                 <TextBlock
+                    Grid.Column="0"
+                    Padding="10"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Text="Search Type" />
+                <ComboBox
+                    x:Name="PhaseSearchTypeComboBox"
                     Grid.Column="1"
+                    VerticalContentAlignment="Center">
+                    <ComboBoxItem Content="Lowest Value" IsSelected="True" />
+                    <ComboBoxItem Content="None" />
+                    <ComboBoxItem Content="Highest Gradient" />
+                </ComboBox>
+                <TextBlock
+                    Grid.Column="2"
+                    Padding="10"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Text="Peak [step (deg), threshold (dB);...]" />
                 <TextBox
                     x:Name="PeakSearchSettingsTextBox"
-                    Grid.Column="2"
+                    Grid.Column="3"
                     Margin="1"
                     Text="1, 0.2;" />
                 <TextBlock
-                    Grid.Column="3"
+                    Grid.Column="4"
+                    Padding="10"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Text="Trough [...;...;]" />
                 <TextBox
                     x:Name="TroughSearchSettingsTextBox"
-                    Grid.Column="4"
+                    Grid.Column="5"
                     Margin="1"
                     Text="1,0.2;0.1,0.1;" />
             </Grid>

@@ -31,7 +31,7 @@ namespace OutphasingSweepController
             }
         public double MeasurementChannelBandwidth;
         public double MeasurementFrequencySpan;
-        public bool PeakTroughPhaseSearch;
+        public PhaseSearch.SearchType PhaseSearchType;
         public PhaseSearchConfig PhaseSearchSettings;
         public DeviceCommands Commands;
 
@@ -48,7 +48,7 @@ namespace OutphasingSweepController
             string genOffsetsFilePath1,
             string genOffsetsFilePath2,
             string spectrumAnalyzerOffsetsFilePath,
-            bool peakTroughPhaseSearch,
+            PhaseSearch.SearchType phaseSearchType,
             PhaseSearchConfig phasePeakTroughSearchSettings,
             DeviceCommands commands)
             {
@@ -63,8 +63,9 @@ namespace OutphasingSweepController
             this.OutputFilePath = outputFilePath;
             this.GetOffsets1 = new DeviceOffsets(genOffsetsFilePath1);
             this.GenOffsets2 = new DeviceOffsets(genOffsetsFilePath2);
-            this.SpectrumAnalyzerOffsets = new DeviceOffsets(spectrumAnalyzerOffsetsFilePath);
-            this.PeakTroughPhaseSearch = peakTroughPhaseSearch;
+            this.SpectrumAnalyzerOffsets = 
+                new DeviceOffsets(spectrumAnalyzerOffsetsFilePath);
+            this.PhaseSearchType = phaseSearchType;
             this.PhaseSearchSettings = phasePeakTroughSearchSettings;
             this.Commands = commands;
             }

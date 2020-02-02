@@ -63,11 +63,30 @@ namespace OutphasingSweepController
         // Signal Generators
         // Measurement
         StreamWriter outFile;
-        public bool PeakTroughSearch { get; set; } = true;
         SweepProgress CurrentSweepProgress = new SweepProgress(false, 0, 0);
         public double EstimatedTimePerSample { get; set; } = 0.32;
         public System.Diagnostics.Stopwatch MeasurementStopWatch =
             new System.Diagnostics.Stopwatch();
+        public PhaseSearch.SearchType PhaseSearchType
+            {
+            get
+                {
+                var option = 
+                    (string)this.PhaseSearchTypeComboBox.SelectedItem;
+                if (option == "Lowest Value")
+                    {
+                    return PhaseSearch.SearchType.LowestValue;
+                    }
+                else if (option == "Highest Gradient")
+                    {
+                    return PhaseSearch.SearchType.HighestGradient;
+                    }
+                else
+                    {
+                    return PhaseSearch.SearchType.None;
+                    }
+                }
+            }
 
         public MainWindow()
             {
@@ -132,7 +151,7 @@ namespace OutphasingSweepController
                 this.SignalGenerator1OffsetsPath,
                 this.SignalGenerator2OffsetsPath,
                 this.SpectrumAnalzyerOffsetsPath,
-                this.PeakTroughSearch,
+                this.PhaseSearchType,
                 new PhaseSearchConfig(
                     this.PeakSearchSettingsTextBox.Text,
                     this.TroughSearchSettingsTextBox.Text),
@@ -217,9 +236,12 @@ namespace OutphasingSweepController
                 return true;
                 }
             return checkPath(this.ResultsSavePath, "save")
-                && checkPath(this.SignalGenerator1OffsetsPath, "Generator 1 offset")
-                && checkPath(this.SignalGenerator2OffsetsPath, "Generator 2 offset")
-                && checkPath(this.SpectrumAnalzyerOffsetsPath, "Spectrum Analzyer offset");
+                && checkPath(this.SignalGenerator1OffsetsPath, 
+                    "Generator 1 offset")
+                && checkPath(this.SignalGenerator2OffsetsPath, 
+                    "Generator 2 offset")
+                && checkPath(this.SpectrumAnalzyerOffsetsPath, 
+                    "Spectrum Analzyer offset");
             }
 
         private void RunSweep(MeasurementConfig sweepConf)

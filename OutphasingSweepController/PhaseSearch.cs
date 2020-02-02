@@ -8,6 +8,13 @@ namespace OutphasingSweepController
     {
     public static class PhaseSearch
         {
+        public enum SearchType
+            {
+            None,
+            LowestValue,
+            HighestGradient
+            }
+
         public enum Mode
             {
             Peak,
@@ -55,33 +62,43 @@ namespace OutphasingSweepController
             var samples = new List<Sample>();
             BasicPhaseSweep(samples, phaseSweepConfig);
 
-            if (!phaseSweepConfig.MeasurementConfig.PeakTroughPhaseSearch)
+            var searchType = 
+                phaseSweepConfig.MeasurementConfig.PhaseSearchType;
+
+            if (searchType == SearchType.None)
                 {
                 return samples;
                 }
-
-            void DoSearch(
+            if (searchType == SearchType.HighestGradient)
+                {
+                FindPeakAndTrough(samples, phaseSweepConfig);
+                }
+            if (searchType == SearchType.LowestValue)
+                {
+                void DoSearch(
                 List<PhaseSearchPointConfig> searchSettings,
                 Mode mode)
-                {
-                foreach (var searchSetting in searchSettings)
                     {
-                    var bestSample = GetBestSample(samples, mode);
-                    FindPeakOrTrough1(
-                        mode,
-                        samples,
-                        bestSample,
-                        phaseSweepConfig,
-                        searchSetting);
+                    foreach (var searchSetting in searchSettings)
+                        {
+                        var bestSample = GetBestSample(samples, mode);
+                        FindPeakOrTrough(
+                            mode,
+                            samples,
+                            bestSample,
+                            phaseSweepConfig,
+                            searchSetting);
+                        }
                     }
+
+                DoSearch(
+                    phaseSweepConfig.MeasurementConfig.PhaseSearchSettings.Peak,
+                    Mode.Peak);
+                DoSearch(
+                    phaseSweepConfig.MeasurementConfig.PhaseSearchSettings.Trough,
+                    Mode.Trough);
                 }
-            FindPeakAndTrough(samples, phaseSweepConfig);
-            //DoSearch(
-            //    phaseSweepConfig.MeasurementConfig.PhaseSearchSettings.Peak, 
-            //    Mode.Peak);
-            //DoSearch(
-            //    phaseSweepConfig.MeasurementConfig.PhaseSearchSettings.Trough, 
-            //    Mode.Trough);
+
             return samples.OrderByDescending(s => s.Conf.Phase).ToList();
             }
 
@@ -112,7 +129,7 @@ namespace OutphasingSweepController
             return newSample;
             }
 
-        public static void FindPeakOrTrough1(
+        public static void FindPeakOrTrough(
             Mode searchMode,
             List<Sample> samples,
             Sample startBestSample,
