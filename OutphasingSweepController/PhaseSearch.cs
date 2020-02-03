@@ -72,11 +72,11 @@ namespace OutphasingSweepController
                 {
                 return samples;
                 }
-            if (searchType == SearchType.HighestGradient)
+            else if (searchType == SearchType.HighestGradient)
                 {
                 FindPeakAndTrough(samples, phaseSweepConfig);
                 }
-            if (searchType == SearchType.LowestValue)
+            else if (searchType == SearchType.LowestValue)
                 {
                 void DoSearch(
                         List<PhaseSearchPointConfig> searchSettings,
@@ -108,6 +108,10 @@ namespace OutphasingSweepController
                         .LowerValue
                         .Trough,
                     Mode.Trough);
+                }
+            else
+                {
+                throw new Exception();
                 }
 
             return samples.OrderByDescending(s => s.Conf.Phase).ToList();
@@ -239,13 +243,17 @@ namespace OutphasingSweepController
             {
             var corePhase = bestSample.Conf.Phase;
 
-            Gradient getNewSampleGradient(double phaseStepScalar)
+            Gradient getNewSampleGradient(double phaseStepScalar, bool leftPoint)
                 {
-                var phaseStep = phaseStepScalar * phasePtConfig.StepDeg;
+                var sign = leftPoint ? -1.0 : 1.0;
+                var phaseStep = 
+                    phaseStepScalar * phasePtConfig.StepDeg * sign;
                 var newPhase = corePhase + phaseStep;
                 var newConfig = makeSampleConfig(newPhase);
                 var newSample = TakeSample(newConfig, samples);
-                return GetGradient(bestSample, newSample);
+                return leftPoint
+                    ? GetGradient(from: newSample, to:bestSample)
+                    : GetGradient(from: bestSample, to:newSample);
                 }
 
             // Find two points adjacent to the best position
@@ -266,10 +274,12 @@ namespace OutphasingSweepController
                 {
                 iterations++;
                 scalar += 1.0;
-                var gradientRightSample = getNewSampleGradient(scalar);
-                var gradientLeftSample = getNewSampleGradient(scalar * -1);
+                var gradientToRightSample = 
+                    getNewSampleGradient(scalar, leftPoint: false);
+                var gradientFromLeftSample = 
+                    getNewSampleGradient(scalar, leftPoint: true);
                 
-                if (gradientLeftSample == gradientRightSample)
+                if (gradientFromLeftSample != gradientToRightSample)
                     {
                     if(iterations > searchIterationLimit)
                         {
@@ -279,13 +289,13 @@ namespace OutphasingSweepController
                     }
                 if (searchMode == Mode.Peak)
                     {
-                    return (gradientRightSample == Gradient.Positive) 
+                    return (gradientToRightSample == Gradient.Positive) 
                         ? Direction.Positive 
                         : Direction.Negative;
                     }
                 else
                     {
-                    return (gradientRightSample == Gradient.Negative)
+                    return (gradientToRightSample == Gradient.Negative)
                         ? Direction.Positive
                         : Direction.Negative;
                     }
@@ -293,10 +303,10 @@ namespace OutphasingSweepController
             }
 
         public static Gradient GetGradient(
-            Sample sampleRef,
-            Sample sampleNew)
+            Sample from,
+            Sample to)
             {
-            return new SamplePair(sampleRef, sampleNew).GradientDirection; 
+            return new SamplePair(from, to).GradientDirection; 
             }
 
         public static NewSampleResult PeakTroughComparison(
@@ -490,8 +500,17 @@ namespace OutphasingSweepController
             double maximaSweepStep = config.MaximaCoarseStep;
             int maximaNumSteps = config.MaximaNumCoarseSteps;
             var maximaStartDelta = (maximaNumSteps / 2) * maximaSweepStep;
-            var maximaPhaseStart = 
-                lowestPowerSample.Conf.Phase + 180.0 - maximaStartDelta;
+            var maximaPhaseStart = lowestPowerSample.Conf.Phase - maximaStartDelta;
+
+            if (lowestPowerSample.Conf.Phase > 180)
+                {
+                maximaPhaseStart -= 180.0;
+                }
+            else
+                {
+                maximaPhaseStart += 180.0;
+                }
+
             for (int i = 0; i < maximaNumSteps; i++)
                 {
                 currentPhase = 

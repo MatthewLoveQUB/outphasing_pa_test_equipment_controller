@@ -17,6 +17,12 @@ namespace OutphasingSweepController
             double measuredPoutdBm = -1;
             OutphasingDcMeasurements dcResults = null;
 
+            // Make sure all commands are settled first
+            while (!conf.MeasurementConfig.Commands.OperationsComplete())
+                {
+
+                }
+
             Task.WaitAll(new Task[]
                 {
                 Task.Factory.StartNew(() =>

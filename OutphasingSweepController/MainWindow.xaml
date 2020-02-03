@@ -56,8 +56,8 @@
                 Grid.Column="0"
                 Grid.ColumnSpan="5"
                 LostFocus="SweepSettingsControl_LostFocus"
-                NSteps="31"
-                Start="3e9"
+                NSteps="1"
+                Start="5e9"
                 Stop="6e9"
                 SweepDescriptionText="Frequency (GHz)" />
             <local:SweepParameterInput
@@ -66,8 +66,8 @@
                 Grid.Column="0"
                 Grid.ColumnSpan="5"
                 LostFocus="SweepSettingsControl_LostFocus"
-                NSteps="18"
-                Start="-20"
+                NSteps="1"
+                Start="-5"
                 Stop="-3"
                 SweepDescriptionText="Power (dBm)" />
             <local:SweepParameterInput
@@ -76,9 +76,9 @@
                 Grid.Column="0"
                 Grid.ColumnSpan="5"
                 LostFocus="SweepSettingsControl_LostFocus"
-                NSteps="181"
+                NSteps="60"
                 Start="0"
-                Stop="180"
+                Stop="360"
                 SweepDescriptionText="Phase (degrees)" />
             <Grid Grid.Row="3" Grid.ColumnSpan="5">
                 <Grid.RowDefinitions>
@@ -106,9 +106,9 @@
                         x:Name="PhaseSearchTypeComboBox"
                         Grid.Column="1"
                         VerticalContentAlignment="Center">
-                        <ComboBoxItem Content="Lowest Value" IsSelected="True" />
                         <ComboBoxItem Content="None" />
-                        <ComboBoxItem Content="Highest Gradient" />
+                        <ComboBoxItem Content="Lowest Value"/>
+                        <ComboBoxItem Content="Highest Gradient" IsSelected="True"/>
                     </ComboBox>
                     <TextBlock
                         Grid.Column="2"

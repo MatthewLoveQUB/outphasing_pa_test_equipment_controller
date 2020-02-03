@@ -29,6 +29,18 @@ namespace QubVisa
             this.Device.connection.RawIO.Write("*RST");
             }
 
+        public void RunCalibration()
+            {
+            this.Device.connection.RawIO.Write("*CAL?");
+            }
+
+        public bool OperationComplete()
+            {
+            return
+                Convert.ToBoolean(
+                    Convert.ToInt32(this.Device.ReadString("*OPC?")));
+            }
+
         // Calibration Commands
         public void RunDcfmCalibration()
             {

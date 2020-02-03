@@ -24,8 +24,8 @@ namespace OutphasingSweepController
         public double PsuCurrentLimit { get; set; } = 0.3;
         public int PsuRampUpStepTimeMilliseconds { get; set; } = 100;
         public double RampVoltageStep { get; set; } = 0.1;
-        public bool PsuPlus10Percent { get; set; } = true;
-        public bool PsuMinus10Percent { get; set; } = true;
+        public bool PsuPlus10Percent { get; set; } = false;
+        public bool PsuMinus10Percent { get; set; } = false;
         public bool PsuChannel1On { get; set; } = false;
         public bool PsuChannel2On { get; set; } = false;
         public bool PsuChannel3On { get; set; } = false;
@@ -66,14 +66,15 @@ namespace OutphasingSweepController
         public double EstimatedTimePerSample { get; set; } = 0.32;
         public System.Diagnostics.Stopwatch MeasurementStopWatch =
             new System.Diagnostics.Stopwatch();
+        DeviceCommands Commands;
+
 
         // Phase Search Settings
         public PhaseSearch.SearchType PhaseSearchType
             {
             get
                 {
-                var option = 
-                    (string)this.PhaseSearchTypeComboBox.SelectedItem;
+                var option = this.PhaseSearchTypeComboBox.Text;
                 if (option == "Lowest Value")
                     {
                     return PhaseSearch.SearchType.LowestValue;
@@ -82,9 +83,13 @@ namespace OutphasingSweepController
                     {
                     return PhaseSearch.SearchType.HighestGradient;
                     }
-                else
+                else if (option == "None")
                     {
                     return PhaseSearch.SearchType.None;
+                    }
+                else
+                    {
+                    throw new Exception("Could not parse Search Type");
                     }
                 }
             }
@@ -93,11 +98,11 @@ namespace OutphasingSweepController
         public int PhaseSearchIterationLimit { get; set; } = 500;
         public int PhaseSearchNumCenterSamples { get; set; } = 10;
         // Gradeitn search
-        public double GradientSearchMinimaCoarseStep { get; set; } = 1;
+        public double GradientSearchMinimaCoarseStep { get; set; } = 3;
         public double GradientSearchMinimaFineStep { get; set; } = 0.1;
-        public int GradientSearchMinimaNumFineSteps { get; set; } = 10;
-        public double GradientSearchMaximaCoarseStep { get; set; } = 2;
-        public int GradientSearchMaximaNumCoarseSteps { get; set; } = 10;
+        public int GradientSearchMinimaNumFineSteps { get; set; } = 20;
+        public double GradientSearchMaximaCoarseStep { get; set; } = 3;
+        public int GradientSearchMaximaNumCoarseSteps { get; set; } = 8;
 
         public MainWindow()
             {
@@ -114,6 +119,10 @@ namespace OutphasingSweepController
                 this.SignalGenerator2OffsetsPath;
             this.SpectrumAnalzyerOffsetsFilePathTextBlock.Text = 
                 this.SpectrumAnalzyerOffsetsPath;
+
+            this.Commands = VisaSetup.SetUpVisaDevices(
+                this.PsuChannelStates, this.PsuCurrentLimit);
+            this.Commands.ResetDevices();
             }
 
         private void SetUpDispatcherTimer()
@@ -146,9 +155,6 @@ namespace OutphasingSweepController
                 voltages.Add(0.9 * this.PsuNominalVoltage);
                 }
 
-            var commands = VisaSetup.SetUpVisaDevices(
-                this.PsuChannelStates, this.PsuCurrentLimit);
-            
             return new MeasurementConfig(
                 frequencySettings,
                 powerSettings,
@@ -174,7 +180,7 @@ namespace OutphasingSweepController
                     this.GradientSearchMinimaNumFineSteps,
                     this.GradientSearchMaximaCoarseStep,
                     this.GradientSearchMaximaNumCoarseSteps),
-                commands);
+                this.Commands);
             }
 
         private void ToggleGuiActive(bool on)
@@ -265,7 +271,7 @@ namespace OutphasingSweepController
 
         private void RunSweep(MeasurementConfig sweepConf)
             {
-            sweepConf.Commands.ResetDevices();
+            //sweepConf.Commands.ResetDevices();
 
             var outputFile = new StreamWriter(sweepConf.OutputFilePath);
             var headerLine =

@@ -105,6 +105,12 @@ namespace OutphasingSweepController
                 devices.Rsa3408a.ResetDevice();
                 devices.Smr20.ResetDevice();
                 devices.E8257d.ResetDevice();
+                
+                while(!devices.Rsa3408a.OperationComplete())
+                    { }
+                devices.Rsa3408a.SetSpectrumChannelPowerMeasurementMode();
+                devices.Rsa3408a.SetContinuousMode(continuousOn: false);
+                devices.Rsa3408a.StartSignalAcquisition();
                 }
 
             void preMeasurementSetup(MeasurementConfig sweepConf)
@@ -117,13 +123,11 @@ namespace OutphasingSweepController
 
                 // Spectrum Analyser
                 var rsa = devices.Rsa3408a;
-                rsa.SetSpectrumChannelPowerMeasurementMode();
-                rsa.SetContinuousMode(continuousOn: false);
+                
                 rsa.SetFrequencyCenter(sweepConf.Frequencies[0]);
                 rsa.SetFrequencySpan(sweepConf.MeasurementFrequencySpan);
                 rsa.SetChannelBandwidth(sweepConf.MeasurementChannelBandwidth);
-                rsa.StartSignalAcquisition();
-
+                
                 //rsa3408a.SetMarkerState(markerNumber: 1, view: 1, on: true);
                 //rsa3408a.SetMarkerXToPositionMode(1,1);
                 // When the frequency changes, the marker should automatially
@@ -137,6 +141,12 @@ namespace OutphasingSweepController
                 sweepConf.Commands.SetRfOutputState(on: true);
                 }
 
+            bool operationsComplete()
+                {
+                return devices.Rsa3408a.OperationComplete()
+                    && devices.E8257d.OperationComplete();
+                }
+
             return new DeviceCommands(
                 setPow,
                 setRfOutputState,
@@ -147,7 +157,8 @@ namespace OutphasingSweepController
                 preMeasurementSetup,
                 devices.Hp6624a.SetPsuVoltageStepped,
                 devices.Hp6624a.OutphasingOptimisedMeasurement,
-                devices.Rsa3408a.ReadSpectrumChannelPower);
+                devices.Rsa3408a.ReadSpectrumChannelPower,
+                operationsComplete);
             }
         }
     }
