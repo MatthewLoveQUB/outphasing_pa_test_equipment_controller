@@ -63,7 +63,7 @@ namespace OutphasingSweepController
         // Measurement
         StreamWriter outFile;
         SweepProgress CurrentSweepProgress = new SweepProgress(false, 0, 0);
-        public double EstimatedTimePerSample { get; set; } = 0.32;
+        public double EstimatedTimePerSample { get; set; } = 0.5;
         public System.Diagnostics.Stopwatch MeasurementStopWatch =
             new System.Diagnostics.Stopwatch();
         DeviceCommands Commands;
@@ -121,9 +121,9 @@ namespace OutphasingSweepController
             this.SpectrumAnalzyerOffsetsFilePathTextBlock.Text = 
                 this.SpectrumAnalzyerOffsetsPath;
 
-            this.Commands = VisaSetup.SetUpVisaDevices(
-                this.PsuChannelStates, this.PsuCurrentLimit);
-            this.Commands.ResetDevices();
+            //this.Commands = VisaSetup.SetUpVisaDevices(
+            //    this.PsuChannelStates, this.PsuCurrentLimit);
+            //this.Commands.ResetDevices();
             }
 
         private void SetUpDispatcherTimer()
@@ -373,12 +373,13 @@ namespace OutphasingSweepController
             var voltagePoints = 1
                 + Convert.ToInt64(this.PsuPlus10Percent)
                 + Convert.ToInt64(this.PsuMinus10Percent);
-            var nPoints = this.EstimatedTimePerSample
-                * voltagePoints
+            var nPoints = voltagePoints
                 * this.FrequencySweepSettingsControl.NSteps
                 * this.PowerSweepSettingsControl.NSteps
-                * this.PhaseSweepSettingsControl.NSteps;
-            var estimatedMeasurementTime = TimeSpan.FromSeconds(nPoints);
+                * this.EstimatedPhaseSamples;
+            var secondsRequired = this.EstimatedTimePerSample * nPoints;
+            var estimatedMeasurementTime = 
+                TimeSpan.FromSeconds(secondsRequired);
             this.EstimatedSimulationTimeTextBlock.Text =
               $"Estimated Measurement Time = "
                 + $"{estimatedMeasurementTime.Days} days "
