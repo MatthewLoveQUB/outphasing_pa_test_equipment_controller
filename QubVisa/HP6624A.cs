@@ -119,11 +119,11 @@ namespace QubVisa
                 var channelNumber = i + 1;
                 bool channelState = this.ChannelStates[i];
                 SetChannelOutputState(channelNumber, on: channelState);
-                if (!channelState)
-                    {
-                    SetChannelVoltage(channelNumber, zeroVoltage);
-                    SetChannelCurrent(channelNumber, zeroCurrent);
-                    }
+                //if (!channelState)
+                //    {
+                //    SetChannelVoltage(channelNumber, zeroVoltage);
+                //    SetChannelCurrent(channelNumber, zeroCurrent);
+                //    }
                 }
             }
 

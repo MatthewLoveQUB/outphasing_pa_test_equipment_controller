@@ -16,7 +16,7 @@ namespace OutphasingSweepController
         public string Corner;
         public List<Double> Voltages;
         public string OutputFilePath;
-        public DeviceOffsets GetOffsets1;
+        public DeviceOffsets GenOffsets1;
         public DeviceOffsets GenOffsets2;
         public DeviceOffsets SpectrumAnalyzerOffsets;
         public int MeasurementPoints
@@ -59,7 +59,7 @@ namespace OutphasingSweepController
             this.MeasurementChannelBandwidth = measurementBandwidth;
             this.MeasurementFrequencySpan = measurementSpan;
             this.OutputFilePath = outputFilePath;
-            this.GetOffsets1 = new DeviceOffsets(genOffsetsFilePath1);
+            this.GenOffsets1 = new DeviceOffsets(genOffsetsFilePath1);
             this.GenOffsets2 = new DeviceOffsets(genOffsetsFilePath2);
             this.SpectrumAnalyzerOffsets = 
                 new DeviceOffsets(spectrumAnalyzerOffsetsFilePath);

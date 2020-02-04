@@ -127,20 +127,21 @@ namespace OutphasingSweepController
                 rsa.SetFrequencyCenter(sweepConf.Frequencies[0]);
                 rsa.SetFrequencySpan(sweepConf.MeasurementFrequencySpan);
                 rsa.SetChannelBandwidth(sweepConf.MeasurementChannelBandwidth);
+                rsa.Device.Write("INP:MLEV 18");
 
-                rsa.SetMarkerState(markerNumber: 1, view: 1, on: true);
-                rsa.SetMarkerXToPositionMode(1,1);
-                // When the frequency changes, the marker should automatially
-                // track to the new centre frequency
-                rsa.SetMarkerXValue(
-                    markerNumber: 1, 
-                    view: 1, 
-                    xValue: sweepConf.Frequencies[0]);
+                //rsa.SetMarkerState(markerNumber: 1, view: 1, on: true);
+                //rsa.SetMarkerXToPositionMode(1,1);
+                //// When the frequency changes, the marker should automatially
+                //// track to the new centre frequency
+                //rsa.SetMarkerXValue(
+                //    markerNumber: 1, 
+                //    view: 1, 
+                //    xValue: sweepConf.Frequencies[0]);
                 // Set the power sources to an extremely low
                 // power before starting the sweep
                 // in case they default to some massive value
-                sweepConf.Commands.SetRfOutputState(on: false);
-                sweepConf.Commands.SetInputPower(-60, offset1: 0, offset2: 0);
+                //sweepConf.Commands.SetRfOutputState(on: false);
+                //sweepConf.Commands.SetInputPower(-60, offset1: 0, offset2: 0);
                 sweepConf.Commands.SetRfOutputState(on: true);
                 }
 

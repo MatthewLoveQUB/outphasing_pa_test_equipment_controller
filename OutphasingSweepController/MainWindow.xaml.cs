@@ -111,7 +111,7 @@ namespace OutphasingSweepController
             {
             InitializeComponent();
             this.DataContext = this;
-            SetUpDispatcherTimer();
+            //SetUpDispatcherTimer();
             UpdateEstimatedMeasurementTime();
 
             this.ResultsSavePathTextBlock.Text = 
@@ -128,15 +128,15 @@ namespace OutphasingSweepController
             this.Commands.ResetDevices();
             }
 
-        private void SetUpDispatcherTimer()
-            {
-            this.dispatcherTimer = 
-                new System.Windows.Threading.DispatcherTimer();
-            this.dispatcherTimer.Tick += 
-                new EventHandler(dispatcherTimer_Tick);
-            this.dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 2);
-            this.dispatcherTimer.Start();
-            }
+        //private void SetUpDispatcherTimer()
+        //    {
+        //    this.dispatcherTimer = 
+        //        new System.Windows.Threading.DispatcherTimer();
+        //    this.dispatcherTimer.Tick += 
+        //        new EventHandler(dispatcherTimer_Tick);
+        //    this.dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 2);
+        //    this.dispatcherTimer.Start();
+        //    }
 
         private void AddNewLogLine(string line)
             {
@@ -205,52 +205,52 @@ namespace OutphasingSweepController
             });
             }
 
-        private void dispatcherTimer_Tick(object sender, EventArgs e)
-            {
-            // To avoid memory leaks, wipe the log every tick
-            this.SweepLogTextBox.Text = "";
+        //private void dispatcherTimer_Tick(object sender, EventArgs e)
+        //    {
+        //    // To avoid memory leaks, wipe the log every tick
+        //    this.SweepLogTextBox.Text = "";
 
-            if (this.CurrentSweepProgress.Running)
-                {
-                var curPt = this.CurrentSweepProgress.CurrentPoint;
-                var nPts = this.CurrentSweepProgress.NumberOfPoints;
-                var timeElapsed = this.MeasurementStopWatch.Elapsed;
-                var ptsRemaining = nPts - curPt;
-                var timeScaler = (double)ptsRemaining / (double)curPt;
-                var estimatedTime =
-                    TimeSpan.FromTicks(timeElapsed.Ticks * (long)timeScaler);
-                var samplesPerSecond = curPt / (double)timeElapsed.TotalSeconds;
-                var secondsPerSample = 1 / samplesPerSecond;
+        //    if (this.CurrentSweepProgress.Running)
+        //        {
+        //        var curPt = this.CurrentSweepProgress.CurrentPoint;
+        //        var nPts = this.CurrentSweepProgress.NumberOfPoints;
+        //        var timeElapsed = this.MeasurementStopWatch.Elapsed;
+        //        var ptsRemaining = nPts - curPt;
+        //        var timeScaler = (double)ptsRemaining / (double)curPt;
+        //        var estimatedTime =
+        //            TimeSpan.FromTicks(timeElapsed.Ticks * (long)timeScaler);
+        //        var samplesPerSecond = curPt / (double)timeElapsed.TotalSeconds;
+        //        var secondsPerSample = 1 / samplesPerSecond;
 
-                // Print current point
-                var msg = $"On task {curPt} of {nPts}";
-                AddNewLogLine(msg);
-                // Print elapsed time
-                msg = "Elapsed Time: "
-                    + $"{timeElapsed.Days} days "
-                    + $"{timeElapsed.Hours} hours "
-                    + $"{timeElapsed.Minutes} minutes "
-                    + $"{timeElapsed.Seconds} seconds";
-                AddNewLogLine(msg);
-                // Print sample rate
-                AddNewLogLine($"Sample Rate = {samplesPerSecond:F2} S/s");
-                AddNewLogLine($"Sample Time = {secondsPerSample:F2} s");
-                // Print estimated remaining time
-                msg = "Est. Remaining Time: "
-                    + $"{estimatedTime.Days} days "
-                    + $"{estimatedTime.Hours} hours "
-                    + $"{estimatedTime.Minutes} minutes "
-                    + $"{estimatedTime.Seconds} seconds";
-                AddNewLogLine(msg);
-                }
+        //        // Print current point
+        //        var msg = $"On task {curPt} of {nPts}";
+        //        AddNewLogLine(msg);
+        //        // Print elapsed time
+        //        msg = "Elapsed Time: "
+        //            + $"{timeElapsed.Days} days "
+        //            + $"{timeElapsed.Hours} hours "
+        //            + $"{timeElapsed.Minutes} minutes "
+        //            + $"{timeElapsed.Seconds} seconds";
+        //        AddNewLogLine(msg);
+        //        // Print sample rate
+        //        AddNewLogLine($"Sample Rate = {samplesPerSecond:F2} S/s");
+        //        AddNewLogLine($"Sample Time = {secondsPerSample:F2} s");
+        //        // Print estimated remaining time
+        //        msg = "Est. Remaining Time: "
+        //            + $"{estimatedTime.Days} days "
+        //            + $"{estimatedTime.Hours} hours "
+        //            + $"{estimatedTime.Minutes} minutes "
+        //            + $"{estimatedTime.Seconds} seconds";
+        //        AddNewLogLine(msg);
+        //        }
 
-            // Empty the log queue
-            while (this.LogQueue.Count > 0)
-                {
-                var message = this.LogQueue.Dequeue();
-                AddNewLogLine(message);
-                }
-            }
+        //    // Empty the log queue
+        //    while (this.LogQueue.Count > 0)
+        //        {
+        //        var message = this.LogQueue.Dequeue();
+        //        AddNewLogLine(message);
+        //        }
+        //    }
         
         bool MeasurementVariablesCheck()
             {
@@ -328,7 +328,7 @@ namespace OutphasingSweepController
                 foreach (var frequency in sweepConf.Frequencies)
                     {
                     var offsets = new CurrentOffset(
-                        sweepConf.GetOffsets1.GetOffset(frequency),
+                        sweepConf.GenOffsets1.GetOffset(frequency),
                         sweepConf.GenOffsets2.GetOffset(frequency),
                         sweepConf.SpectrumAnalyzerOffsets.GetOffset(frequency));
                     sweepConf.Commands.SetFrequency(frequency);
