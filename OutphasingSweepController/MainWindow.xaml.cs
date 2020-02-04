@@ -70,6 +70,7 @@ namespace OutphasingSweepController
 
 
         // Phase Search Settings
+        public int EstimatedPhaseSamples { get; set; } = 90;
         public PhaseSearch.SearchType PhaseSearchType
             {
             get

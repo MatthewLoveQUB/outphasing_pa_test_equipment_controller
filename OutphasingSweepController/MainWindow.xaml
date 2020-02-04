@@ -107,8 +107,8 @@
                         Grid.Column="1"
                         VerticalContentAlignment="Center">
                         <ComboBoxItem Content="None" />
-                        <ComboBoxItem Content="Lowest Value"/>
-                        <ComboBoxItem Content="Highest Gradient" IsSelected="True"/>
+                        <ComboBoxItem Content="Lowest Value" />
+                        <ComboBoxItem Content="Highest Gradient" IsSelected="True" />
                     </ComboBox>
                     <TextBlock
                         Grid.Column="2"
@@ -406,26 +406,42 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Center"
                 Text="{Binding RampVoltageStep, Mode=TwoWay}" />
-            <TextBlock
-                Grid.Row="9"
-                Grid.Column="0"
-                VerticalAlignment="Center"
-                Text="Est. Time/sample (s)" />
-            <TextBox
-                x:Name="SampleTimeBox"
-                Grid.Row="9"
-                Grid.Column="1"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Center"
-                LostFocus="SweepSettingsControl_LostFocus"
-                Text="{Binding EstimatedTimePerSample, Mode=TwoWay}" />
-            <TextBlock
-                x:Name="EstimatedSimulationTimeTextBlock"
-                Grid.Row="9"
-                Grid.Column="2"
-                Grid.ColumnSpan="3"
-                VerticalAlignment="Center"
-                TextAlignment="Left" />
+            <Grid Grid.Row="9" Grid.ColumnSpan="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="3*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    Grid.Column="0"
+                    Padding="10"
+                    VerticalAlignment="Center"
+                    Text="Est. Time/sample (s)" />
+                <TextBox
+                    Grid.Column="1"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    HorizontalContentAlignment="Stretch"
+                    LostFocus="SweepSettingsControl_LostFocus"
+                    Text="{Binding EstimatedTimePerSample, Mode=TwoWay}" />
+                <TextBlock
+                    Grid.Column="2"
+                    Padding="10"
+                    VerticalAlignment="Center"
+                    Text="Est. Phase Samples" />
+                <TextBox
+                    Grid.Column="3"
+                    VerticalAlignment="Center"
+                    Text="{Binding EstimatedPhaseSamples, Mode=TwoWay}" />
+                <TextBlock
+                    x:Name="EstimatedSimulationTimeTextBlock"
+                    Grid.Column="4"
+                    Grid.ColumnSpan="3"
+                    VerticalAlignment="Center"
+                    TextAlignment="Left" />
+            </Grid>
             <!--  Results Save file  -->
             <Button
                 x:Name="SaveButton"
