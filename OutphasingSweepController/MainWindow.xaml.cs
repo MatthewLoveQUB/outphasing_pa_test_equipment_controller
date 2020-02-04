@@ -286,13 +286,14 @@ namespace OutphasingSweepController
                 + ", Measured Channel Power (dBm)"
                 + ", Measured Channel Power (W)"
                 + ", Measured Output Power (dBm)"
+                + ", Measured Output Power (W)"
                 + ", Calibrated Output Power (dBm)"
+                + ", Calibrated Output Power (W)"
                 + ", Signal Generator 1 Input Power Offset (dB)"
                 + ", Signal Generator 2 Input Power Offset (dB)"
                 + ", Spectrum Analyzer Measurement Offset (dB)"
                 + ", Calibrated Drain Efficiency (%)"
                 + ", Calibrated Power Added Efficiency (%)"
-                + ", Measured Channel Power (dBm)"
                 + ", Measurement Frequency Span (Hz)"
                 + ", Channel Measurement Bandwidth (Hz)"
                 + ", Calibrated Gain (dB)";
@@ -342,7 +343,7 @@ namespace OutphasingSweepController
                             return;
                             }
                         sweepConf.Commands.SetInputPower(
-                            inputPower, offsets.Smu200a, offsets.E8257d);
+                            inputPower, offsets.SignalGenerator1, offsets.SignalGenerator2);
 
                         var phaseSweepConfig = new PhaseSweepConfig(
                             sweepConf, offsets, voltage, frequency, inputPower);
@@ -358,6 +359,7 @@ namespace OutphasingSweepController
                 }
             this.outFile.Flush();
             this.outFile.Close();
+            this.outFile.Dispose();
             this.MeasurementStopWatch.Stop();
             this.MeasurementStopWatch.Reset();
             }
@@ -451,10 +453,18 @@ namespace OutphasingSweepController
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
             {
-            if(this.outFile != null)
+            try
                 {
-                this.outFile.Flush();
-                this.outFile.Close();
+                if (this.outFile != null)
+                    {
+                    this.outFile.Flush();
+                    this.outFile.Close();
+                    this.outFile.Dispose();
+                    }
+                }
+            catch
+                {
+
                 }
             }
         }

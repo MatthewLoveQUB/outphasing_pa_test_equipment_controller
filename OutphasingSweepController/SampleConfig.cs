@@ -9,18 +9,18 @@ namespace OutphasingSweepController
     // The offset values in dB for the latest frequency
     public class CurrentOffset
         {
-        public double Smu200a;
-        public double E8257d;
-        public double Rsa3408a;
+        public double SignalGenerator1;
+        public double SignalGenerator2;
+        public double SpectrumAnalyzer;
 
         public CurrentOffset(
-            double offsetSmu200a, 
-            double offsetE8257d, 
-            double offsetRsa)
+            double signalGenerator1, 
+            double signalGenerator2, 
+            double spectrumAnalyzer)
             {
-            this.Smu200a = offsetSmu200a;
-            this.E8257d = offsetE8257d;
-            this.Rsa3408a = offsetRsa;
+            this.SignalGenerator1 = signalGenerator1;
+            this.SignalGenerator2 = signalGenerator2;
+            this.SpectrumAnalyzer = spectrumAnalyzer;
             }
         }
 

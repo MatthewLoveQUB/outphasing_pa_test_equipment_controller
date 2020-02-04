@@ -34,11 +34,18 @@ namespace OutphasingSweepController
                 }
             }
         public double MeasuredOutputPowerdBm;
+        public double MeasuredOutputPowerWatts
+            {
+            get
+                {
+                return PowerConversion.dBmToWatts(this.MeasuredOutputPowerdBm);
+                }
+            }
         public double CalibratedOutputPowerdBm
             {
             get
                 {
-                return this.MeasuredOutputPowerdBm + this.Conf.Offset.Rsa3408a;
+                return this.MeasuredOutputPowerdBm + this.Conf.Offset.SpectrumAnalyzer;
                 }
             }
         public double CalibratedOutputPowerWatts

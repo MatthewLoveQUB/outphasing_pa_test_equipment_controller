@@ -32,6 +32,7 @@ namespace OutphasingSweepController
             {
             this.MeasurementConfig = other.MeasurementConfig;
             this.Offset = other.Offset;
+            this.SupplyVoltage = other.SupplyVoltage;
             this.Frequency = other.Frequency;
             this.InputPower = other.InputPower;
             }

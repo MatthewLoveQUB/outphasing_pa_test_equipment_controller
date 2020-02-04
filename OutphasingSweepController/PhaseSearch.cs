@@ -456,9 +456,16 @@ namespace OutphasingSweepController
                 directionPos ? bestPair.Sample2 : bestPair.Sample1;
             double currentPhase = newSample.Conf.Phase;
 
+            var searchSampleLimit = phaseSweepConfig
+                                        .MeasurementConfig
+                                        .PhaseSearchSettings
+                                        .LowerValue
+                                        .DirectionSearchIterationLimit;
+            int nIterations = 0;
             // Sweep until the gradient inverts
             while (true)
                 {
+                nIterations++;
                 var oldSample = newSample;
                 currentPhase += coarseStep;
                 var sampleConfig = new SampleConfig(
@@ -470,6 +477,11 @@ namespace OutphasingSweepController
                 if (currentPair.GradientDirection != startingGradientSign)
                     {
                     break;
+                    }
+
+                if(nIterations > searchSampleLimit)
+                    {
+                    return;
                     }
                 }
 
