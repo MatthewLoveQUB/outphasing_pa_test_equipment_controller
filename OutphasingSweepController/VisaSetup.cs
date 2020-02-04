@@ -127,12 +127,15 @@ namespace OutphasingSweepController
                 rsa.SetFrequencyCenter(sweepConf.Frequencies[0]);
                 rsa.SetFrequencySpan(sweepConf.MeasurementFrequencySpan);
                 rsa.SetChannelBandwidth(sweepConf.MeasurementChannelBandwidth);
-                
-                //rsa3408a.SetMarkerState(markerNumber: 1, view: 1, on: true);
-                //rsa3408a.SetMarkerXToPositionMode(1,1);
+
+                rsa.SetMarkerState(markerNumber: 1, view: 1, on: true);
+                rsa.SetMarkerXToPositionMode(1,1);
                 // When the frequency changes, the marker should automatially
                 // track to the new centre frequency
-                //rsa3408a.SetMarkerXValue(markerNumber: 1, view: 1, xValue: conf.Frequencies[0]);
+                rsa.SetMarkerXValue(
+                    markerNumber: 1, 
+                    view: 1, 
+                    xValue: sweepConf.Frequencies[0]);
                 // Set the power sources to an extremely low
                 // power before starting the sweep
                 // in case they default to some massive value
@@ -147,6 +150,13 @@ namespace OutphasingSweepController
                     && devices.E8257d.OperationComplete();
                 }
 
+            double GetMarkerPower(int marker)
+                {
+                return devices
+                    .Rsa3408a
+                    .GetMarkerYValue(markerNumber: marker, view: 1);
+                }
+
             return new DeviceCommands(
                 setPow,
                 setRfOutputState,
@@ -158,7 +168,8 @@ namespace OutphasingSweepController
                 devices.Hp6624a.SetPsuVoltageStepped,
                 devices.Hp6624a.OutphasingOptimisedMeasurement,
                 devices.Rsa3408a.ReadSpectrumChannelPower,
-                operationsComplete);
+                operationsComplete,
+                GetMarkerPower);
             }
         }
     }

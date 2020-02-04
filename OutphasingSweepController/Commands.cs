@@ -22,6 +22,7 @@ namespace OutphasingSweepController
             OutphasingOptimisedMeasurementDelegate(double voltage);
         public delegate double GetSpectrumPowerDelegate();
         public delegate bool OperationCompleteDelegate();
+        public delegate double GetMarkerPowerDelegate(int marker);
 
         public SetInputPowerDelegate SetInputPower;
         public SetRfOutputStateDelegate SetRfOutputState;
@@ -35,6 +36,8 @@ namespace OutphasingSweepController
             OutphasingOptimisedMeasurement;
         public GetSpectrumPowerDelegate GetSpectrumPower;
         public OperationCompleteDelegate OperationsComplete;
+        public GetMarkerPowerDelegate GetMarkerPower;
+
         public DeviceCommands(
             SetInputPowerDelegate setInputPower,
             SetRfOutputStateDelegate setRfOutputState,
@@ -46,7 +49,8 @@ namespace OutphasingSweepController
             SetDcVoltageSteppedDelegate setDcVoltageStepped,
             OutphasingOptimisedMeasurementDelegate outphasingOptimisedMeasurement,
             GetSpectrumPowerDelegate getSpectrumPower,
-            OperationCompleteDelegate operationsComplete)
+            OperationCompleteDelegate operationsComplete,
+            GetMarkerPowerDelegate getMarkerPower)
             {
             this.SetInputPower = setInputPower;
             this.SetRfOutputState = setRfOutputState;
@@ -59,6 +63,7 @@ namespace OutphasingSweepController
             this.OutphasingOptimisedMeasurement = outphasingOptimisedMeasurement;
             this.GetSpectrumPower = getSpectrumPower;
             this.OperationsComplete = operationsComplete;
+            this.GetMarkerPower = getMarkerPower;
             }
         }
     }
