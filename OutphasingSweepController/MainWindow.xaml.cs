@@ -27,8 +27,8 @@ namespace OutphasingSweepController
         public bool PsuPlus10Percent { get; set; } = false;
         public bool PsuMinus10Percent { get; set; } = false;
         public bool PsuChannel1On { get; set; } = false;
-        public bool PsuChannel2On { get; set; } = false;
-        public bool PsuChannel3On { get; set; } = false;
+        public bool PsuChannel2On { get; set; } = true;
+        public bool PsuChannel3On { get; set; } = true;
         public bool PsuChannel4On { get; set; } = false;
         public List<bool> PsuChannelStates
             {
@@ -51,14 +51,16 @@ namespace OutphasingSweepController
         public Queue<String> LogQueue = new Queue<string>();
         System.Windows.Threading.DispatcherTimer dispatcherTimer;
         // File IO
+        private static string MDir =
+            "C:\\Users\\matth\\OneDrive - Queen's University Belfast\\pa1_meas\\";
         public string ResultsSavePath { get; set; } =
-            "C:\\Users\\matth\\Downloads\\x.csv";
+            MDir + "initial_check_measurements\\x.csv";
         public string SignalGenerator1OffsetsPath { get; set; } =
-            "C:\\Users\\matth\\Downloads\\Cable_5_offset_file.cor";
+            MDir + "Cable_8_offset_file.cor";
         public string SignalGenerator2OffsetsPath { get; set; } =
-            "C:\\Users\\matth\\Downloads\\Cable_2_offset_file.cor";
+            MDir + "Cable_2_offset_file.cor";
         public string SpectrumAnalzyerOffsetsPath { get; set; } =
-            "C:\\Users\\matth\\Downloads\\Cable_7_offset_file.cor";
+            MDir + "Cable_7_offset_file.cor";
         // Signal Generators
         // Measurement
         StreamWriter outFile;
@@ -98,7 +100,7 @@ namespace OutphasingSweepController
         public int DirectionSearchIterationLimit { get; set; } = 5;
         public int PhaseSearchIterationLimit { get; set; } = 500;
         public int PhaseSearchNumCenterSamples { get; set; } = 10;
-        // Gradeitn search
+        // Gradient search
         public double GradientSearchMinimaCoarseStep { get; set; } = 3;
         public double GradientSearchMinimaFineStep { get; set; } = 0.1;
         public int GradientSearchMinimaNumFineSteps { get; set; } = 20;
@@ -121,9 +123,9 @@ namespace OutphasingSweepController
             this.SpectrumAnalzyerOffsetsFilePathTextBlock.Text = 
                 this.SpectrumAnalzyerOffsetsPath;
 
-            //this.Commands = VisaSetup.SetUpVisaDevices(
-            //    this.PsuChannelStates, this.PsuCurrentLimit);
-            //this.Commands.ResetDevices();
+            this.Commands = VisaSetup.SetUpVisaDevices(
+                this.PsuChannelStates, this.PsuCurrentLimit);
+            this.Commands.ResetDevices();
             }
 
         private void SetUpDispatcherTimer()
@@ -272,9 +274,7 @@ namespace OutphasingSweepController
 
         private void RunSweep(MeasurementConfig sweepConf)
             {
-            //sweepConf.Commands.ResetDevices();
-
-            var outputFile = new StreamWriter(sweepConf.OutputFilePath);
+            this.outFile = new StreamWriter(sweepConf.OutputFilePath);
             var headerLine =
                 "Frequency (Hz)" // 1
                 + ", Input Power (dBm)"
@@ -305,7 +305,7 @@ namespace OutphasingSweepController
                 headerLine += $", DC Current Channel {channel} (A)";
                 }
 
-            outputFile.WriteLine(headerLine);
+            this.outFile.WriteLine(headerLine);
             var numberOfPoints = sweepConf.MeasurementPoints;
             this.CurrentSweepProgress.CurrentPoint = 1;
             this.CurrentSweepProgress.NumberOfPoints = numberOfPoints;
@@ -333,11 +333,11 @@ namespace OutphasingSweepController
                     sweepConf.Commands.SetFrequency(frequency);
                     foreach (var inputPower in sweepConf.InputPowers)
                         {
-                        outputFile.Flush();
+                        this.outFile.Flush();
                         if (!this.CurrentSweepProgress.Running)
                             {
-                            outputFile.Flush();
-                            outputFile.Close();
+                            this.outFile.Flush();
+                            this.outFile.Close();
                             sweepConf.Commands.SetRfOutputState(on: false);
                             return;
                             }
@@ -351,12 +351,13 @@ namespace OutphasingSweepController
 
                         foreach (var sample in samples)
                             {
-                            Measurement.SaveSample(outputFile, sample);
+                            Measurement.SaveSample(this.outFile, sample);
                             }
                         }
                     }
                 }
-            outputFile.Close();
+            this.outFile.Flush();
+            this.outFile.Close();
             this.MeasurementStopWatch.Stop();
             this.MeasurementStopWatch.Reset();
             }

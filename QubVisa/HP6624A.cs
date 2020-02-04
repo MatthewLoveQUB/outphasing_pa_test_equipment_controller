@@ -249,7 +249,8 @@ namespace QubVisa
                 var channelNumber = i + 1;
                 if (this.ChannelStates[i])
                     {
-                    currents.Add(GetChannelCurrentOutput(channelNumber));
+                    currents.Add(
+                        Math.Abs(GetChannelCurrentOutput(channelNumber)));
                     }
                 }
             return new OutphasingDcMeasurements(voltage, currents);
