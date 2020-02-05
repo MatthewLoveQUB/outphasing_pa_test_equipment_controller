@@ -59,6 +59,7 @@
     </ApplicationDefinition>
     <Compile Include="Commands.cs" />
     <Compile Include="Equipment.cs" />
+    <Compile Include="PhaseSweep.cs" />
     <Compile Include="PhaseSweepConfig.cs" />
     <Compile Include="Sample.cs" />
     <Compile Include="Measurement.cs" />

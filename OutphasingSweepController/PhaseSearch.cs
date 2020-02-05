@@ -47,103 +47,6 @@ namespace OutphasingSweepController
             CentreSweep
             }
 
-        public static Sample GetBestSample(List<Sample> samples, Mode mode)
-            {
-            var orderedSamples =
-                        samples.OrderByDescending(
-                            s => s.MeasuredChannelPowerdBm).ToList();
-            return (mode == Mode.Peak)
-                ? orderedSamples.First()
-                : orderedSamples.Last();
-            }
-
-        public static List<Sample> MeasurementPhaseSweep(
-            PhaseSweepConfig phaseSweepConfig)
-            {
-            var samples = BasicPhaseSweep(phaseSweepConfig);
-
-            var searchType = phaseSweepConfig
-                                .MeasurementConfig
-                                .PhaseSearchSettings
-                                .PhaseSearchType;
-
-            if (searchType == SearchType.None)
-                {
-                return samples;
-                }
-            else if (searchType == SearchType.HighestGradient)
-                {
-                FindPeakAndTrough(samples, phaseSweepConfig);
-                }
-            else if (searchType == SearchType.LowestValue)
-                {
-                void DoSearch(
-                        List<PhaseSearchPointConfig> searchSettings,
-                        Mode mode)
-                    {
-                    foreach (var searchSetting in searchSettings)
-                        {
-                        var bestSample = GetBestSample(samples, mode);
-                        FindPeakOrTrough(
-                            mode,
-                            samples,
-                            bestSample,
-                            phaseSweepConfig,
-                            searchSetting);
-                        }
-                    }
-
-                DoSearch(
-                    phaseSweepConfig
-                        .MeasurementConfig
-                        .PhaseSearchSettings
-                        .LowerValue
-                        .Peak,
-                    Mode.Peak);
-                DoSearch(
-                    phaseSweepConfig
-                        .MeasurementConfig
-                        .PhaseSearchSettings
-                        .LowerValue
-                        .Trough,
-                    Mode.Trough);
-                }
-            else
-                {
-                throw new Exception();
-                }
-
-            return samples.OrderByDescending(s => s.Conf.Phase).ToList();
-            }
-
-        public static List<Sample> BasicPhaseSweep(
-            PhaseSweepConfig phaseSweepConfig)
-            {
-            var samples = new List<Sample>();
-            foreach (var phase in phaseSweepConfig.MeasurementConfig.Phases)
-                {
-                var sampleConfig = new SampleConfig(
-                    phaseSweepConfig,
-                    phase);
-                TakeSample(sampleConfig, samples);
-                }
-            return samples;
-            }
-
-        private static Sample TakeSample(
-            SampleConfig sampleConfig,
-            List<Sample> samples)
-            {
-            sampleConfig
-                .MeasurementConfig
-                .Commands
-                .SetPhase(sampleConfig.Phase);
-
-            var newSample = Measurement.TakeSample(sampleConfig);
-            samples.Add(newSample);
-            return newSample;
-            }
-
         public static void FindPeakOrTrough(
             Mode searchMode,
             List<Sample> samples,
@@ -176,7 +79,7 @@ namespace OutphasingSweepController
                     .LowerValue
                     .PhaseSearchNumCenterSamples;
                 var centerPhase = 
-                    GetBestSample(samples, searchMode).Conf.Phase;
+                    PhaseSweep.GetBestSample(samples, searchMode).Conf.Phase;
                 var centreSweepPhaseStep = searchPtConfig.StepDeg;
                 var startPhase = 
                     centerPhase - (numSteps/2.0 * centreSweepPhaseStep);
@@ -184,7 +87,7 @@ namespace OutphasingSweepController
                     {
                     var curPhase = startPhase + (i * centreSweepPhaseStep);
                     var newConfig = makeSampleConfig(curPhase);
-                    TakeSample(newConfig, samples);
+                    PhaseSweep.TakeSample(newConfig, samples);
                     }
                 return;
                 }
@@ -223,7 +126,7 @@ namespace OutphasingSweepController
                     }
                 currentPhase += phaseStep;
                 var sampleConfig = makeSampleConfig(currentPhase);
-                newSample = TakeSample(sampleConfig, samples);
+                newSample = PhaseSweep.TakeSample(sampleConfig, samples);
                 var newResult = PeakTroughComparison(
                     searchMode, bestSample, newSample);
                 if (newResult == NewSampleResult.Better)
@@ -250,7 +153,7 @@ namespace OutphasingSweepController
                     phaseStepScalar * phasePtConfig.StepDeg * sign;
                 var newPhase = corePhase + phaseStep;
                 var newConfig = makeSampleConfig(newPhase);
-                var newSample = TakeSample(newConfig, samples);
+                var newSample = PhaseSweep.TakeSample(newConfig, samples);
                 return leftPoint
                     ? GetGradient(from: newSample, to:bestSample)
                     : GetGradient(from: bestSample, to:newSample);
@@ -481,7 +384,7 @@ namespace OutphasingSweepController
                 currentPhase += coarseStep;
                 var sampleConfig = new SampleConfig(
                     phaseSweepConfig, currentPhase);
-                newSample = TakeSample(sampleConfig, samples);
+                newSample = PhaseSweep.TakeSample(sampleConfig, samples);
                 var currentPair = directionPos
                     ? new SamplePair(oldSample, newSample)
                     : new SamplePair(newSample, oldSample);
@@ -511,7 +414,7 @@ namespace OutphasingSweepController
                 currentPhase = startingPhase + ((double)i * fineStep);
                 var sampleConfig = new SampleConfig(
                     phaseSweepConfig, currentPhase);
-                newSample = TakeSample(sampleConfig, samples);
+                newSample = PhaseSweep.TakeSample(sampleConfig, samples);
                 }
 
             // Take the new lowest and sweep 180 away to get the highest power
@@ -540,7 +443,7 @@ namespace OutphasingSweepController
                     maximaPhaseStart + ((double)i * maximaSweepStep);
                 var sampleConfig = new SampleConfig(
                     phaseSweepConfig, currentPhase);
-                newSample = TakeSample(sampleConfig, samples);
+                newSample = PhaseSweep.TakeSample(sampleConfig, samples);
                 }
             }
         }
