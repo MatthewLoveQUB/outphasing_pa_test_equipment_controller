@@ -91,6 +91,14 @@ namespace OutphasingSweepController
                 ref SweepProgress sweepProgress)
             {
             var outFile = new StreamWriter(sweepConf.OutputFilePath);
+
+            void cleanup()
+                {
+                outFile.Flush();
+                outFile.Close();
+                outFile.Dispose();
+                }
+
             var headerLine =
                 "Frequency (Hz)"
                 + ", Input Power (dBm)"
@@ -176,13 +184,17 @@ namespace OutphasingSweepController
                             {
                             SaveSample(outFile, sample);
                             }
+
+                        if(sweepProgress.Running == false)
+                            {
+                            cleanup();
+                            return;
+                            }
                         }
                     }
                 }
             sweepProgress.Running = false;
-            outFile.Flush();
-            outFile.Close();
-            outFile.Dispose();
+            cleanup();
             }
         }
     }
