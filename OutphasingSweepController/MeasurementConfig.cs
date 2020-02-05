@@ -33,6 +33,8 @@ namespace OutphasingSweepController
         public double MeasurementFrequencySpan;
         public PhaseSearchConfig PhaseSearchSettings;
         public DeviceCommands Commands;
+        public double RampVoltageStep;
+        public int PsuRampUpStepTimeMilliseconds;
 
         public MeasurementConfig(
             List<Double> frequencySettings,
@@ -48,7 +50,9 @@ namespace OutphasingSweepController
             string genOffsetsFilePath2,
             string spectrumAnalyzerOffsetsFilePath,
             PhaseSearchConfig phasePeakTroughSearchSettings,
-            DeviceCommands commands)
+            DeviceCommands commands,
+            double rampVoltageStep,
+            int psuRampUpStepTimeMilliseconds)
             {
             this.Frequencies = frequencySettings;
             this.InputPowers = powerSettings;
@@ -65,6 +69,8 @@ namespace OutphasingSweepController
                 new DeviceOffsets(spectrumAnalyzerOffsetsFilePath);
             this.PhaseSearchSettings = phasePeakTroughSearchSettings;
             this.Commands = commands;
+            this.RampVoltageStep = rampVoltageStep;
+            this.PsuRampUpStepTimeMilliseconds = psuRampUpStepTimeMilliseconds;
             }
         }
     }

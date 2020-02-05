@@ -85,5 +85,104 @@ namespace OutphasingSweepController
 
             outputFile.WriteLine(outputLine);
             }
+
+        public static void RunSweep(
+                MeasurementConfig sweepConf,
+                ref SweepProgress sweepProgress)
+            {
+            var outFile = new StreamWriter(sweepConf.OutputFilePath);
+            var headerLine =
+                "Frequency (Hz)"
+                + ", Input Power (dBm)"
+                + ", Input Power (W)"
+                + ", Phase (deg)"
+                + ", Temperature (Celcius)"
+                + ", Corner"
+                + ", Supply Voltage (V)"
+                + ", Measured DC Power (W)"
+                + ", Measured Channel Power (dBm)"
+                + ", Measured Channel Power (W)"
+                + ", Calibrated Channel Power (dBm)"
+                + ", Calibrated Channel Power (W)"
+                + ", Measured Output Power (dBm)"
+                + ", Measured Output Power (W)"
+                + ", Calibrated Output Power (dBm)"
+                + ", Calibrated Output Power (W)"
+                + ", Signal Generator 1 Input Power Offset (dB)"
+                + ", Signal Generator 2 Input Power Offset (dB)"
+                + ", Spectrum Analyzer Measurement Offset (dB)"
+                + ", Calibrated Drain Efficiency (%)"
+                + ", Calibrated Power Added Efficiency (%)"
+                + ", Calibrated Channel Drain Efficiency (%)"
+                + ", Calibrated Channel Power Added Efficiency (%)"
+                + ", Measurement Frequency Span (Hz)"
+                + ", Channel Measurement Bandwidth (Hz)"
+                + ", Calibrated Gain (dB)"
+                + ", Calibrated Channel Gain (dB)";
+
+            var numActiveChannels =
+                sweepConf.Commands.GetPsuChannelStates().Count(c => c);
+            for (int i = 0; i < numActiveChannels; i++)
+                {
+                int channel = i + 1;
+                headerLine += $", DC Current Channel {channel} (A)";
+                }
+
+            outFile.WriteLine(headerLine);
+            var numberOfPoints = sweepConf.MeasurementPoints;
+            sweepProgress.CurrentPoint = 1;
+            sweepProgress.NumberOfPoints = numberOfPoints;
+            sweepProgress.Running = true;
+            
+            // Pre-setup
+            sweepConf.Commands.PreMeasurementSetup(sweepConf);
+
+            // All of the sweeps are <= as we want to include the stop
+            // value in the sweep
+            foreach (var voltage in sweepConf.Voltages)
+                {
+                sweepConf.Commands.SetDcVoltageStepped(
+                    voltage,
+                    sweepConf.RampVoltageStep,
+                    sweepConf.PsuRampUpStepTimeMilliseconds);
+
+                foreach (var frequency in sweepConf.Frequencies)
+                    {
+                    var offsets = new CurrentOffset(
+                        sweepConf.GenOffsets1.GetOffset(frequency),
+                        sweepConf.GenOffsets2.GetOffset(frequency),
+                        sweepConf.SpectrumAnalyzerOffsets.GetOffset(frequency));
+                    sweepConf.Commands.SetFrequency(frequency);
+                    foreach (var inputPower in sweepConf.InputPowers)
+                        {
+                        outFile.Flush();
+                        if (!sweepProgress.Running)
+                            {
+                            outFile.Flush();
+                            outFile.Close();
+                            sweepConf.Commands.SetRfOutputState(on: false);
+                            return;
+                            }
+                        sweepConf.Commands.SetInputPower(
+                            inputPower,
+                            offsets.SignalGenerator1,
+                            offsets.SignalGenerator2);
+
+                        var phaseSweepConfig = new PhaseSweepConfig(
+                            sweepConf, offsets, voltage, frequency, inputPower);
+                        var samples = PhaseSearch.MeasurementPhaseSweep(
+                            phaseSweepConfig);
+
+                        foreach (var sample in samples)
+                            {
+                            Measurement.SaveSample(outFile, sample);
+                            }
+                        }
+                    }
+                }
+            outFile.Flush();
+            outFile.Close();
+            outFile.Dispose();
+            }
         }
     }

@@ -62,7 +62,6 @@ namespace OutphasingSweepController
             MDir + "Cable_7_offset_file.cor";
         // Signal Generators
         // Measurement
-        StreamWriter outFile;
         SweepProgress CurrentSweepProgress = new SweepProgress(false, 0, 0);
         public double EstimatedTimePerSample { get; set; } = 0.5;
         public System.Diagnostics.Stopwatch MeasurementStopWatch =
@@ -200,7 +199,9 @@ namespace OutphasingSweepController
                     this.GradientSearchMinimaNumFineSteps,
                     this.GradientSearchMaximaCoarseStep,
                     this.GradientSearchMaximaNumCoarseSteps),
-                this.Commands);
+                this.Commands,
+                this.RampVoltageStep,
+                this.PsuRampUpStepTimeMilliseconds);
             }
 
         private void ToggleGuiActive(bool on)
@@ -218,7 +219,9 @@ namespace OutphasingSweepController
             this.ToggleGuiActive(on: false);
             Task.Factory.StartNew(() =>
             {
-                RunSweep(measurementSettings);
+                Measurement.RunSweep(
+                    measurementSettings, 
+                    ref this.CurrentSweepProgress);
             });
             }
 
@@ -289,107 +292,6 @@ namespace OutphasingSweepController
                     "Spectrum Analzyer offset");
             }
 
-        private void RunSweep(MeasurementConfig sweepConf)
-            {
-            this.outFile = new StreamWriter(sweepConf.OutputFilePath);
-            var headerLine =
-                "Frequency (Hz)"
-                + ", Input Power (dBm)"
-                + ", Input Power (W)"
-                + ", Phase (deg)"
-                + ", Temperature (Celcius)"
-                + ", Corner"
-                + ", Supply Voltage (V)"
-                + ", Measured DC Power (W)"
-                + ", Measured Channel Power (dBm)"
-                + ", Measured Channel Power (W)"
-                + ", Calibrated Channel Power (dBm)"
-                + ", Calibrated Channel Power (W)"
-                + ", Measured Output Power (dBm)"
-                + ", Measured Output Power (W)"
-                + ", Calibrated Output Power (dBm)"
-                + ", Calibrated Output Power (W)"
-                + ", Signal Generator 1 Input Power Offset (dB)"
-                + ", Signal Generator 2 Input Power Offset (dB)"
-                + ", Spectrum Analyzer Measurement Offset (dB)"
-                + ", Calibrated Drain Efficiency (%)"
-                + ", Calibrated Power Added Efficiency (%)"
-                + ", Calibrated Channel Drain Efficiency (%)"
-                + ", Calibrated Channel Power Added Efficiency (%)"
-                + ", Measurement Frequency Span (Hz)"
-                + ", Channel Measurement Bandwidth (Hz)"
-                + ", Calibrated Gain (dB)"
-                + ", Calibrated Channel Gain (dB)";
-
-            var numActiveChannels = 
-                sweepConf.Commands.GetPsuChannelStates().Count(c => c);
-            for (int i = 0; i < numActiveChannels; i++)
-                {
-                int channel = i + 1;
-                headerLine += $", DC Current Channel {channel} (A)";
-                }
-
-            this.outFile.WriteLine(headerLine);
-            var numberOfPoints = sweepConf.MeasurementPoints;
-            this.CurrentSweepProgress.CurrentPoint = 1;
-            this.CurrentSweepProgress.NumberOfPoints = numberOfPoints;
-            this.CurrentSweepProgress.Running = true;
-            this.MeasurementStopWatch.Restart();
-
-            // Pre-setup
-            sweepConf.Commands.PreMeasurementSetup(sweepConf);
-
-            // All of the sweeps are <= as we want to include the stop
-            // value in the sweep
-            foreach (var voltage in sweepConf.Voltages)
-                {
-                sweepConf.Commands.SetDcVoltageStepped(
-                    voltage, 
-                    this.RampVoltageStep, 
-                    this.PsuRampUpStepTimeMilliseconds);
-
-                foreach (var frequency in sweepConf.Frequencies)
-                    {
-                    var offsets = new CurrentOffset(
-                        sweepConf.GenOffsets1.GetOffset(frequency),
-                        sweepConf.GenOffsets2.GetOffset(frequency),
-                        sweepConf.SpectrumAnalyzerOffsets.GetOffset(frequency));
-                    sweepConf.Commands.SetFrequency(frequency);
-                    foreach (var inputPower in sweepConf.InputPowers)
-                        {
-                        this.outFile.Flush();
-                        if (!this.CurrentSweepProgress.Running)
-                            {
-                            this.outFile.Flush();
-                            this.outFile.Close();
-                            sweepConf.Commands.SetRfOutputState(on: false);
-                            return;
-                            }
-                        sweepConf.Commands.SetInputPower(
-                            inputPower, 
-                            offsets.SignalGenerator1, 
-                            offsets.SignalGenerator2);
-
-                        var phaseSweepConfig = new PhaseSweepConfig(
-                            sweepConf, offsets, voltage, frequency, inputPower);
-                        var samples = PhaseSearch.MeasurementPhaseSweep(
-                            phaseSweepConfig);
-
-                        foreach (var sample in samples)
-                            {
-                            Measurement.SaveSample(this.outFile, sample);
-                            }
-                        }
-                    }
-                }
-            this.outFile.Flush();
-            this.outFile.Close();
-            this.outFile.Dispose();
-            this.MeasurementStopWatch.Stop();
-            this.MeasurementStopWatch.Reset();
-            }
-        
-        
         private void SweepSettingsControl_LostFocus(
             object sender, RoutedEventArgs e)
             {
@@ -474,23 +376,6 @@ namespace OutphasingSweepController
             {
             this.ToggleGuiActive(on: true);
             this.CurrentSweepProgress.Running = false;
-            }
-
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-            {
-            try
-                {
-                if (this.outFile != null)
-                    {
-                    this.outFile.Flush();
-                    this.outFile.Close();
-                    this.outFile.Dispose();
-                    }
-                }
-            catch
-                {
-
-                }
             }
         }
     }
