@@ -293,15 +293,18 @@ namespace OutphasingSweepController
             {
             this.outFile = new StreamWriter(sweepConf.OutputFilePath);
             var headerLine =
-                "Frequency (Hz)" // 1
+                "Frequency (Hz)"
                 + ", Input Power (dBm)"
+                + ", Input Power (W)"
                 + ", Phase (deg)"
                 + ", Temperature (Celcius)"
-                + ", Corner" // 5
+                + ", Corner"
                 + ", Supply Voltage (V)"
                 + ", Measured DC Power (W)"
                 + ", Measured Channel Power (dBm)"
                 + ", Measured Channel Power (W)"
+                + ", Calibrated Channel Power (dBm)"
+                + ", Calibrated Channel Power (W)"
                 + ", Measured Output Power (dBm)"
                 + ", Measured Output Power (W)"
                 + ", Calibrated Output Power (dBm)"
@@ -311,9 +314,12 @@ namespace OutphasingSweepController
                 + ", Spectrum Analyzer Measurement Offset (dB)"
                 + ", Calibrated Drain Efficiency (%)"
                 + ", Calibrated Power Added Efficiency (%)"
+                + ", Calibrated Channel Drain Efficiency (%)"
+                + ", Calibrated Channel Power Added Efficiency (%)"
                 + ", Measurement Frequency Span (Hz)"
                 + ", Channel Measurement Bandwidth (Hz)"
-                + ", Calibrated Gain (dB)";
+                + ", Calibrated Gain (dB)"
+                + ", Calibrated Channel Gain (dB)";
 
             var numActiveChannels = 
                 sweepConf.Commands.GetPsuChannelStates().Count(c => c);

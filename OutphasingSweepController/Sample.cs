@@ -81,6 +81,43 @@ namespace OutphasingSweepController
                     this.MeasuredChannelPowerdBm);
                 }
             }
+        public double CalibratedChannelPowerdBm
+            {
+            get
+                {
+                return this.MeasuredChannelPowerdBm 
+                    + this.Conf.Offset.SpectrumAnalyzer;
+                }
+            }
+
+        public double CalibratedChannelPowerWatts
+            {
+            get
+                {
+                return PowerConversion.dBmToWatts(
+                    this.CalibratedChannelPowerdBm);
+                }
+            }
+
+        public double CalibratedChannelPowerAddedEfficiency
+            {
+            get
+                {
+                var pout = this.CalibratedChannelPowerWatts;
+                var pin = this.InputPowerWatts;
+                var diffp = pout - pin;
+                return 100.0 * (diffp / this.MeasuredPowerDcWatts);
+                }
+            }
+
+        public double CalibratedChannelDrainEfficiency
+            {
+            get
+                {
+                var pout = this.CalibratedChannelPowerWatts;
+                return 100.0 * (pout / this.MeasuredPowerDcWatts);
+                }
+            }
 
         public double CalibratedGaindB
             {
@@ -89,6 +126,16 @@ namespace OutphasingSweepController
                 return this.CalibratedOutputPowerdBm - (this.InputPowerdBm + 3);
                 }
             }
+
+        public double CalibratedChannelGaindB
+            {
+            get
+                {
+                return this.CalibratedChannelPowerdBm 
+                    - (this.InputPowerdBm + 3);
+                }
+            }
+
         public List<double> DcCurrents;
         
         public Sample(

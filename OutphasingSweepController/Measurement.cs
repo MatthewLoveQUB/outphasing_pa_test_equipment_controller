@@ -50,8 +50,9 @@ namespace OutphasingSweepController
         public static void SaveSample(StreamWriter outputFile, Sample sample)
             {
             var outputLine =
-                $"{sample.Conf.Frequency}" // 1
+                $"{sample.Conf.Frequency}"
                 + $", {sample.InputPowerdBm}"
+                + $", {sample.InputPowerWatts}"
                 + $", {sample.Conf.Phase}"
                 + $", {sample.Conf.MeasurementConfig.Temperature}"
                 + $", {sample.Conf.MeasurementConfig.Corner}"
@@ -59,6 +60,8 @@ namespace OutphasingSweepController
                 + $", {sample.MeasuredPowerDcWatts}"
                 + $", {sample.MeasuredChannelPowerdBm}"
                 + $", {sample.MeasuredChannelPowerWatts}"
+                + $", {sample.CalibratedChannelPowerdBm}"
+                + $", {sample.CalibratedChannelPowerWatts}"
                 + $", {sample.MeasuredOutputPowerdBm}"
                 + $", {sample.MeasuredOutputPowerWatts}"
                 + $", {sample.CalibratedOutputPowerdBm}"
@@ -68,9 +71,12 @@ namespace OutphasingSweepController
                 + $", {sample.Conf.Offset.SpectrumAnalyzer}"
                 + $", {sample.CalibratedDrainEfficiency}"
                 + $", {sample.CalibratedPowerAddedEfficiency}"
+                + $", {sample.CalibratedChannelDrainEfficiency}"
+                + $", {sample.CalibratedChannelPowerAddedEfficiency}"
                 + $", {sample.Conf.MeasurementConfig.MeasurementFrequencySpan}"
                 + $", {sample.Conf.MeasurementConfig.MeasurementChannelBandwidth}"
-                + $", {sample.CalibratedGaindB}";
+                + $", {sample.CalibratedGaindB}"
+                + $", {sample.CalibratedChannelGaindB}";
 
             foreach (var current in sample.DcCurrents)
                 {
