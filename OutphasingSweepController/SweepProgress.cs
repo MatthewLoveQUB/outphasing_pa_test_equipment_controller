@@ -10,12 +10,10 @@ namespace OutphasingSweepController
         {
         public bool Running;
         public int CurrentPoint;
-        public int NumberOfPoints;
-        public SweepProgress(bool running, int currentPoint, int numberOfPoints)
+        public SweepProgress(bool running, int currentPoint)
             {
             this.Running = running;
             this.CurrentPoint = currentPoint;
-            this.NumberOfPoints = numberOfPoints;
             }
         }
     }

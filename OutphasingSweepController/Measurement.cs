@@ -131,7 +131,6 @@ namespace OutphasingSweepController
             outFile.WriteLine(headerLine);
             var numberOfPoints = sweepConf.MeasurementPoints;
             sweepProgress.CurrentPoint = 1;
-            sweepProgress.NumberOfPoints = numberOfPoints;
             sweepProgress.Running = true;
             
             // Pre-setup
@@ -175,11 +174,12 @@ namespace OutphasingSweepController
 
                         foreach (var sample in samples)
                             {
-                            Measurement.SaveSample(outFile, sample);
+                            SaveSample(outFile, sample);
                             }
                         }
                     }
                 }
+            sweepProgress.Running = false;
             outFile.Flush();
             outFile.Close();
             outFile.Dispose();

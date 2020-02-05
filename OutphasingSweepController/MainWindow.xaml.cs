@@ -62,7 +62,8 @@ namespace OutphasingSweepController
             MDir + "Cable_7_offset_file.cor";
         // Signal Generators
         // Measurement
-        SweepProgress CurrentSweepProgress = new SweepProgress(false, 0, 0);
+        SweepProgress CurrentSweepProgress = 
+            new SweepProgress(running: false, currentPoint: 0);
         public double EstimatedTimePerSample { get; set; } = 0.5;
         public System.Diagnostics.Stopwatch MeasurementStopWatch =
             new System.Diagnostics.Stopwatch();
@@ -109,7 +110,7 @@ namespace OutphasingSweepController
             {
             InitializeComponent();
             this.DataContext = this;
-            //SetUpDispatcherTimer();
+            SetUpDispatcherTimer();
             UpdateEstimatedMeasurementTime();
 
             this.ResultsSavePathTextBlock.Text = 
@@ -126,15 +127,15 @@ namespace OutphasingSweepController
             this.Commands.ResetDevices();
             }
 
-        //private void SetUpDispatcherTimer()
-        //    {
-        //    this.dispatcherTimer = 
-        //        new System.Windows.Threading.DispatcherTimer();
-        //    this.dispatcherTimer.Tick += 
-        //        new EventHandler(dispatcherTimer_Tick);
-        //    this.dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 2);
-        //    this.dispatcherTimer.Start();
-        //    }
+        private void SetUpDispatcherTimer()
+            {
+            this.dispatcherTimer =
+                new System.Windows.Threading.DispatcherTimer();
+            this.dispatcherTimer.Tick +=
+                new EventHandler(dispatcherTimer_Tick);
+            this.dispatcherTimer.Interval = new TimeSpan(0, 0, 0, 2);
+            this.dispatcherTimer.Start();
+            }
 
         private void AddNewLogLine(string line)
             {
@@ -223,55 +224,51 @@ namespace OutphasingSweepController
                     measurementSettings, 
                     ref this.CurrentSweepProgress);
             });
+            this.MeasurementStopWatch.Restart();
             }
 
-        //private void dispatcherTimer_Tick(object sender, EventArgs e)
-        //    {
-        //    // To avoid memory leaks, wipe the log every tick
-        //    this.SweepLogTextBox.Text = "";
+        private void dispatcherTimer_Tick(object sender, EventArgs e)
+            {
+            // To avoid memory leaks, wipe the log every tick
+            this.SweepLogTextBox.Text = "";
 
-        //    if (this.CurrentSweepProgress.Running)
-        //        {
-        //        var curPt = this.CurrentSweepProgress.CurrentPoint;
-        //        var nPts = this.CurrentSweepProgress.NumberOfPoints;
-        //        var timeElapsed = this.MeasurementStopWatch.Elapsed;
-        //        var ptsRemaining = nPts - curPt;
-        //        var timeScaler = (double)ptsRemaining / (double)curPt;
-        //        var estimatedTime =
-        //            TimeSpan.FromTicks(timeElapsed.Ticks * (long)timeScaler);
-        //        var samplesPerSecond = curPt / (double)timeElapsed.TotalSeconds;
-        //        var secondsPerSample = 1 / samplesPerSecond;
+            if (!this.CurrentSweepProgress.Running)
+                {
+                return;
+                }
+            var curPt = this.CurrentSweepProgress.CurrentPoint;
+            var timeElapsed = this.MeasurementStopWatch.Elapsed;
+            var samplesPerSecond = curPt / (double)timeElapsed.TotalSeconds;
+            var secondsPerSample = 1 / samplesPerSecond;
 
-        //        // Print current point
-        //        var msg = $"On task {curPt} of {nPts}";
-        //        AddNewLogLine(msg);
-        //        // Print elapsed time
-        //        msg = "Elapsed Time: "
-        //            + $"{timeElapsed.Days} days "
-        //            + $"{timeElapsed.Hours} hours "
-        //            + $"{timeElapsed.Minutes} minutes "
-        //            + $"{timeElapsed.Seconds} seconds";
-        //        AddNewLogLine(msg);
-        //        // Print sample rate
-        //        AddNewLogLine($"Sample Rate = {samplesPerSecond:F2} S/s");
-        //        AddNewLogLine($"Sample Time = {secondsPerSample:F2} s");
-        //        // Print estimated remaining time
-        //        msg = "Est. Remaining Time: "
-        //            + $"{estimatedTime.Days} days "
-        //            + $"{estimatedTime.Hours} hours "
-        //            + $"{estimatedTime.Minutes} minutes "
-        //            + $"{estimatedTime.Seconds} seconds";
-        //        AddNewLogLine(msg);
-        //        }
+            // Print elapsed time
+            var msg = "Elapsed Time: "
+                + $"{timeElapsed.Days} days "
+                + $"{timeElapsed.Hours} hours "
+                + $"{timeElapsed.Minutes} minutes "
+                + $"{timeElapsed.Seconds} seconds";
+            AddNewLogLine(msg);
 
-        //    // Empty the log queue
-        //    while (this.LogQueue.Count > 0)
-        //        {
-        //        var message = this.LogQueue.Dequeue();
-        //        AddNewLogLine(message);
-        //        }
-        //    }
-        
+            // Print sample rate
+            AddNewLogLine($"Sample Rate = {samplesPerSecond:F2} S/s");
+            AddNewLogLine($"Sample Time = {secondsPerSample:F2} s");
+
+            // Print estimated total time
+            var estTime = GetEstimatedMeasurementTime();
+            msg = "Estimated Total Time: "
+                + $"{estTime.Days} days "
+                + $"{estTime.Hours} hours "
+                + $"{estTime.Minutes} minutes "
+                + $"{estTime.Seconds} seconds";
+            AddNewLogLine(msg);
+
+            while (this.LogQueue.Count > 0)
+                {
+                var message = this.LogQueue.Dequeue();
+                AddNewLogLine(message);
+                }
+            }
+
         bool MeasurementVariablesCheck()
             {
             bool checkPath(string path, string name)
@@ -298,7 +295,7 @@ namespace OutphasingSweepController
             UpdateEstimatedMeasurementTime();
             }
 
-        private void UpdateEstimatedMeasurementTime()
+        private TimeSpan GetEstimatedMeasurementTime()
             {
             var voltagePoints = 1
                 + Convert.ToInt64(this.PsuPlus10Percent)
@@ -308,13 +305,17 @@ namespace OutphasingSweepController
                 * this.PowerSweepSettingsControl.NSteps
                 * this.EstimatedPhaseSamples;
             var secondsRequired = this.EstimatedTimePerSample * nPoints;
-            var estimatedMeasurementTime = 
-                TimeSpan.FromSeconds(secondsRequired);
+            return TimeSpan.FromSeconds(secondsRequired);
+            }
+
+        private void UpdateEstimatedMeasurementTime()
+            {
+            var estTime = GetEstimatedMeasurementTime();
             this.EstimatedSimulationTimeTextBlock.Text =
               $"Estimated Measurement Time = "
-                + $"{estimatedMeasurementTime.Days} days "
-                + $"{estimatedMeasurementTime.Hours} hours "
-                + $"{estimatedMeasurementTime.Minutes} minutes";
+                + $"{estTime.Days} days "
+                + $"{estTime.Hours} hours "
+                + $"{estTime.Minutes} minutes";
             }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
