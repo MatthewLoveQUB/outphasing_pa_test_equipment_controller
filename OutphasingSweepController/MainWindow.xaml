@@ -154,7 +154,7 @@
                         Grid.Column="1"
                         Padding="10"
                         VerticalAlignment="Center"
-                        Text="Direction Search Max Iter" />
+                        Text="Direction Search Max Iter  (Both modes)" />
                     <TextBox
                         Grid.Column="2"
                         VerticalAlignment="Center"

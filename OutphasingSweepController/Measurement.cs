@@ -16,9 +16,10 @@ namespace OutphasingSweepController
             double channelPowerdBm = -1;
             double measuredPoutdBm = -1;
             OutphasingDcMeasurements dcResults = null;
+            var commands = conf.MeasurementConfig.Commands;
 
             // Make sure all commands are settled first
-            while (!conf.MeasurementConfig.Commands.OperationsComplete())
+            while (!commands.OperationsComplete())
                 {
 
                 }
@@ -27,19 +28,15 @@ namespace OutphasingSweepController
                 {
                 Task.Factory.StartNew(() =>
                 {
-                    channelPowerdBm = 
-                        conf.MeasurementConfig.Commands.GetSpectrumPower();
-                    measuredPoutdBm
-                        = conf.MeasurementConfig.Commands.GetMarkerPower(marker: 1);
+                    channelPowerdBm = commands.GetSpectrumPower();
+                    measuredPoutdBm = commands.GetMarkerPower(marker: 1);
                     //measuredPoutdBm = channelPowerdBm;
                 }),
                 Task.Factory.StartNew(() =>
                 {
                     dcResults =
-                    conf
-                    .MeasurementConfig
-                    .Commands
-                    .OutphasingOptimisedMeasurement(conf.SupplyVoltage);
+                        commands.OutphasingOptimisedMeasurement(
+                            conf.SupplyVoltage);
                 })});
 
             return new Sample(
