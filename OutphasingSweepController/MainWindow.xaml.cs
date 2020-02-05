@@ -53,8 +53,7 @@ namespace OutphasingSweepController
         // File IO
         private static string MDir =
             "C:\\Users\\matth\\OneDrive - Queen's University Belfast\\pa1_meas\\";
-        public string ResultsSavePath { get; set; } =
-            MDir + "initial_check_measurements\\x.csv";
+        public string ResultsSavePath { get; set; } = "";
         public string SignalGenerator1OffsetsPath { get; set; } =
             MDir + "Cable_8_offset_file.cor";
         public string SignalGenerator2OffsetsPath { get; set; } =
@@ -143,11 +142,29 @@ namespace OutphasingSweepController
             this.SweepLogTextBox.Text = $"{this.SweepLogTextBox.Text}{line}\n";
             }
 
+        public List<double> RoundVals(List<double> freqs, double minVal)
+            {
+            var outVals = new List<double>();
+
+            foreach(var freq in freqs)
+                {
+                var x = freq / minVal;
+                var y = Math.Floor(x);
+                var z = y * minVal;
+                outVals.Add(z);
+                }
+            return outVals;
+            }
+
         private MeasurementConfig ParseMeasurementConfiguration()
             {
-            var frequencySettings = this.FrequencySweepSettingsControl.Values;
-            var powerSettings = this.PowerSweepSettingsControl.Values;
-            var phaseSettings = this.PhaseSweepSettingsControl.Values;
+            var rawFrequencySettings = this.FrequencySweepSettingsControl.Values;
+            var frequencySettings = this.RoundVals(rawFrequencySettings, 1e6);
+            var rawPowerSettings = this.PowerSweepSettingsControl.Values;
+            var powerSettings = this.RoundVals(rawPowerSettings, 0.01);
+            var rawPhaseSettings = this.PhaseSweepSettingsControl.Values;
+            var phaseSettings = this.RoundVals(rawPhaseSettings, 0.1);
+
             var voltages = new List<Double>() { this.PsuNominalVoltage };
             if (this.PsuPlus10Percent)
                 {
