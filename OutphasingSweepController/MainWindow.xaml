@@ -16,16 +16,7 @@
             <RowDefinition Height="1.5*" />
             <RowDefinition Height="20" />
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="2*" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-        <Grid
-            x:Name="ControllerGrid"
-            Grid.Row="1"
-            Grid.Column="0"
-            Grid.ColumnSpan="2">
+        <Grid x:Name="ControllerGrid" Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
@@ -520,7 +511,7 @@
                 VerticalContentAlignment="Center"
                 Text="{Binding Rsa3408ChannelBandwidth, Mode=TwoWay, StringFormat=g2}" />
         </Grid>
-        <Grid Grid.Row="2" Grid.ColumnSpan="2">
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="*" />
@@ -538,24 +529,9 @@
                 Content="Stop Sweep"
                 IsEnabled="False" />
         </Grid>
-        <Grid Grid.RowSpan="2" Grid.Column="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="20" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <TextBlock
-                Grid.Row="0"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                FontSize="14"
-                Text="Last Sample" />
-            <TextBlock x:Name="LastSampleTextBlock" Grid.Row="1" />
-        </Grid>
         <TextBox
             x:Name="SweepLogTextBox"
             Grid.Row="0"
-            Grid.Column="0"
-            Grid.ColumnSpan="2"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch"
             AcceptsReturn="True"
