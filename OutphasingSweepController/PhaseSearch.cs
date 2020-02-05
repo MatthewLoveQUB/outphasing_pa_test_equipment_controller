@@ -60,8 +60,7 @@ namespace OutphasingSweepController
         public static List<Sample> MeasurementPhaseSweep(
             PhaseSweepConfig phaseSweepConfig)
             {
-            var samples = new List<Sample>();
-            BasicPhaseSweep(samples, phaseSweepConfig);
+            var samples = BasicPhaseSweep(phaseSweepConfig);
 
             var searchType = phaseSweepConfig
                                 .MeasurementConfig
@@ -117,10 +116,10 @@ namespace OutphasingSweepController
             return samples.OrderByDescending(s => s.Conf.Phase).ToList();
             }
 
-        public static void BasicPhaseSweep(
-            List<Sample> samples,
+        public static List<Sample> BasicPhaseSweep(
             PhaseSweepConfig phaseSweepConfig)
             {
+            var samples = new List<Sample>();
             foreach (var phase in phaseSweepConfig.MeasurementConfig.Phases)
                 {
                 var sampleConfig = new SampleConfig(
@@ -128,6 +127,7 @@ namespace OutphasingSweepController
                     phase);
                 TakeSample(sampleConfig, samples);
                 }
+            return samples;
             }
 
         private static Sample TakeSample(
@@ -440,6 +440,7 @@ namespace OutphasingSweepController
 
             // Find the pair with the steepest gradient
             // This should correspond to the pair closest to the power null
+            // If no pairs have the same gradient then just give up
             var sortedPairs = 
                 validPairs
                     .OrderByDescending(p => Math.Abs(p.PowerGradient))

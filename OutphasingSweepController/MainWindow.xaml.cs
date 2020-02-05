@@ -360,7 +360,9 @@ namespace OutphasingSweepController
                             return;
                             }
                         sweepConf.Commands.SetInputPower(
-                            inputPower, offsets.SignalGenerator1, offsets.SignalGenerator2);
+                            inputPower, 
+                            offsets.SignalGenerator1, 
+                            offsets.SignalGenerator2);
 
                         var phaseSweepConfig = new PhaseSweepConfig(
                             sweepConf, offsets, voltage, frequency, inputPower);
