@@ -444,6 +444,16 @@ namespace OutphasingSweepController
                 validPairs
                     .OrderByDescending(p => Math.Abs(p.PowerGradient))
                     .ToList();
+            if(sortedPairs == null)
+                {
+                return;
+                }
+            if(sortedPairs.Count < 1)
+                {
+                return;
+                }
+
+
             var bestPair = sortedPairs.First();
             var startingGradientSign = bestPair.GradientDirection;
             var direction = GetDirection(bestPair);

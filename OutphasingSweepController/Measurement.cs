@@ -29,9 +29,9 @@ namespace OutphasingSweepController
                 {
                     channelPowerdBm = 
                         conf.MeasurementConfig.Commands.GetSpectrumPower();
-                    //measuredPoutdBm
-                    //    = conf.MeasurementConfig.Commands.GetMarkerPower(marker: 1);
-                    measuredPoutdBm = channelPowerdBm;
+                    measuredPoutdBm
+                        = conf.MeasurementConfig.Commands.GetMarkerPower(marker: 1);
+                    //measuredPoutdBm = channelPowerdBm;
                 }),
                 Task.Factory.StartNew(() =>
                 {

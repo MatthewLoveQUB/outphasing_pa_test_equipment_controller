@@ -100,7 +100,8 @@ namespace QubVisa
         // Initiate Commands
         public void SetContinuousMode(bool continuousOn)
             {
-            var message = string.Format(":INIT:CONT {0}", continuousOn ? "ON" : "OFF");
+            var message = 
+                string.Format(":INIT:CONT {0}", continuousOn ? "ON" : "OFF");
             this.Device.connection.RawIO.Write(message);
             }
 
@@ -186,6 +187,11 @@ namespace QubVisa
             {
             var message = string.Format(":SENS:CHP:BAND:INT {0}", bandwidth);
             this.Device.connection.RawIO.Write(message);
+            }
+
+        public void SetReferencePower(double power)
+            {
+            this.Device.Write($"INP:MLEV {power}");
             }
     }
 }
