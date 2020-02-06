@@ -45,8 +45,8 @@ namespace OutphasingSweepController
 
 
         // Spectrum Analyser
-        public double Rsa3408ChannelBandwidth { get; set; } = 25e3;
-        public double Rsa3408FrequencySpan { get; set; } = 1e6;
+        public double Rsa3408ChannelBandwidth { get; set; } = 100e3;
+        public double Rsa3408FrequencySpan { get; set; } = 500e3;
         // UI
         public Queue<String> LogQueue = new Queue<string>();
         System.Windows.Threading.DispatcherTimer dispatcherTimer;
@@ -96,7 +96,7 @@ namespace OutphasingSweepController
                 }
             }
         // Lowest Value
-        public int DirectionSearchIterationLimit { get; set; } = 5;
+        public int DirectionSearchIterationLimit { get; set; } = 20;
         public int PhaseSearchIterationLimit { get; set; } = 500;
         public int PhaseSearchNumCenterSamples { get; set; } = 10;
         // Gradient search
