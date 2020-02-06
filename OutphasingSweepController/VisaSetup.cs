@@ -48,7 +48,11 @@ namespace OutphasingSweepController
             var smr20 = new RS_SMR20(signalGen1Address);
             var e8257d = new KeysightE8257D(signalGen2Address);
 
-            return new Equipment(hp6624a, rsa3408a, smr20, e8257d);
+            return new Equipment(
+                hp6624a: hp6624a, 
+                rsa3408a: rsa3408a, 
+                smr20: smr20, 
+                e8257d: e8257d);
             }
 
         // This is the dirty method that is edited when
@@ -62,7 +66,7 @@ namespace OutphasingSweepController
             void setPow(double inputPower, double offset1, double offset2)
                 {
                 Task SetPowerLevel(
-                    Action<double, double> setPower, double offset)
+                        Action<double, double> setPower, double offset)
                     {
                     return Task.Factory.StartNew(
                         () => setPower(inputPower, offset));
@@ -117,7 +121,9 @@ namespace OutphasingSweepController
                 {
                 // DC supply
                 var psu = devices.Hp6624a;
-                psu.SetAllChannelVoltagesToZero();
+                psu.ZeroAllChannels();
+                psu.ChannelStates = sweepConf.PsuChannelStates;
+                psu.SetChannelStates();
                 psu.SetActiveChannelsCurrent(currentLimit);
 
                 // Spectrum Analyser

@@ -9,6 +9,7 @@ namespace OutphasingSweepController
         public List<Double> Frequencies;
         public List<Double> InputPowers;
         public List<Double> Phases;
+        public List<bool> PsuChannelStates;
         public double Temperature;
         public string Corner;
         public List<Double> Voltages;
@@ -37,6 +38,7 @@ namespace OutphasingSweepController
             List<Double> frequencySettings,
             List<Double> powerSettings,
             List<Double> phaseSettings,
+            List<bool> psuChannelStates,
             double temperature,
             string corner,
             List<Double> voltages,
@@ -54,6 +56,7 @@ namespace OutphasingSweepController
             this.Frequencies = frequencySettings;
             this.InputPowers = powerSettings;
             this.Phases = phaseSettings;
+            this.PsuChannelStates = psuChannelStates;
             this.Temperature = temperature;
             this.Corner = corner;
             this.Voltages = voltages;

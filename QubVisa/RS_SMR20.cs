@@ -52,7 +52,7 @@ namespace QubVisa
         public void SetPowerLevel(double power, double offset = 0)
             {
             var pIn = power + offset;
-            this.Device.connection.RawIO.Write($":POW {pIn}");
+            this.Device.Write($":POW {pIn}");
             }
         }
     }

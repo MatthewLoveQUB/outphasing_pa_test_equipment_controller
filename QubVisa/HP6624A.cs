@@ -152,11 +152,24 @@ namespace QubVisa
 
         public void SetAllChannelVoltagesToZero()
             {
-            for (int i = 0; i < NumChannels; i++)
+            for (int i = 1; i <= NumChannels; i++)
                 {
-                var channelNumber = i + 1;
-                SetChannelVoltage(channelNumber, 0.0);
+                SetChannelVoltage(i, 0.0);
                 }
+            }
+
+        public void SetAllChannelCurrentsToZero()
+            {
+            for (int i = 1; i <= NumChannels; i++)
+                {
+                SetChannelCurrent(i, 0.0);
+                }
+            }
+
+        public void ZeroAllChannels()
+            {
+            this.SetAllChannelVoltagesToZero();
+            this.SetAllChannelCurrentsToZero();
             }
 
         public void SetActiveChannelsCurrent(double current)
