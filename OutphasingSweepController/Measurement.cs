@@ -176,9 +176,14 @@ namespace OutphasingSweepController
                             offsets.SignalGenerator2);
 
                         var phaseSweepConfig = new PhaseSweepConfig(
-                            sweepConf, offsets, voltage, frequency, inputPower);
+                            sweepConf, 
+                            offsets, 
+                            voltage, 
+                            frequency, 
+                            inputPower);
                         var samples = PhaseSweep.MeasurementPhaseSweep(
-                            phaseSweepConfig);
+                            phaseSweepConfig,
+                            ref sweepProgress);
 
                         foreach (var sample in samples)
                             {

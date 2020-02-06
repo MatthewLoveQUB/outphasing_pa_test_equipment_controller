@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OutphasingSweepController
     {
-    class SweepProgress
+    public class SweepProgress
         {
         public bool Running;
         public int CurrentPoint;

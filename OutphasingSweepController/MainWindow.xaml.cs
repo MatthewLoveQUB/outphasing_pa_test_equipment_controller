@@ -179,6 +179,7 @@ namespace OutphasingSweepController
                 frequencySettings,
                 powerSettings,
                 phaseSettings,
+                this.PsuChannelStates,
                 this.ChipTemperature,
                 this.ChipCorner,
                 voltages,

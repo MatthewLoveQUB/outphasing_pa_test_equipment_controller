@@ -107,26 +107,6 @@ namespace QubVisa
             return Convert.ToDouble(ReadQ2Query("OVSET?", channel));
         }
 
-        // It's hard to tell if the output state command actually works
-        // so this "strong" command also zeros the 
-        // current limit and voltage of the disabled channels
-        public void SetChannelOutputStatesStrong()
-            {
-            var zeroVoltage = 0;
-            var zeroCurrent = 0;
-            for (int i = 0; i < NumChannels; i++)
-                {
-                var channelNumber = i + 1;
-                bool channelState = this.ChannelStates[i];
-                SetChannelOutputState(channelNumber, on: channelState);
-                //if (!channelState)
-                //    {
-                //    SetChannelVoltage(channelNumber, zeroVoltage);
-                //    SetChannelCurrent(channelNumber, zeroCurrent);
-                //    }
-                }
-            }
-
         // Set the states as listed in the config
         public void SetChannelStates()
             {

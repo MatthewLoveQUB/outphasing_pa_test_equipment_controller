@@ -7,9 +7,11 @@ namespace OutphasingSweepController
     public static class PhaseSweep
         {
         public static List<Sample> MeasurementPhaseSweep(
-            PhaseSweepConfig phaseSweepConfig)
+            PhaseSweepConfig phaseSweepConfig,
+            ref SweepProgress sweepProgress)
             {
-            var samples = BasicPhaseSweep(phaseSweepConfig);
+            var samples = BasicPhaseSweep(
+                phaseSweepConfig, ref sweepProgress);
 
             var searchType = phaseSweepConfig
                                 .MeasurementConfig
@@ -22,13 +24,15 @@ namespace OutphasingSweepController
                 }
             else if (searchType == PhaseSearch.SearchType.HighestGradient)
                 {
-                PhaseSearch.FindPeakAndTrough(samples, phaseSweepConfig);
+                PhaseSearch.FindPeakAndTrough(
+                    samples, phaseSweepConfig, ref sweepProgress);
                 }
             else if (searchType == PhaseSearch.SearchType.LowestValue)
                 {
                 void DoSearch(
                         List<PhaseSearchPointConfig> searchSettings,
-                        PhaseSearch.Mode mode)
+                        PhaseSearch.Mode mode,
+                        ref SweepProgress sp)
                     {
                     foreach (var searchSetting in searchSettings)
                         {
@@ -38,7 +42,8 @@ namespace OutphasingSweepController
                             samples,
                             bestSample,
                             phaseSweepConfig,
-                            searchSetting);
+                            searchSetting,
+                            ref sp);
                         }
                     }
 
@@ -48,14 +53,16 @@ namespace OutphasingSweepController
                         .PhaseSearchSettings
                         .LowerValue
                         .Peak,
-                    PhaseSearch.Mode.Peak);
+                    PhaseSearch.Mode.Peak,
+                    ref sweepProgress);
                 DoSearch(
                     phaseSweepConfig
                         .MeasurementConfig
                         .PhaseSearchSettings
                         .LowerValue
                         .Trough,
-                    PhaseSearch.Mode.Trough);
+                    PhaseSearch.Mode.Trough,
+                    ref sweepProgress);
                 }
             else
                 {
@@ -66,7 +73,8 @@ namespace OutphasingSweepController
             }
 
         public static List<Sample> BasicPhaseSweep(
-            PhaseSweepConfig phaseSweepConfig)
+            PhaseSweepConfig phaseSweepConfig,
+            ref SweepProgress sweepProgress)
             {
             var samples = new List<Sample>();
             foreach (var phase in phaseSweepConfig.MeasurementConfig.Phases)
@@ -74,14 +82,15 @@ namespace OutphasingSweepController
                 var sampleConfig = new SampleConfig(
                     phaseSweepConfig,
                     phase);
-                TakeSample(sampleConfig, samples);
+                TakeSample(sampleConfig, samples, ref sweepProgress);
                 }
             return samples;
             }
 
         public static Sample TakeSample(
             SampleConfig sampleConfig,
-            List<Sample> samples)
+            List<Sample> samples,
+            ref SweepProgress sweepProgress)
             {
             sampleConfig
                 .MeasurementConfig
@@ -90,6 +99,7 @@ namespace OutphasingSweepController
 
             var newSample = Measurement.TakeSample(sampleConfig);
             samples.Add(newSample);
+            sweepProgress.CurrentPoint++;
             return newSample;
             }
 

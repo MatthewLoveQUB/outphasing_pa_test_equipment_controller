@@ -52,7 +52,8 @@ namespace OutphasingSweepController
             List<Sample> samples,
             Sample startBestSample,
             PhaseSweepConfig phaseSweepConfig,
-            PhaseSearchPointConfig searchPtConfig)
+            PhaseSearchPointConfig searchPtConfig,
+            ref SweepProgress sweepProgress)
             {
 
             SampleConfig makeSampleConfig(double phase)
@@ -67,7 +68,8 @@ namespace OutphasingSweepController
                 bestSample,
                 phaseSweepConfig,
                 searchPtConfig,
-                makeSampleConfig);
+                makeSampleConfig,
+                ref sweepProgress);
 
             // If no definite direction is found then
             // assume we're very close to the peak or trough
@@ -87,7 +89,8 @@ namespace OutphasingSweepController
                     {
                     var curPhase = startPhase + (i * centreSweepPhaseStep);
                     var newConfig = makeSampleConfig(curPhase);
-                    PhaseSweep.TakeSample(newConfig, samples);
+                    PhaseSweep.TakeSample(
+                        newConfig, samples, ref sweepProgress);
                     }
                 return;
                 }
@@ -126,7 +129,8 @@ namespace OutphasingSweepController
                     }
                 currentPhase += phaseStep;
                 var sampleConfig = makeSampleConfig(currentPhase);
-                newSample = PhaseSweep.TakeSample(sampleConfig, samples);
+                newSample = PhaseSweep.TakeSample(
+                    sampleConfig, samples, ref sweepProgress);
                 var newResult = PeakTroughComparison(
                     searchMode, bestSample, newSample);
                 if (newResult == NewSampleResult.Better)
@@ -142,18 +146,23 @@ namespace OutphasingSweepController
             Sample bestSample,
             PhaseSweepConfig phaseSweepConfig,
             PhaseSearchPointConfig phasePtConfig,
-            Func<double, SampleConfig> makeSampleConfig)
+            Func<double, SampleConfig> makeSampleConfig,
+            ref SweepProgress sweepProgress)
             {
             var corePhase = bestSample.Conf.Phase;
 
-            Gradient getNewSampleGradient(double phaseStepScalar, bool leftPoint)
+            Gradient getNewSampleGradient(
+                    double phaseStepScalar, 
+                    bool leftPoint, 
+                    ref SweepProgress sp)
                 {
                 var sign = leftPoint ? -1.0 : 1.0;
                 var phaseStep = 
                     phaseStepScalar * phasePtConfig.StepDeg * sign;
                 var newPhase = corePhase + phaseStep;
                 var newConfig = makeSampleConfig(newPhase);
-                var newSample = PhaseSweep.TakeSample(newConfig, samples);
+                var newSample = PhaseSweep.TakeSample(
+                    newConfig, samples, ref sp);
                 return leftPoint
                     ? GetGradient(from: newSample, to:bestSample)
                     : GetGradient(from: bestSample, to:newSample);
@@ -178,9 +187,15 @@ namespace OutphasingSweepController
                 iterations++;
                 scalar += 1.0;
                 var gradientToRightSample = 
-                    getNewSampleGradient(scalar, leftPoint: false);
+                    getNewSampleGradient(
+                        scalar, 
+                        leftPoint: false, 
+                        sp: ref sweepProgress);
                 var gradientFromLeftSample = 
-                    getNewSampleGradient(scalar, leftPoint: true);
+                    getNewSampleGradient(
+                        scalar, 
+                        leftPoint: true, 
+                        sp: ref sweepProgress);
                 
                 if (gradientFromLeftSample != gradientToRightSample)
                     {
@@ -305,7 +320,8 @@ namespace OutphasingSweepController
         // Sweep around that point and we should find a max value
         public static void FindPeakAndTrough(
             List<Sample> samples,
-            PhaseSweepConfig phaseSweepConfig)
+            PhaseSweepConfig phaseSweepConfig,
+            ref SweepProgress sweepProgress)
             {
 
             var config = 
@@ -384,7 +400,8 @@ namespace OutphasingSweepController
                 currentPhase += coarseStep;
                 var sampleConfig = new SampleConfig(
                     phaseSweepConfig, currentPhase);
-                newSample = PhaseSweep.TakeSample(sampleConfig, samples);
+                newSample = PhaseSweep.TakeSample(
+                    sampleConfig, samples, ref sweepProgress);
                 var currentPair = directionPos
                     ? new SamplePair(oldSample, newSample)
                     : new SamplePair(newSample, oldSample);
@@ -414,7 +431,8 @@ namespace OutphasingSweepController
                 currentPhase = startingPhase + ((double)i * fineStep);
                 var sampleConfig = new SampleConfig(
                     phaseSweepConfig, currentPhase);
-                newSample = PhaseSweep.TakeSample(sampleConfig, samples);
+                newSample = PhaseSweep.TakeSample(
+                    sampleConfig, samples, ref sweepProgress);
                 }
 
             // Take the new lowest and sweep 180 away to get the highest power
@@ -443,7 +461,8 @@ namespace OutphasingSweepController
                     maximaPhaseStart + ((double)i * maximaSweepStep);
                 var sampleConfig = new SampleConfig(
                     phaseSweepConfig, currentPhase);
-                newSample = PhaseSweep.TakeSample(sampleConfig, samples);
+                newSample = PhaseSweep.TakeSample(
+                    sampleConfig, samples, ref sweepProgress);
                 }
             }
         }
