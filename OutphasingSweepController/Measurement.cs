@@ -200,6 +200,8 @@ namespace OutphasingSweepController
                 }
             sweepProgress.Running = false;
             cleanup();
+            sweepConf.Commands.SetRfOutputState(on: false);
+            sweepConf.Commands.SetDcVoltageStepped(0, 0.1, 1000);
             }
         }
     }

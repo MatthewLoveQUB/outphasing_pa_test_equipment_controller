@@ -17,15 +17,15 @@ namespace OutphasingSweepController
     public partial class MainWindow : Window
         {
         // Misc
-        public string ChipCorner { get; set; } = "TT";
+        public string ChipCorner { get; set; } = "";
         public double ChipTemperature { get; set; } = 25.0;
         // PSU
         public double PsuNominalVoltage { get; set; } = 2.2;
         public double PsuCurrentLimit { get; set; } = 0.3;
         public int PsuRampUpStepTimeMilliseconds { get; set; } = 100;
         public double RampVoltageStep { get; set; } = 0.1;
-        public bool PsuPlus10Percent { get; set; } = false;
-        public bool PsuMinus10Percent { get; set; } = false;
+        public bool PsuPlus10Percent { get; set; } = true;
+        public bool PsuMinus10Percent { get; set; } = true;
         public bool PsuChannel1On { get; set; } = false;
         public bool PsuChannel2On { get; set; } = true;
         public bool PsuChannel3On { get; set; } = true;

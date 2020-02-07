@@ -46,9 +46,9 @@
                 Grid.Column="0"
                 Grid.ColumnSpan="5"
                 LostFocus="SweepSettingsControl_LostFocus"
-                NSteps="1"
-                Start="5e9"
-                Stop="6e9"
+                NSteps="40"
+                Start="3e9"
+                Stop="7e9"
                 SweepDescriptionText="Frequency (GHz)" />
             <local:SweepParameterInput
                 x:Name="PowerSweepSettingsControl"
@@ -56,8 +56,8 @@
                 Grid.Column="0"
                 Grid.ColumnSpan="5"
                 LostFocus="SweepSettingsControl_LostFocus"
-                NSteps="1"
-                Start="-5"
+                NSteps="18"
+                Start="-20"
                 Stop="-3"
                 SweepDescriptionText="Power (dBm)" />
             <local:SweepParameterInput
