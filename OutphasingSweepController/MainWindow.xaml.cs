@@ -25,23 +25,8 @@ namespace OutphasingSweepController
         public double RampVoltageStep { get; set; } = 0.1;
         public PsuSweepSettings PsuSettings = 
             new PsuSweepSettings(true, true, true);
-        public bool PsuChannel1On { get; set; } = false;
-        public bool PsuChannel2On { get; set; } = true;
-        public bool PsuChannel3On { get; set; } = true;
-        public bool PsuChannel4On { get; set; } = false;
-        public List<bool> PsuChannelStates
-            {
-            get
-                {
-                return new List<bool> {
-                    this.PsuChannel1On,
-                    this.PsuChannel2On,
-                    this.PsuChannel3On,
-                    this.PsuChannel4On
-                    };
-                }
-            }
-
+        public PsuChannelSettings PsuChannelStates =
+            new PsuChannelSettings(false, true, true, false);
 
         // Spectrum Analyser
         public double Rsa3408ChannelBandwidth { get; set; } = 100e3;
@@ -121,9 +106,10 @@ namespace OutphasingSweepController
             this.PsuSweepSettingsGrid.DataContext = this.PsuSettings;
             this.GradientSearchMinimaGrid.DataContext = this.GradientSettings;
             this.GradientSearchMaximaGrid.DataContext = this.GradientSettings;
+            this.PsuChannelStateGrid.DataContext = this.PsuChannelStates;
 
             this.Commands = VisaSetup.SetUpVisaDevices(
-                this.PsuChannelStates, this.PsuCurrentLimit);
+                this.PsuChannelStates.All, this.PsuCurrentLimit);
             this.Commands.ResetDevices();
             }
 
@@ -183,7 +169,7 @@ namespace OutphasingSweepController
                 frequencySettings,
                 powerSettings,
                 phaseSettings,
-                this.PsuChannelStates,
+                this.PsuChannelStates.All,
                 this.ChipTemperature,
                 this.ChipCorner,
                 voltages,

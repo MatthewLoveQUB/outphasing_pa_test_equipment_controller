@@ -344,44 +344,46 @@
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Center"
                 Text="{Binding PsuCurrentLimit, Mode=TwoWay}" />
-            <TextBlock
+            <Grid
+                x:Name="PsuChannelStateGrid"
                 Grid.Row="7"
-                Grid.Column="0"
-                Grid.ColumnSpan="1"
-                VerticalAlignment="Center"
-                Text="Enabled PSU Channels" />
-            <CheckBox
-                x:Name="PsuChannel1Enable"
-                Grid.Row="7"
-                Grid.Column="1"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Content="1"
-                IsChecked="{Binding PsuChannel1On, Mode=TwoWay}" />
-            <CheckBox
-                x:Name="PsuChannel2Enable"
-                Grid.Row="7"
-                Grid.Column="2"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Content="2"
-                IsChecked="{Binding PsuChannel2On, Mode=TwoWay}" />
-            <CheckBox
-                x:Name="PsuChannel3Enable"
-                Grid.Row="7"
-                Grid.Column="3"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Content="3"
-                IsChecked="{Binding PsuChannel3On, Mode=TwoWay}" />
-            <CheckBox
-                x:Name="PsuChannel4Enable"
-                Grid.Row="7"
-                Grid.Column="4"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Content="4"
-                IsChecked="{Binding PsuChannel4On, Mode=TwoWay}" />
+                Grid.ColumnSpan="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Enabled PSU Channels" />
+                <CheckBox
+                    Grid.Column="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Content="1"
+                    IsChecked="{Binding PsuChannel1On, Mode=TwoWay}" />
+                <CheckBox
+                    Grid.Column="2"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Content="2"
+                    IsChecked="{Binding PsuChannel2On, Mode=TwoWay}" />
+                <CheckBox
+                    Grid.Column="3"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Content="3"
+                    IsChecked="{Binding PsuChannel3On, Mode=TwoWay}" />
+                <CheckBox
+                    Grid.Column="4"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Content="4"
+                    IsChecked="{Binding PsuChannel4On, Mode=TwoWay}" />
+            </Grid>
             <TextBlock
                 Grid.Row="8"
                 Grid.Column="0"
