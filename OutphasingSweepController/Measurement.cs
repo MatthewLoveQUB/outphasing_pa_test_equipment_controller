@@ -49,6 +49,7 @@ namespace OutphasingSweepController
 
         public static void SaveSample(StreamWriter outputFile, Sample sample)
             {
+            var totalCurrent = sample.DcCurrents.Sum();
             var outputLine =
                 $"{sample.Conf.Frequency}"
                 + $", {sample.InputPowerdBm}"
@@ -58,6 +59,7 @@ namespace OutphasingSweepController
                 + $", {sample.Conf.MeasurementConfig.Corner}"
                 + $", {sample.Conf.SupplyVoltage}"
                 + $", {sample.MeasuredPowerDcWatts}"
+                + $", {sample.MeasuredPowerDcdBm}"
                 + $", {sample.MeasuredChannelPowerdBm}"
                 + $", {sample.MeasuredChannelPowerWatts}"
                 + $", {sample.CalibratedChannelPowerdBm}"
@@ -82,6 +84,7 @@ namespace OutphasingSweepController
                 {
                     outputLine += $", {current}";
                 }
+            outputLine += $", {totalCurrent}";
 
             outputFile.WriteLine(outputLine);
             }
@@ -108,6 +111,7 @@ namespace OutphasingSweepController
                 + ", Corner"
                 + ", Supply Voltage (V)"
                 + ", Measured DC Power (W)"
+                + ", Measured DC Power (dBm)"
                 + ", Measured Channel Power (dBm)"
                 + ", Measured Channel Power (W)"
                 + ", Calibrated Channel Power (dBm)"
@@ -135,6 +139,8 @@ namespace OutphasingSweepController
                 int channel = i + 1;
                 headerLine += $", DC Current Channel {channel} (A)";
                 }
+
+            headerLine += $", DC Current (A)";
 
             outFile.WriteLine(headerLine);
             var numberOfPoints = sweepConf.MeasurementPoints;
