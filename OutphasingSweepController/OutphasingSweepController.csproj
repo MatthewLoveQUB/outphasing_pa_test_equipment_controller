@@ -59,6 +59,7 @@
     </ApplicationDefinition>
     <Compile Include="Commands.cs" />
     <Compile Include="Equipment.cs" />
+    <Compile Include="GradientSearchSettings.cs" />
     <Compile Include="PhaseSweep.cs" />
     <Compile Include="PhaseSweepConfig.cs" />
     <Compile Include="PsuSweepSettings.cs" />

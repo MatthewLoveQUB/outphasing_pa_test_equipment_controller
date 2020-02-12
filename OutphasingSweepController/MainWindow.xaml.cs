@@ -99,11 +99,8 @@ namespace OutphasingSweepController
         public int PhaseSearchIterationLimit { get; set; } = 500;
         public int PhaseSearchNumCenterSamples { get; set; } = 10;
         // Gradient search
-        public double GradientSearchMinimaCoarseStep { get; set; } = 3;
-        public double GradientSearchMinimaFineStep { get; set; } = 0.1;
-        public int GradientSearchMinimaNumFineSteps { get; set; } = 20;
-        public double GradientSearchMaximaCoarseStep { get; set; } = 3;
-        public int GradientSearchMaximaNumCoarseSteps { get; set; } = 8;
+        public GradientSearchSettings GradientSettings
+            = new GradientSearchSettings(3, 0.1, 20, 3, 8);
 
         public MainWindow()
             {
@@ -122,6 +119,8 @@ namespace OutphasingSweepController
                 this.SpectrumAnalzyerOffsetsPath;
 
             this.PsuSweepSettingsGrid.DataContext = this.PsuSettings;
+            this.GradientSearchMinimaGrid.DataContext = this.GradientSettings;
+            this.GradientSearchMaximaGrid.DataContext = this.GradientSettings;
 
             this.Commands = VisaSetup.SetUpVisaDevices(
                 this.PsuChannelStates, this.PsuCurrentLimit);
@@ -201,11 +200,11 @@ namespace OutphasingSweepController
                     this.DirectionSearchIterationLimit,
                     this.PhaseSearchIterationLimit,
                     this.PhaseSearchNumCenterSamples,
-                    this.GradientSearchMinimaCoarseStep,
-                    this.GradientSearchMinimaFineStep,
-                    this.GradientSearchMinimaNumFineSteps,
-                    this.GradientSearchMaximaCoarseStep,
-                    this.GradientSearchMaximaNumCoarseSteps),
+                    this.GradientSettings.MinimaCoarseStep,
+                    this.GradientSettings.MinimaFineStep,
+                    this.GradientSettings.MinimaNumFineSteps,
+                    this.GradientSettings.MaximaCoarseStep,
+                    this.GradientSettings.MaximaNumCoarseSteps),
                 this.Commands,
                 this.RampVoltageStep,
                 this.PsuRampUpStepTimeMilliseconds);
