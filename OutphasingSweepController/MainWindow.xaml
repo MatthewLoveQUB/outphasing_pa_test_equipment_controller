@@ -305,7 +305,10 @@
                 HorizontalContentAlignment="Left"
                 VerticalContentAlignment="Center"
                 Text="{Binding PsuNominalVoltage, Mode=TwoWay}" />
-            <Grid Grid.Row="6" Grid.Column="3">
+            <Grid
+                x:Name="PsuSweepSettingsGrid"
+                Grid.Row="6"
+                Grid.Column="2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
@@ -316,19 +319,19 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Content="Nom"
-                    IsChecked="{Binding PsuNominal, Mode=TwoWay}" />
+                    IsChecked="{Binding Path=Nominal, Mode=TwoWay}" />
                 <CheckBox
                     Grid.Column="1"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Content="+10%"
-                    IsChecked="{Binding PsuPlus10Percent, Mode=TwoWay}" />
+                    IsChecked="{Binding Plus10, Mode=TwoWay}" />
                 <CheckBox
                     Grid.Column="2"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Content="-10%"
-                    IsChecked="{Binding PsuMinus10Percent, Mode=TwoWay}" />
+                    IsChecked="{Binding Minus10, Mode=TwoWay}" />
             </Grid>
             <TextBlock
                 Grid.Row="6"

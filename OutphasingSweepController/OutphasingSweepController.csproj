@@ -61,6 +61,7 @@
     <Compile Include="Equipment.cs" />
     <Compile Include="PhaseSweep.cs" />
     <Compile Include="PhaseSweepConfig.cs" />
+    <Compile Include="PsuSweepSettings.cs" />
     <Compile Include="Sample.cs" />
     <Compile Include="Measurement.cs" />
     <Compile Include="PhaseSearchConfig.cs" />

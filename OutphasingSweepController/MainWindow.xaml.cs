@@ -10,7 +10,6 @@ using QubVisa;
 
 namespace OutphasingSweepController
     {
-    
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -24,9 +23,8 @@ namespace OutphasingSweepController
         public double PsuCurrentLimit { get; set; } = 0.3;
         public int PsuRampUpStepTimeMilliseconds { get; set; } = 100;
         public double RampVoltageStep { get; set; } = 0.1;
-        public bool PsuNominal { get; set; } = true;
-        public bool PsuPlus10Percent { get; set; } = true;
-        public bool PsuMinus10Percent { get; set; } = true;
+        public PsuSweepSettings PsuSettings = 
+            new PsuSweepSettings(true, true, true);
         public bool PsuChannel1On { get; set; } = false;
         public bool PsuChannel2On { get; set; } = true;
         public bool PsuChannel3On { get; set; } = true;
@@ -123,6 +121,8 @@ namespace OutphasingSweepController
             this.SpectrumAnalzyerOffsetsFilePathTextBlock.Text = 
                 this.SpectrumAnalzyerOffsetsPath;
 
+            this.PsuSweepSettingsGrid.DataContext = this.PsuSettings;
+
             this.Commands = VisaSetup.SetUpVisaDevices(
                 this.PsuChannelStates, this.PsuCurrentLimit);
             this.Commands.ResetDevices();
@@ -167,15 +167,15 @@ namespace OutphasingSweepController
             var phaseSettings = this.RoundVals(rawPhaseSettings, 0.1);
 
             var voltages = new List<Double>();
-            if (this.PsuNominal)
+            if (this.PsuSettings.Nominal)
                 {
                 voltages.Add(this.PsuNominalVoltage);
                 }
-            if (this.PsuPlus10Percent)
+            if (this.PsuSettings.Plus10)
                 {
                 voltages.Add(1.1 * this.PsuNominalVoltage);
                 }
-            if (this.PsuMinus10Percent)
+            if (this.PsuSettings.Minus10)
                 {
                 voltages.Add(0.9 * this.PsuNominalVoltage);
                 }
@@ -303,9 +303,9 @@ namespace OutphasingSweepController
 
         private TimeSpan GetEstimatedMeasurementTime()
             {
-            var voltagePoints = 1
-                + Convert.ToInt64(this.PsuPlus10Percent)
-                + Convert.ToInt64(this.PsuMinus10Percent);
+            var voltagePoints = Convert.ToInt64(this.PsuSettings.Nominal)
+                + Convert.ToInt64(this.PsuSettings.Plus10)
+                + Convert.ToInt64(this.PsuSettings.Minus10);
             var nPoints = voltagePoints
                 * this.FrequencySweepSettingsControl.NSteps
                 * this.PowerSweepSettingsControl.NSteps
