@@ -24,6 +24,7 @@ namespace OutphasingSweepController
         public double PsuCurrentLimit { get; set; } = 0.3;
         public int PsuRampUpStepTimeMilliseconds { get; set; } = 100;
         public double RampVoltageStep { get; set; } = 0.1;
+        public bool PsuNominal { get; set; } = true;
         public bool PsuPlus10Percent { get; set; } = true;
         public bool PsuMinus10Percent { get; set; } = true;
         public bool PsuChannel1On { get; set; } = false;
@@ -165,7 +166,11 @@ namespace OutphasingSweepController
             var rawPhaseSettings = this.PhaseSweepSettingsControl.Values;
             var phaseSettings = this.RoundVals(rawPhaseSettings, 0.1);
 
-            var voltages = new List<Double>() { this.PsuNominalVoltage };
+            var voltages = new List<Double>();
+            if (this.PsuNominal)
+                {
+                voltages.Add(this.PsuNominalVoltage);
+                }
             if (this.PsuPlus10Percent)
                 {
                 voltages.Add(1.1 * this.PsuNominalVoltage);

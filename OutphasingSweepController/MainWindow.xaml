@@ -305,8 +305,9 @@
                 HorizontalContentAlignment="Left"
                 VerticalContentAlignment="Center"
                 Text="{Binding PsuNominalVoltage, Mode=TwoWay}" />
-            <Grid Grid.Row="6" Grid.Column="2">
+            <Grid Grid.Row="6" Grid.Column="3">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
@@ -314,10 +315,16 @@
                     Grid.Column="0"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
+                    Content="Nom"
+                    IsChecked="{Binding PsuNominal, Mode=TwoWay}" />
+                <CheckBox
+                    Grid.Column="1"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
                     Content="+10%"
                     IsChecked="{Binding PsuPlus10Percent, Mode=TwoWay}" />
                 <CheckBox
-                    Grid.Column="1"
+                    Grid.Column="2"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Content="-10%"
