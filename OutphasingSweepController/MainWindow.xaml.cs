@@ -157,10 +157,9 @@ namespace OutphasingSweepController
                 frequencySettings,
                 powerSettings,
                 phaseSettings,
-                this.PsuConfig.ChannelStates.ToList(),
+                this.PsuConfig,
                 this.ChipTemperature,
                 this.ChipCorner,
-                this.PsuConfig.Voltages,
                 this.Rsa3408ChannelBandwidth,
                 this.Rsa3408FrequencySpan,
                 this.ResultsSavePath,
@@ -179,9 +178,7 @@ namespace OutphasingSweepController
                     this.GradientSettings.MinimaNumFineSteps,
                     this.GradientSettings.MaximaCoarseStep,
                     this.GradientSettings.MaximaNumCoarseSteps),
-                this.Commands,
-                this.PsuConfig.RampVoltageStep,
-                this.PsuConfig.RampUpStepTimeMilliseconds);
+                this.Commands);
             }
 
         private void ToggleGuiActive(bool on)

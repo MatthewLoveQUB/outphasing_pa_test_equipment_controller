@@ -9,10 +9,9 @@ namespace OutphasingSweepController
         public List<Double> Frequencies;
         public List<Double> InputPowers;
         public List<Double> Phases;
-        public List<bool> PsuChannelStates;
+        public PsuSettings PsuConfig;
         public double Temperature;
         public string Corner;
-        public List<Double> Voltages;
         public string OutputFilePath;
         public DeviceOffsets GenOffsets1;
         public DeviceOffsets GenOffsets2;
@@ -24,24 +23,21 @@ namespace OutphasingSweepController
                 return this.Frequencies.Count
                     * this.InputPowers.Count
                     * this.Phases.Count
-                    * this.Voltages.Count;
+                    * this.PsuConfig.Voltages.Count;
                 }
             }
         public double MeasurementChannelBandwidth;
         public double MeasurementFrequencySpan;
         public PhaseSearchConfig PhaseSearchSettings;
         public DeviceCommands Commands;
-        public double RampVoltageStep;
-        public int PsuRampUpStepTimeMilliseconds;
 
         public MeasurementConfig(
             List<Double> frequencySettings,
             List<Double> powerSettings,
             List<Double> phaseSettings,
-            List<bool> psuChannelStates,
+            PsuSettings psuConfig,
             double temperature,
             string corner,
-            List<Double> voltages,
             double measurementBandwidth,
             double measurementSpan,
             string outputFilePath,
@@ -49,17 +45,14 @@ namespace OutphasingSweepController
             string genOffsetsFilePath2,
             string spectrumAnalyzerOffsetsFilePath,
             PhaseSearchConfig phasePeakTroughSearchSettings,
-            DeviceCommands commands,
-            double rampVoltageStep,
-            int psuRampUpStepTimeMilliseconds)
+            DeviceCommands commands)
             {
             this.Frequencies = frequencySettings;
             this.InputPowers = powerSettings;
             this.Phases = phaseSettings;
-            this.PsuChannelStates = psuChannelStates;
+            this.PsuConfig = psuConfig;
             this.Temperature = temperature;
             this.Corner = corner;
-            this.Voltages = voltages;
             this.MeasurementChannelBandwidth = measurementBandwidth;
             this.MeasurementFrequencySpan = measurementSpan;
             this.OutputFilePath = outputFilePath;
@@ -69,8 +62,6 @@ namespace OutphasingSweepController
                 new DeviceOffsets(spectrumAnalyzerOffsetsFilePath);
             this.PhaseSearchSettings = phasePeakTroughSearchSettings;
             this.Commands = commands;
-            this.RampVoltageStep = rampVoltageStep;
-            this.PsuRampUpStepTimeMilliseconds = psuRampUpStepTimeMilliseconds;
             }
         }
     }

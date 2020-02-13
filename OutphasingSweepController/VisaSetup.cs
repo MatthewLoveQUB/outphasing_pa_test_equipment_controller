@@ -122,7 +122,7 @@ namespace OutphasingSweepController
                 // DC supply
                 var psu = devices.Hp6624a;
                 psu.ZeroAllChannels();
-                psu.ChannelStates = sweepConf.PsuChannelStates;
+                psu.ChannelStates = sweepConf.PsuConfig.ChannelStates.ToList();
                 psu.SetChannelStates();
                 psu.SetActiveChannelsCurrent(currentLimit);
 

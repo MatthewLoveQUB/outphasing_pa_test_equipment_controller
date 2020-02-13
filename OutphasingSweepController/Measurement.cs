@@ -152,12 +152,12 @@ namespace OutphasingSweepController
 
             // All of the sweeps are <= as we want to include the stop
             // value in the sweep
-            foreach (var voltage in sweepConf.Voltages)
+            foreach (var voltage in sweepConf.PsuConfig.Voltages)
                 {
                 sweepConf.Commands.SetDcVoltageStepped(
                     voltage,
-                    sweepConf.RampVoltageStep,
-                    sweepConf.PsuRampUpStepTimeMilliseconds);
+                    sweepConf.PsuConfig.RampVoltageStep,
+                    sweepConf.PsuConfig.RampUpStepTimeMilliseconds);
 
                 foreach (var frequency in sweepConf.Frequencies)
                     {
