@@ -18,15 +18,16 @@ namespace OutphasingSweepController
         // Misc
         public string ChipCorner { get; set; } = "";
         public double ChipTemperature { get; set; } = 25.0;
-        // PSU
-        public double PsuNominalVoltage { get; set; } = 2.2;
-        public double PsuCurrentLimit { get; set; } = 0.3;
-        public int PsuRampUpStepTimeMilliseconds { get; set; } = 100;
-        public double RampVoltageStep { get; set; } = 0.1;
-        public PsuSweepSettings PsuSettings = 
-            new PsuSweepSettings(true, true, true);
-        public PsuChannelSettings PsuChannelStates =
-            new PsuChannelSettings(false, true, true, false);
+        public PsuSettings PsuConfig =
+            new PsuSettings(
+                nominal: true,
+                plus10: true,
+                minus10: true,
+                channelStates: new bool[] { false, true, true, false },
+                nominalVoltage: 2.2,
+                currentLimit: 0.3,
+                rampUpTimeMilliseconds: 100,
+                rampVoltageStep: 0.1);
 
         // Spectrum Analyser
         public double Rsa3408ChannelBandwidth { get; set; } = 100e3;
@@ -103,13 +104,14 @@ namespace OutphasingSweepController
             this.SpectrumAnalzyerOffsetsFilePathTextBlock.Text = 
                 this.SpectrumAnalzyerOffsetsPath;
 
-            this.PsuSweepSettingsGrid.DataContext = this.PsuSettings;
+            this.PsuSettingsGrid.DataContext = this.PsuConfig;
+
             this.GradientSearchMinimaGrid.DataContext = this.GradientSettings;
             this.GradientSearchMaximaGrid.DataContext = this.GradientSettings;
-            this.PsuChannelStateGrid.DataContext = this.PsuChannelStates;
 
             this.Commands = VisaSetup.SetUpVisaDevices(
-                this.PsuChannelStates.All, this.PsuCurrentLimit);
+                this.PsuConfig.ChannelStates.ToList(),
+                this.PsuConfig.CurrentLimit);
             this.Commands.ResetDevices();
             }
 
@@ -152,24 +154,24 @@ namespace OutphasingSweepController
             var phaseSettings = this.RoundVals(rawPhaseSettings, 0.1);
 
             var voltages = new List<Double>();
-            if (this.PsuSettings.Nominal)
+            if (this.PsuConfig.Nominal)
                 {
-                voltages.Add(this.PsuNominalVoltage);
+                voltages.Add(this.PsuConfig.NominalVoltage);
                 }
-            if (this.PsuSettings.Plus10)
+            if (this.PsuConfig.Plus10)
                 {
-                voltages.Add(1.1 * this.PsuNominalVoltage);
+                voltages.Add(1.1 * this.PsuConfig.NominalVoltage);
                 }
-            if (this.PsuSettings.Minus10)
+            if (this.PsuConfig.Minus10)
                 {
-                voltages.Add(0.9 * this.PsuNominalVoltage);
+                voltages.Add(0.9 * this.PsuConfig.NominalVoltage);
                 }
 
             return new MeasurementConfig(
                 frequencySettings,
                 powerSettings,
                 phaseSettings,
-                this.PsuChannelStates.All,
+                this.PsuConfig.ChannelStates.ToList(),
                 this.ChipTemperature,
                 this.ChipCorner,
                 voltages,
@@ -192,8 +194,8 @@ namespace OutphasingSweepController
                     this.GradientSettings.MaximaCoarseStep,
                     this.GradientSettings.MaximaNumCoarseSteps),
                 this.Commands,
-                this.RampVoltageStep,
-                this.PsuRampUpStepTimeMilliseconds);
+                this.PsuConfig.RampVoltageStep,
+                this.PsuConfig.RampUpStepTimeMilliseconds);
             }
 
         private void ToggleGuiActive(bool on)
@@ -288,9 +290,9 @@ namespace OutphasingSweepController
 
         private TimeSpan GetEstimatedMeasurementTime()
             {
-            var voltagePoints = Convert.ToInt64(this.PsuSettings.Nominal)
-                + Convert.ToInt64(this.PsuSettings.Plus10)
-                + Convert.ToInt64(this.PsuSettings.Minus10);
+            var voltagePoints = Convert.ToInt64(this.PsuConfig.Nominal)
+                + Convert.ToInt64(this.PsuConfig.Plus10)
+                + Convert.ToInt64(this.PsuConfig.Minus10);
             var nPoints = voltagePoints
                 * this.FrequencySweepSettingsControl.NSteps
                 * this.PowerSweepSettingsControl.NSteps

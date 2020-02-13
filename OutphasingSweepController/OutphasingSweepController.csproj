@@ -62,8 +62,7 @@
     <Compile Include="GradientSearchSettings.cs" />
     <Compile Include="PhaseSweep.cs" />
     <Compile Include="PhaseSweepConfig.cs" />
-    <Compile Include="PsuChannelSettings.cs" />
-    <Compile Include="PsuSweepSettings.cs" />
+    <Compile Include="PsuSettings.cs" />
     <Compile Include="Sample.cs" />
     <Compile Include="Measurement.cs" />
     <Compile Include="PhaseSearchConfig.cs" />

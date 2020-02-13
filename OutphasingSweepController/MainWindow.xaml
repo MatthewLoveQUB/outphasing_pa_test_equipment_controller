@@ -289,65 +289,17 @@
                 HorizontalContentAlignment="Left"
                 VerticalContentAlignment="Center"
                 Text="{Binding ChipCorner, Mode=TwoWay}" />
-            <TextBlock
+            <Grid
+                x:Name="PsuSettingsGrid"
                 Grid.Row="6"
+                Grid.RowSpan="3"
                 Grid.Column="0"
-                VerticalAlignment="Center"
-                Text="Supply Voltage (V)" />
-            <TextBox
-                x:Name="VoltageSettingsTextBox"
-                Grid.Row="6"
-                Grid.Column="1"
-                Grid.ColumnSpan="1"
-                Margin="1"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Center"
-                HorizontalContentAlignment="Left"
-                VerticalContentAlignment="Center"
-                Text="{Binding PsuNominalVoltage, Mode=TwoWay}" />
-            <Grid
-                x:Name="PsuSweepSettingsGrid"
-                Grid.Row="6"
-                Grid.Column="2">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <CheckBox
-                    Grid.Column="0"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Content="Nom"
-                    IsChecked="{Binding Path=Nominal, Mode=TwoWay}" />
-                <CheckBox
-                    Grid.Column="1"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Content="+10%"
-                    IsChecked="{Binding Plus10, Mode=TwoWay}" />
-                <CheckBox
-                    Grid.Column="2"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Content="-10%"
-                    IsChecked="{Binding Minus10, Mode=TwoWay}" />
-            </Grid>
-            <TextBlock
-                Grid.Row="6"
-                Grid.Column="3"
-                VerticalAlignment="Center"
-                Text="Current Limit (A)" />
-            <TextBox
-                Grid.Row="6"
-                Grid.Column="4"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Center"
-                Text="{Binding PsuCurrentLimit, Mode=TwoWay}" />
-            <Grid
-                x:Name="PsuChannelStateGrid"
-                Grid.Row="7"
                 Grid.ColumnSpan="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
@@ -356,58 +308,118 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    VerticalAlignment="Center"
+                    Text="Supply Voltage (V)" />
+                <TextBox
+                    x:Name="VoltageSettingsTextBox"
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Grid.ColumnSpan="1"
+                    Margin="1"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    HorizontalContentAlignment="Left"
+                    VerticalContentAlignment="Center"
+                    Text="{Binding NominalVoltage, Mode=TwoWay}" />
+                <Grid
+                    x:Name="PsuSweepSettingsGrid"
+                    Grid.Row="0"
+                    Grid.Column="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <CheckBox
+                        Grid.Column="0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Content="Nom"
+                        IsChecked="{Binding Nominal, Mode=TwoWay}" />
+                    <CheckBox
+                        Grid.Column="1"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Content="+10%"
+                        IsChecked="{Binding Plus10, Mode=TwoWay}" />
+                    <CheckBox
+                        Grid.Column="2"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Content="-10%"
+                        IsChecked="{Binding Minus10, Mode=TwoWay}" />
+                </Grid>
+                <TextBlock
+                    Grid.Row="0"
+                    Grid.Column="3"
+                    VerticalAlignment="Center"
+                    Text="Current Limit (A)" />
+                <TextBox
+                    Grid.Row="0"
+                    Grid.Column="4"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Text="{Binding CurrentLimit, Mode=TwoWay}" />
+                <TextBlock
+                    Grid.Row="1"
                     Grid.Column="0"
                     VerticalAlignment="Center"
                     Text="Enabled PSU Channels" />
                 <CheckBox
+                    Grid.Row="1"
                     Grid.Column="1"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Content="1"
-                    IsChecked="{Binding PsuChannel1On, Mode=TwoWay}" />
+                    IsChecked="{Binding Channel1On, Mode=TwoWay}" />
                 <CheckBox
+                    Grid.Row="1"
                     Grid.Column="2"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Content="2"
-                    IsChecked="{Binding PsuChannel2On, Mode=TwoWay}" />
+                    IsChecked="{Binding Channel2On, Mode=TwoWay}" />
                 <CheckBox
+                    Grid.Row="1"
                     Grid.Column="3"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Content="3"
-                    IsChecked="{Binding PsuChannel3On, Mode=TwoWay}" />
+                    IsChecked="{Binding Channel3On, Mode=TwoWay}" />
                 <CheckBox
+                    Grid.Row="1"
                     Grid.Column="4"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Content="4"
-                    IsChecked="{Binding PsuChannel4On, Mode=TwoWay}" />
+                    IsChecked="{Binding Channel4On, Mode=TwoWay}" />
+                <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Text="PSU Ramp up step (ms)" />
+                <TextBox
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Text="{Binding RampUpStepTimeMilliseconds, Mode=TwoWay}" />
+                <TextBlock
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Text="Ramp Volts/step" />
+                <TextBox
+                    Grid.Row="2"
+                    Grid.Column="3"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Text="{Binding RampVoltageStep, Mode=TwoWay}" />
             </Grid>
-            <TextBlock
-                Grid.Row="8"
-                Grid.Column="0"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Center"
-                Text="PSU Ramp up step (ms)" />
-            <TextBox
-                Grid.Row="8"
-                Grid.Column="1"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Center"
-                Text="{Binding PsuRampUpStepTimeMilliseconds, Mode=TwoWay}" />
-            <TextBlock
-                Grid.Row="8"
-                Grid.Column="2"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Text="Ramp Volts/step" />
-            <TextBox
-                Grid.Row="8"
-                Grid.Column="3"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Center"
-                Text="{Binding RampVoltageStep, Mode=TwoWay}" />
             <Grid Grid.Row="9" Grid.ColumnSpan="5">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
