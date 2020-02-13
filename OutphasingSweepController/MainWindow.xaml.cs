@@ -153,20 +153,6 @@ namespace OutphasingSweepController
             var rawPhaseSettings = this.PhaseSweepSettingsControl.Values;
             var phaseSettings = this.RoundVals(rawPhaseSettings, 0.1);
 
-            var voltages = new List<Double>();
-            if (this.PsuConfig.Nominal)
-                {
-                voltages.Add(this.PsuConfig.NominalVoltage);
-                }
-            if (this.PsuConfig.Plus10)
-                {
-                voltages.Add(1.1 * this.PsuConfig.NominalVoltage);
-                }
-            if (this.PsuConfig.Minus10)
-                {
-                voltages.Add(0.9 * this.PsuConfig.NominalVoltage);
-                }
-
             return new MeasurementConfig(
                 frequencySettings,
                 powerSettings,
@@ -174,7 +160,7 @@ namespace OutphasingSweepController
                 this.PsuConfig.ChannelStates.ToList(),
                 this.ChipTemperature,
                 this.ChipCorner,
-                voltages,
+                this.PsuConfig.Voltages,
                 this.Rsa3408ChannelBandwidth,
                 this.Rsa3408FrequencySpan,
                 this.ResultsSavePath,
@@ -290,9 +276,7 @@ namespace OutphasingSweepController
 
         private TimeSpan GetEstimatedMeasurementTime()
             {
-            var voltagePoints = Convert.ToInt64(this.PsuConfig.Nominal)
-                + Convert.ToInt64(this.PsuConfig.Plus10)
-                + Convert.ToInt64(this.PsuConfig.Minus10);
+            var voltagePoints = this.PsuConfig.Voltages.Count;
             var nPoints = voltagePoints
                 * this.FrequencySweepSettingsControl.NSteps
                 * this.PowerSweepSettingsControl.NSteps

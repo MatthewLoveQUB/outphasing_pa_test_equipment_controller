@@ -59,6 +59,27 @@ namespace OutphasingSweepController
                 }
             }
 
+        public List<double> Voltages
+            {
+            get
+                {
+                var voltages = new List<double>();
+                if (this.Nominal)
+                    {
+                    voltages.Add(this.NominalVoltage);
+                    }
+                if (this.Plus10)
+                    {
+                    voltages.Add(1.1 * this.NominalVoltage);
+                    }
+                if (this.Minus10)
+                    {
+                    voltages.Add(0.9 * this.NominalVoltage);
+                    }
+                return voltages;
+                }
+            }
+
         public double NominalVoltage { get; set; }
         public double CurrentLimit { get; set; }
         public int RampUpStepTimeMilliseconds { get; set; }
