@@ -36,7 +36,9 @@ namespace OutphasingSweepController
             OutphasingOptimisedMeasurement;
         public GetSpectrumPowerDelegate GetSpectrumPower;
         public OperationCompleteDelegate OperationsComplete;
+        public OperationCompleteDelegate PhaseSignalGenOperationComplete;
         public GetMarkerPowerDelegate GetMarkerPower;
+
 
         public DeviceCommands(
             SetInputPowerDelegate setInputPower,
@@ -50,6 +52,7 @@ namespace OutphasingSweepController
             OutphasingOptimisedMeasurementDelegate outphasingOptimisedMeasurement,
             GetSpectrumPowerDelegate getSpectrumPower,
             OperationCompleteDelegate operationsComplete,
+            OperationCompleteDelegate phaseSignalGenOperationComplete,
             GetMarkerPowerDelegate getMarkerPower)
             {
             this.SetInputPower = setInputPower;
@@ -63,6 +66,7 @@ namespace OutphasingSweepController
             this.OutphasingOptimisedMeasurement = outphasingOptimisedMeasurement;
             this.GetSpectrumPower = getSpectrumPower;
             this.OperationsComplete = operationsComplete;
+            this.PhaseSignalGenOperationComplete = phaseSignalGenOperationComplete;
             this.GetMarkerPower = getMarkerPower;
             }
         }

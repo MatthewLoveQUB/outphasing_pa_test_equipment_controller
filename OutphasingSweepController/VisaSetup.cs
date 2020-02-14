@@ -27,9 +27,9 @@ namespace OutphasingSweepController
             if (true)
                 {
                 // HP6624A
-                psuAddress = "GPIB1::14::INSTR";
+                psuAddress = "GPIB0::14::INSTR";
                 // Tek RSA3408A
-                spectrumAnalyzerAddress = "GPIB1::1::INSTR";
+                spectrumAnalyzerAddress = "GPIB0::1::INSTR";
                 //  R&S SMR20
                 signalGen1Address = "GPIB0::28::INSTR";
                 // Keysight E8257D
@@ -145,6 +145,11 @@ namespace OutphasingSweepController
                 sweepConf.Commands.SetRfOutputState(on: true);
                 }
 
+            bool phaseSignalGenOperationComplete()
+                {
+                return devices.E8257d.OperationComplete();
+                }
+
             bool operationsComplete()
                 {
                 return devices.Rsa3408a.OperationComplete()
@@ -169,6 +174,7 @@ namespace OutphasingSweepController
                 devices.Hp6624a.SetPsuVoltageStepped,
                 devices.Hp6624a.OutphasingOptimisedMeasurement,
                 devices.Rsa3408a.ReadSpectrumChannelPower,
+                phaseSignalGenOperationComplete,
                 operationsComplete,
                 GetMarkerPower);
             }

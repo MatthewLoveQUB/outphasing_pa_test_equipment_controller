@@ -18,8 +18,8 @@ namespace OutphasingSweepController
             OutphasingDcMeasurements dcResults = null;
             var commands = conf.MeasurementConfig.Commands;
 
-            // Make sure all commands are settled first
-            while (!commands.OperationsComplete())
+            // Make sure phase generator done
+            while (!commands.PhaseSignalGenOperationComplete())
                 {
 
                 }
